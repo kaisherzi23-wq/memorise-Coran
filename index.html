@@ -1,0 +1,562 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Hifz Al-Kahf">
+<title>Hifz Al-Kahf</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Amiri+Quran&family=Atkinson+Hyperlegible:wght@400;700&display=swap">
+<style>
+/* Layout : texte du Coran au centre, barre de lecture fixe en bas (pouce), feuille "Morceaux" qui glisse */
+:root{
+  --bg:#F6F7F4; --surface:#FFFFFF; --ink:#1B2421; --muted:#5D6B66; --line:#DCE3DF;
+  --accent:#0E6B5E; --accent-ink:#FFFFFF; --sel:#D6ECE6; --now:#F4C95D; --now-ink:#1B2421;
+  --danger:#B3402E;
+  --f-ar:"Amiri Quran","Amiri","Geeza Pro","Traditional Arabic",serif;
+  --f-ui:"Atkinson Hyperlegible",-apple-system,"Segoe UI",sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root{
+  --bg:#0F1614; --surface:#18211E; --ink:#E8EEEB; --muted:#9AA8A3; --line:#2A3632;
+  --accent:#4FC2AE; --accent-ink:#0B1311; --sel:#1F3B35; --now:#E9B949; --now-ink:#1B1606;
+  --danger:#F08A76; color-scheme:dark}}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--f-ui);font-size:16px;-webkit-tap-highlight-color:transparent}
+button,select{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+
+.top{position:sticky;top:0;z-index:20;background:var(--bg);border-bottom:1px solid var(--line);
+  padding:calc(env(safe-area-inset-top,0px) + 10px) max(16px,env(safe-area-inset-right,0px)) 10px max(16px,env(safe-area-inset-left,0px));
+  display:flex;flex-wrap:wrap;gap:8px 10px;align-items:center}
+.top h1{margin:0;font-size:1.05rem;display:flex;align-items:baseline;gap:8px;flex:1 1 auto}
+.top h1 .ar{font-family:var(--f-ar);font-size:1.4rem;font-weight:400;color:var(--accent)}
+#reciter{flex:1 1 100%;min-width:0;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:var(--surface)}
+.pill{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:8px 14px;font-size:.9rem}
+.pill[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+
+main{padding:12px max(16px,env(safe-area-inset-right,0px)) 300px max(16px,env(safe-area-inset-left,0px));max-width:760px;margin:0 auto}
+.hint{color:var(--muted);font-size:.92rem;line-height:1.45;margin:4px 0 14px}
+.ayah{direction:rtl;text-align:right;font-family:var(--f-ar);font-size:1.75rem;line-height:2.3;padding:6px 0;border-bottom:1px dashed var(--line)}
+.w{padding:0 .08em;border-radius:6px;transition:background .15s,filter .2s}
+.w.sel{background:var(--sel)}
+.w.now{background:var(--now);color:var(--now-ink)}
+.num{display:inline-flex;align-items:center;justify-content:center;min-width:1.7em;height:1.7em;margin:0 .25em;
+  border:1.5px solid var(--accent);color:var(--accent);border-radius:50%;font-size:.6em;line-height:1;vertical-align:middle;font-family:var(--f-ui);padding:0 .2em}
+body.masque .w:not(.now){filter:blur(7px)}
+body.masque .w.reveal{filter:none}
+
+.loading{padding:40px 0;text-align:center;color:var(--muted);line-height:1.5}
+.loading button{margin-top:12px}
+
+/* Barre de sélection */
+#selbar{position:fixed;left:0;right:0;bottom:var(--dockh,220px);z-index:25;
+  padding:10px max(16px,env(safe-area-inset-right,0px)) 10px max(16px,env(safe-area-inset-left,0px));
+  background:var(--surface);border-top:1px solid var(--line);display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+#selbar .lbl{flex:1 1 100%;font-size:.9rem;color:var(--muted)}
+#selbar .lbl b{color:var(--ink)}
+
+/* Dock */
+.dock{position:fixed;left:0;right:0;bottom:0;z-index:30;background:var(--surface);border-top:1px solid var(--line);
+  padding:10px max(16px,env(safe-area-inset-right,0px)) calc(env(safe-area-inset-bottom,0px) + 12px) max(16px,env(safe-area-inset-left,0px));
+  box-shadow:0 -6px 20px rgba(0,0,0,.06)}
+.dock-in{max-width:760px;margin:0 auto;display:grid;gap:10px}
+.status{font-size:.9rem;color:var(--muted);min-height:1.3em;display:flex;justify-content:space-between;gap:8px}
+.status b{color:var(--ink);font-variant-numeric:tabular-nums}
+.seg{display:grid;grid-template-columns:repeat(3,1fr);background:var(--bg);border-radius:12px;padding:4px;gap:4px}
+.seg button{border:0;background:transparent;border-radius:9px;padding:9px 4px;font-size:.92rem}
+.seg button[aria-pressed="true"]{background:var(--surface);color:var(--accent);font-weight:700;box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.row{display:flex;gap:8px;align-items:center}
+.chips{display:flex;gap:6px;flex:1;min-width:0;flex-wrap:wrap}
+.chip{border:1px solid var(--line);background:var(--bg);border-radius:10px;padding:6px 8px;font-size:.8rem;line-height:1.15;text-align:left}
+.chip b{display:block;font-size:.98rem;font-variant-numeric:tabular-nums}
+.play{width:62px;height:62px;border-radius:50%;border:0;background:var(--accent);color:var(--accent-ink);flex:0 0 auto;display:grid;place-items:center}
+.play svg{width:26px;height:26px;fill:currentColor}
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:10px 14px}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:700}
+.btn.wide{width:100%}
+.test{background:var(--sel);border-radius:12px;padding:12px;display:grid;gap:8px;font-size:.95rem;line-height:1.4}
+
+/* Feuille Morceaux */
+#sheet{position:fixed;inset:0;z-index:40;background:rgba(0,0,0,.35);display:flex;align-items:flex-end}
+.sheet-in{background:var(--surface);width:100%;max-height:78%;overflow:auto;border-radius:18px 18px 0 0;
+  padding:16px max(16px,env(safe-area-inset-right,0px)) calc(env(safe-area-inset-bottom,0px) + 16px) max(16px,env(safe-area-inset-left,0px))}
+.sheet-in h2{margin:0 0 4px;font-size:1.1rem}
+.part{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)}
+.part input{width:22px;height:22px;accent-color:var(--accent);flex:0 0 auto}
+.part .name{flex:1;min-width:0}
+.part .name small{display:block;color:var(--muted);font-family:var(--f-ar);direction:rtl;text-align:right;font-size:1.05rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.part .del{color:var(--danger);border:0;background:none;padding:8px}
+.empty{color:var(--muted);padding:14px 0;line-height:1.45}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+<header class="top">
+  <h1>Hifz <span class="ar">الكهف</span></h1>
+  <button class="pill" id="hideBtn" aria-pressed="false">Masquer le texte</button>
+  <select id="reciter" aria-label="Récitateur"></select>
+</header>
+
+<main>
+  <p class="hint">Touche le <b>premier mot</b> puis le <b>dernier mot</b> du passage à travailler. Touche un numéro de verset pour sélectionner tout le verset.</p>
+  <div id="text"><div class="loading" id="loading">Chargement du texte et de la récitation…</div></div>
+</main>
+
+<div id="selbar" hidden>
+  <div class="lbl" id="selLbl"></div>
+  <button class="btn" id="selListen">Écouter une fois</button>
+  <button class="btn primary" id="selSave">Enregistrer le morceau</button>
+  <button class="btn" id="selClear" aria-label="Annuler la sélection">✕</button>
+</div>
+
+<div class="dock" id="dock">
+  <div class="dock-in">
+    <div class="status"><span id="status">Choisis un passage dans le texte</span><b id="counter"></b></div>
+    <div class="seg" role="group" aria-label="Mode">
+      <button data-mode="repeat" aria-pressed="true">Répéter</button>
+      <button data-mode="chain" aria-pressed="false">Enchaîner</button>
+      <button data-mode="test" aria-pressed="false">Test</button>
+    </div>
+    <div class="test" id="testCard" hidden></div>
+    <div class="row">
+      <div class="chips">
+        <button class="chip" id="repsBtn">Répétitions<b>5×</b></button>
+        <button class="chip" id="gapBtn">Pause<b>2 s</b></button>
+        <button class="chip" id="speedBtn">Vitesse<b>1×</b></button>
+        <button class="chip" id="partsBtn">Morceaux<b id="partsCount">0</b></button>
+      </div>
+      <button class="play" id="playBtn" aria-label="Lecture"><svg viewBox="0 0 24 24" id="playIcon"><path d="M8 5v14l11-7z"/></svg></button>
+    </div>
+  </div>
+</div>
+
+<div id="sheet" hidden>
+  <div class="sheet-in" role="dialog" aria-label="Mes morceaux">
+    <h2>Mes morceaux</h2>
+    <p class="hint" style="margin:0 0 6px">Touche un morceau pour le charger. Coche ceux à enchaîner (mode Enchaîner : 1, puis 1+2, puis 1+2+3…).</p>
+    <div id="partsList"></div>
+    <button class="btn wide" id="sheetClose" style="margin-top:14px">Fermer</button>
+  </div>
+</div>
+
+<audio id="audio" preload="auto" playsinline></audio>
+
+<script>
+(function(){
+"use strict";
+const SURAH = 18;
+const $ = id => document.getElementById(id);
+const audio = $('audio');
+const LS = {
+  get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},
+  set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
+};
+const FALLBACK_RECITERS = [
+  {id:7,label:"Mishary Rashid Alafasy"},
+  {id:6,label:"Mahmoud Khalil Al-Husary"},
+  {id:2,label:"Abdul Basit Abdus Samad · Murattal"},
+  {id:1,label:"Abdul Basit Abdus Samad · Mujawwad"},
+  {id:9,label:"Mohamed Siddiq Al-Minshawi · Murattal"},
+  {id:3,label:"Abdur-Rahman As-Sudais"},
+  {id:4,label:"Abu Bakr Al-Shatri"},
+  {id:5,label:"Hani Ar-Rifai"},
+  {id:10,label:"Saud Ash-Shuraim"}
+];
+const REPS=[1,3,5,7,10,Infinity], GAPS=[0,2,4,6,8], SPEEDS=[0.75,0.85,1,1.25];
+
+let verses=[], timing=null, flat=[], wordEl={};
+let reciterId = LS.get('hk.reciter',7);
+let settings = Object.assign({reps:5,gap:2,speed:1,mode:'repeat'}, LS.get('hk.settings',{}));
+let parts = LS.get('hk.parts',[]);
+let sel = {a:null,b:null};
+let run=null, gapTimer=null, nowKey=null, wakeLock=null, userScrolledAt=0;
+
+const key = (v,p)=>v*1000+p;
+const arNum = n => n.toLocaleString('ar-EG');
+
+async function getJSON(urls){
+  let err;
+  for(const u of urls){
+    try{const r=await fetch(u,{headers:{Accept:'application/json'}}); if(r.ok) return await r.json(); err=new Error('HTTP '+r.status);}
+    catch(e){err=e}
+  }
+  throw err;
+}
+
+async function loadText(){
+  const c=LS.get('hk.text.'+SURAH); if(c && c.length) return c;
+  const out=[]; let page=1,total=1;
+  do{
+    const q=`verses/by_chapter/${SURAH}?words=true&word_fields=text_uthmani&per_page=50&page=${page}`;
+    const d=await getJSON([`https://api.quran.com/api/v4/${q}`,`https://api.qurancdn.com/api/qdc/${q}`]);
+    total=(d.pagination&&d.pagination.total_pages)||1;
+    for(const v of d.verses){
+      out.push({n:v.verse_number||+String(v.verse_key).split(':')[1],
+        w:(v.words||[]).filter(w=>w.char_type_name==='word').map(w=>({p:w.position,t:w.text_uthmani||w.text}))});
+    }
+    page++;
+  }while(page<=total && page<10);
+  out.sort((a,b)=>a.n-b.n);
+  LS.set('hk.text.'+SURAH,out);
+  return out;
+}
+
+async function loadReciters(){
+  try{
+    const d=await getJSON(['https://api.qurancdn.com/api/qdc/audio/reciters?locale=en','https://api.quran.com/api/qdc/audio/reciters?locale=en']);
+    const list=(d.reciters||[]).map(r=>({id:r.id,label:((r.translated_name&&r.translated_name.name)||r.name)+(r.style&&r.style.name?' · '+r.style.name:'')}));
+    if(list.length) return list;
+  }catch(e){}
+  return FALLBACK_RECITERS;
+}
+
+async function loadTiming(id){
+  const ck='hk.timing.'+SURAH+'.'+id;
+  const c=LS.get(ck); if(c && c.url) return c;
+  const q=`audio/reciters/${id}/audio_files?chapter=${SURAH}&segments=true`;
+  const d=await getJSON([`https://api.qurancdn.com/api/qdc/${q}`,`https://api.quran.com/api/qdc/${q}`]);
+  const f=(d.audio_files||[])[0];
+  if(!f||!f.audio_url) throw new Error('Pas d’audio pour ce récitateur');
+  const t={url:f.audio_url,v:{}};
+  for(const vt of (f.verse_timings||[])){
+    const n=+String(vt.verse_key).split(':')[1];
+    const from=+vt.timestamp_from, to=+vt.timestamp_to, w={};
+    for(const s of (vt.segments||[])){
+      if(!Array.isArray(s)||s.length<3) continue;
+      let p=+s[0], a=+s[s.length-2], b=+s[s.length-1];
+      if(a<from-1500){a+=from;b+=from;} // segments relatifs au verset
+      if(p>0 && b>a) w[p]=[a,b];
+    }
+    t.v[n]={from,to,w};
+  }
+  if(!Object.keys(t.v).length) throw new Error('Pas de minutage pour ce récitateur');
+  LS.set(ck,t);
+  return t;
+}
+
+/* ---------- Temps d'un mot ---------- */
+function wordTime(v,p){
+  const vt=timing&&timing.v[v]; const verse=verses.find(x=>x.n===v);
+  if(!vt||!verse) return null;
+  if(vt.w[p]) return {s:vt.w[p][0],e:vt.w[p][1]};
+  const i=verse.w.findIndex(w=>w.p===p), N=verse.w.length||1;
+  const span=vt.to-vt.from;
+  return {s:vt.from+span*i/N, e:vt.from+span*(i+1)/N};
+}
+function rangeTime(a,b){
+  const s=wordTime(a.v,a.p), e=wordTime(b.v,b.p);
+  if(!s||!e) return null;
+  return {s:Math.max(0,s.s-60), e:e.e+180};
+}
+function buildFlat(){
+  flat=[];
+  for(const v of verses) for(const w of v.w){const t=wordTime(v.n,w.p); if(t) flat.push({k:key(v.n,w.p),s:t.s,e:t.e});}
+  flat.sort((x,y)=>x.s-y.s);
+}
+
+/* ---------- Rendu du texte ---------- */
+function renderText(){
+  const box=$('text'); box.innerHTML=''; wordEl={};
+  const frag=document.createDocumentFragment();
+  for(const v of verses){
+    const d=document.createElement('div'); d.className='ayah'; d.id='v'+v.n;
+    for(const w of v.w){
+      const s=document.createElement('span'); s.className='w'; s.textContent=w.t;
+      s.dataset.v=v.n; s.dataset.p=w.p; wordEl[key(v.n,w.p)]=s;
+      d.appendChild(s); d.appendChild(document.createTextNode(' '));
+    }
+    const n=document.createElement('button'); n.className='num'; n.textContent=arNum(v.n);
+    n.dataset.verse=v.n; n.setAttribute('aria-label','Sélectionner le verset '+v.n);
+    n.style.background='transparent';
+    d.appendChild(n); frag.appendChild(d);
+  }
+  box.appendChild(frag);
+}
+
+$('text').addEventListener('click',e=>{
+  const num=e.target.closest('.num');
+  if(num){const n=+num.dataset.verse, v=verses.find(x=>x.n===n);
+    setSel({v:n,p:v.w[0].p},{v:n,p:v.w[v.w.length-1].p}); return;}
+  const w=e.target.closest('.w'); if(!w) return;
+  const pt={v:+w.dataset.v,p:+w.dataset.p};
+  if(!sel.a||sel.b) setSel(pt,null); else setSel(sel.a,pt);
+});
+
+function norm(a,b){ if(b && key(b.v,b.p)<key(a.v,a.p)) return [b,a]; return [a,b]; }
+function setSel(a,b){
+  if(a&&b){[a,b]=norm(a,b);}
+  sel={a,b};
+  paintSel(); updateSelBar();
+}
+function curRange(){ if(!sel.a) return null; return {a:sel.a,b:sel.b||sel.a}; }
+function paintSel(){
+  document.querySelectorAll('.w.sel').forEach(x=>x.classList.remove('sel'));
+  const r=curRange(); if(!r) return;
+  const ka=key(r.a.v,r.a.p), kb=key(r.b.v,r.b.p);
+  for(const k in wordEl){ if(+k>=ka && +k<=kb) wordEl[k].classList.add('sel'); }
+}
+function rangeLabel(r){
+  const va=verses.find(x=>x.n===r.a.v), vb=verses.find(x=>x.n===r.b.v);
+  const ia=va.w.findIndex(w=>w.p===r.a.p)+1, ib=vb.w.findIndex(w=>w.p===r.b.p)+1;
+  if(r.a.v===r.b.v){
+    if(ia===1 && ib===vb.w.length) return 'Verset '+r.a.v+' complet';
+    return 'Verset '+r.a.v+' · mots '+ia+' à '+ib;
+  }
+  return 'Verset '+r.a.v+' (mot '+ia+') → verset '+r.b.v+' (mot '+ib+')';
+}
+function rangeText(r){
+  const ka=key(r.a.v,r.a.p), kb=key(r.b.v,r.b.p), out=[];
+  for(const v of verses) for(const w of v.w){const k=key(v.n,w.p); if(k>=ka&&k<=kb) out.push(w.t);}
+  return out.join(' ');
+}
+function updateSelBar(){
+  const r=curRange(), bar=$('selbar');
+  if(!r){bar.hidden=true; setStatus('Choisis un passage dans le texte'); return;}
+  bar.hidden=false;
+  $('selLbl').innerHTML= sel.b ? 'Sélection : <b>'+rangeLabel(r)+'</b>' : 'Début : <b>'+rangeLabel(r)+'</b> — touche maintenant le dernier mot';
+  setStatus(rangeLabel(r));
+  layoutDock();
+}
+
+/* ---------- Morceaux ---------- */
+function saveParts(){ LS.set('hk.parts',parts); $('partsCount').textContent=parts.length; }
+function sortParts(){ parts.sort((x,y)=>key(x.a.v,x.a.p)-key(y.a.v,y.a.p)); }
+$('selSave').onclick=()=>{
+  const r=curRange(); if(!r) return;
+  if(parts.some(p=>key(p.a.v,p.a.p)===key(r.a.v,r.a.p)&&key(p.b.v,p.b.p)===key(r.b.v,r.b.p))){toast('Ce morceau existe déjà');return;}
+  parts.push({id:Date.now(),a:r.a,b:r.b,on:true}); sortParts(); saveParts();
+  toast('Morceau enregistré ('+parts.length+')');
+};
+$('selClear').onclick=()=>{ setSel(null,null); };
+$('selListen').onclick=()=>{ const r=curRange(); if(r) startRun([r],1,'Écoute'); };
+
+function renderParts(){
+  const box=$('partsList'); box.innerHTML='';
+  if(!parts.length){box.innerHTML='<p class="empty">Aucun morceau pour l’instant. Sélectionne un passage dans le texte puis touche « Enregistrer le morceau ».</p>';return;}
+  parts.forEach((p,i)=>{
+    const row=document.createElement('div'); row.className='part';
+    const cb=document.createElement('input'); cb.type='checkbox'; cb.checked=p.on!==false; cb.id='pc'+p.id;
+    cb.setAttribute('aria-label','Inclure dans l’enchaînement');
+    cb.onchange=()=>{p.on=cb.checked; saveParts();};
+    const nm=document.createElement('button'); nm.className='name'; nm.style.cssText='border:0;background:none;text-align:left;padding:0';
+    nm.innerHTML='<b>'+(i+1)+'. '+rangeLabel(p)+'</b><small></small>';
+    nm.querySelector('small').textContent=rangeText(p);
+    nm.onclick=()=>{ setSel(p.a,p.b); closeSheet(); scrollToWord(p.a,true); };
+    const del=document.createElement('button'); del.className='del'; del.textContent='Supprimer';
+    del.onclick=()=>{ if(del.dataset.c){parts.splice(i,1); saveParts(); renderParts();} else {del.dataset.c=1; del.textContent='Confirmer ?';} };
+    row.append(cb,nm,del); box.appendChild(row);
+  });
+}
+function openSheet(){ renderParts(); $('sheet').hidden=false; }
+function closeSheet(){ $('sheet').hidden=true; }
+$('partsBtn').onclick=openSheet; $('sheetClose').onclick=closeSheet;
+$('sheet').addEventListener('click',e=>{ if(e.target.id==='sheet') closeSheet(); });
+
+/* ---------- Réglages ---------- */
+function fmtReps(r){return r===Infinity?'∞':r+'×'}
+function paintSettings(){
+  $('repsBtn').querySelector('b').textContent=fmtReps(settings.reps);
+  $('gapBtn').querySelector('b').textContent=settings.gap+' s';
+  $('speedBtn').querySelector('b').textContent=String(settings.speed).replace('.',',')+'×';
+  document.querySelectorAll('.seg button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.mode===settings.mode));
+  LS.set('hk.settings',Object.assign({},settings,{reps:settings.reps===Infinity?'inf':settings.reps}));
+}
+function cycle(arr,v){const i=arr.indexOf(v);return arr[(i+1)%arr.length]}
+$('repsBtn').onclick=()=>{settings.reps=cycle(REPS,settings.reps);paintSettings();if(run&&run.kind!=='test')run.reps=settings.reps;};
+$('gapBtn').onclick=()=>{settings.gap=cycle(GAPS,settings.gap);paintSettings();};
+$('speedBtn').onclick=()=>{settings.speed=cycle(SPEEDS,settings.speed);audio.playbackRate=settings.speed;paintSettings();};
+document.querySelectorAll('.seg button').forEach(b=>b.onclick=()=>{
+  stopRun(); settings.mode=b.dataset.mode; paintSettings(); $('testCard').hidden=true; layoutDock();
+  if(settings.mode==='chain') setStatus(chainParts().length?chainParts().length+' morceaux cochés à enchaîner':'Enregistre et coche au moins 2 morceaux');
+});
+$('hideBtn').onclick=()=>{const on=!document.body.classList.contains('masque');document.body.classList.toggle('masque',on);$('hideBtn').setAttribute('aria-pressed',on);};
+
+/* ---------- Moteur de lecture ---------- */
+function setStatus(t){$('status').textContent=t}
+function setCounter(t){$('counter').textContent=t||''}
+function setPlayIcon(playing){
+  $('playIcon').innerHTML= playing ? '<path d="M6 5h4v14H6zM14 5h4v14h-4z"/>' : '<path d="M8 5v14l11-7z"/>';
+  $('playBtn').setAttribute('aria-label',playing?'Arrêter':'Lecture');
+}
+function ready(){
+  return new Promise(res=>{ if(audio.readyState>=1) return res(); audio.addEventListener('loadedmetadata',()=>res(),{once:true}); });
+}
+async function requestWake(){ try{ if('wakeLock' in navigator && !wakeLock) {wakeLock=await navigator.wakeLock.request('screen'); wakeLock.addEventListener('release',()=>{wakeLock=null});} }catch(e){} }
+function releaseWake(){ try{ wakeLock&&wakeLock.release(); }catch(e){} wakeLock=null; }
+document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='visible' && run) requestWake(); });
+
+function startRun(ranges,reps,label,kind,onDone){
+  stopRun(true);
+  const steps=ranges.map(r=>rangeTime(r.a,r.b)).filter(Boolean);
+  if(!steps.length){toast('Minutage indisponible pour ce passage');return;}
+  run={steps,ranges,i:0,count:0,reps,label,kind:kind||'repeat',onDone};
+  requestWake(); setPlayIcon(true); playStep();
+}
+async function playStep(){
+  if(!run) return;
+  const st=run.steps[run.i];
+  updateRunStatus();
+  await ready();
+  if(!run) return;
+  audio.playbackRate=settings.speed;
+  audio.currentTime=st.s/1000;
+  try{ await audio.play(); }catch(e){ toast('Touche ▶ pour lancer le son'); stopRun(); }
+}
+function updateRunStatus(){
+  if(!run) return;
+  const r=run.ranges[run.i];
+  let t=run.label||'';
+  if(run.kind==='chain') t='Enchaînement '+(run.i+1)+'/'+run.steps.length+' · '+rangeLabel(r);
+  else if(r) t=(run.label?run.label+' · ':'')+rangeLabel(r);
+  setStatus(t);
+  setCounter(run.reps>1||run.reps===Infinity ? (run.count+1)+' / '+fmtReps(run.reps).replace('×','') : '');
+}
+function stopRun(silent){
+  clearTimeout(gapTimer); gapTimer=null;
+  audio.pause(); run=null; setPlayIcon(false); setCounter(''); releaseWake(); clearNow();
+  if(!silent) updateSelBar();
+}
+function stepEnded(){
+  audio.pause();
+  run.count++;
+  const again = run.reps===Infinity || run.count<run.reps;
+  if(!again){ run.count=0; run.i++; }
+  if(run.i>=run.steps.length){
+    const cb=run.onDone; const lbl=run.label;
+    stopRun(true); setStatus(lbl==='Écoute'?'Écoute terminée':'Terminé, bravo !');
+    if(cb) cb();
+    return;
+  }
+  updateRunStatus();
+  const gapMs=settings.gap*1000;
+  if(gapMs>0) setStatus('À toi de réciter… '+settings.gap+' s');
+  gapTimer=setTimeout(()=>{gapTimer=null;playStep();}, Math.max(gapMs,120));
+}
+setInterval(()=>{
+  if(!run||audio.paused||gapTimer) return;
+  const ms=audio.currentTime*1000;
+  paintNow(ms);
+  if(ms>=run.steps[run.i].e) stepEnded();
+},40);
+
+function clearNow(){ if(nowKey!=null&&wordEl[nowKey]) wordEl[nowKey].classList.remove('now'); nowKey=null; }
+function paintNow(ms){
+  let lo=0,hi=flat.length-1,f=-1;
+  while(lo<=hi){const m=(lo+hi)>>1; if(flat[m].s<=ms){f=m;lo=m+1}else hi=m-1;}
+  const k = f>=0 && ms<=flat[f].e+250 ? flat[f].k : null;
+  if(k===nowKey) return;
+  clearNow(); nowKey=k;
+  if(k!=null&&wordEl[k]){ wordEl[k].classList.add('now'); if(Date.now()-userScrolledAt>2500) scrollIntoViewIfNeeded(wordEl[k]); }
+}
+['touchmove','wheel'].forEach(ev=>window.addEventListener(ev,()=>{userScrolledAt=Date.now()},{passive:true}));
+function scrollIntoViewIfNeeded(el){
+  const r=el.getBoundingClientRect(), top=$('selbar').hidden?0:$('selbar').offsetHeight;
+  const bottomLimit=window.innerHeight-$('dock').offsetHeight-top-20;
+  if(r.top<90||r.bottom>bottomLimit) el.scrollIntoView({block:'center',behavior:'smooth'});
+}
+function scrollToWord(pt,force){ const el=wordEl[key(pt.v,pt.p)]; if(el) el.scrollIntoView({block:'center',behavior:force?'smooth':'auto'}); }
+
+/* ---------- Modes ---------- */
+function chainParts(){ return parts.filter(p=>p.on!==false); }
+function startChain(){
+  const ps=chainParts();
+  if(ps.length<2){toast('Coche au moins 2 morceaux dans « Morceaux »');openSheet();return;}
+  const ranges=ps.map((p,i)=>({a:ps[0].a,b:ps[i].b}));
+  // étape 1 : morceau 1 ; étape 2 : 1+2 ; etc.
+  startRun(ranges,settings.reps,'','chain');
+}
+function firstWords(r,n){
+  const out=[], ka=key(r.a.v,r.a.p), kb=key(r.b.v,r.b.p);
+  for(const v of verses) for(const w of v.w){const k=key(v.n,w.p); if(k>=ka&&k<=kb&&out.length<n) out.push({v:v.n,p:w.p});}
+  return {a:out[0], b:out[out.length-1]};
+}
+function testStart(){
+  const r=curRange(); if(!r){toast('Choisis d’abord un passage');return;}
+  const card=$('testCard'); card.hidden=false;
+  document.body.classList.add('masque'); $('hideBtn').setAttribute('aria-pressed','true');
+  card.innerHTML='<div>Écoute le début, puis <b>récite la suite</b> dans ta tête ou à voix basse.</div>';
+  layoutDock();
+  startRun([firstWords(r,2)],1,'Début','test',()=>{
+    card.innerHTML='<div><b>À toi !</b> Récite jusqu’à la fin du passage, puis vérifie.</div><button class="btn primary wide" id="checkBtn">Vérifier avec le récitateur</button>';
+    $('checkBtn').onclick=()=>{
+      revealRange(r,true);
+      card.innerHTML='<div>Suis le texte pendant la vérification.</div>';
+      startRun([r],1,'Vérification','test',()=>{
+        card.innerHTML='<div>Alors, c’était juste ?</div><div class="row"><button class="btn wide" id="retryBtn">Recommencer</button><button class="btn wide" id="endTest">Terminer</button></div>';
+        $('retryBtn').onclick=()=>{revealRange(r,false);testStart();};
+        $('endTest').onclick=()=>{revealRange(r,false);card.hidden=true;layoutDock();setStatus(rangeLabel(r));};
+        layoutDock();
+      });
+    };
+    layoutDock();
+  });
+}
+function revealRange(r,on){
+  const ka=key(r.a.v,r.a.p), kb=key(r.b.v,r.b.p);
+  for(const k in wordEl){ if(+k>=ka&&+k<=kb) wordEl[k].classList.toggle('reveal',on); }
+}
+
+$('playBtn').onclick=()=>{
+  if(run){ stopRun(); return; }
+  if(!timing){toast('La récitation n’est pas encore chargée');return;}
+  if(settings.mode==='chain') return startChain();
+  if(settings.mode==='test') return testStart();
+  const r=curRange(); if(!r){toast('Touche le premier puis le dernier mot du passage');return;}
+  startRun([r],settings.reps,'');
+};
+
+/* Boutons des écouteurs */
+if('mediaSession' in navigator){
+  try{
+    navigator.mediaSession.setActionHandler('pause',()=>stopRun());
+    navigator.mediaSession.setActionHandler('play',()=>$('playBtn').click());
+    navigator.mediaSession.setActionHandler('nexttrack',()=>{ if(run){clearTimeout(gapTimer);gapTimer=null;run.count=0;run.i=Math.min(run.i+1,run.steps.length-1);playStep();} });
+    navigator.mediaSession.setActionHandler('previoustrack',()=>{ if(run){clearTimeout(gapTimer);gapTimer=null;playStep();} });
+  }catch(e){}
+}
+
+/* ---------- Divers ---------- */
+let toastT;
+function toast(t){ setStatus(t); clearTimeout(toastT); }
+function layoutDock(){ document.documentElement.style.setProperty('--dockh',$('dock').offsetHeight+'px'); document.querySelector('main').style.paddingBottom=($('dock').offsetHeight+($('selbar').hidden?0:$('selbar').offsetHeight)+40)+'px'; }
+window.addEventListener('resize',layoutDock);
+
+async function chooseReciter(id){
+  stopRun(true);
+  reciterId=id; LS.set('hk.reciter',id);
+  setStatus('Chargement de la récitation…'); timing=null;
+  try{
+    timing=await loadTiming(id);
+    audio.src=timing.url; audio.load();
+    buildFlat();
+    if('mediaSession' in navigator){ try{ navigator.mediaSession.metadata=new MediaMetadata({title:'Sourate Al-Kahf',artist:$('reciter').selectedOptions[0]?.textContent||''}); }catch(e){} }
+    updateSelBar();
+  }catch(e){
+    setStatus('Récitation introuvable pour ce récitateur. Essaie-en un autre.');
+  }
+}
+
+async function init(){
+  if(settings.reps==='inf') settings.reps=Infinity;
+  paintSettings(); saveParts(); layoutDock();
+  try{
+    const [txt,recs]=await Promise.all([loadText(),loadReciters()]);
+    verses=txt; renderText();
+    const selEl=$('reciter');
+    selEl.innerHTML=''; for(const r of recs){const o=document.createElement('option');o.value=r.id;o.textContent=r.label;selEl.appendChild(o);}
+    if(!recs.some(r=>r.id==reciterId)) reciterId=recs[0].id;
+    selEl.value=reciterId;
+    selEl.onchange=()=>chooseReciter(+selEl.value);
+    await chooseReciter(+reciterId);
+  }catch(e){
+    $('text').innerHTML='<div class="loading">Impossible de charger la sourate. Vérifie ta connexion internet.<br><button class="btn primary" onclick="location.reload()">Réessayer</button></div>';
+  }
+}
+init();
+})();
+</script>
+</body>
+</html>
