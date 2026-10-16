@@ -385,6 +385,9 @@ textarea{width:100%;min-height:70px;border-radius:10px;border:1px solid var(--li
 .k-result p{font-size:1.15rem;color:#5B6B82;margin:0 0 6px}
 .k-unlock{background:#fff;border-radius:20px;padding:12px;margin:12px 0;font-weight:800;color:#2B6CB0;box-shadow:0 5px 0 #D3E6F3}
 @keyframes kpop{0%{transform:scale(0)}70%{transform:scale(1.3)}100%{transform:scale(1)}}
+.k-cd{position:fixed;inset:0;z-index:7;display:grid;place-items:center;background:rgba(233,246,255,.82);pointer-events:none}
+.k-cd span{font-size:7rem;font-weight:800;color:#2B6CB0;line-height:1;animation:kpop .5s both}
+.k-cd span.go{font-size:3.4rem;color:#2E9E6A}
 .k-confetti{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:5}
 .k-confetti i{position:absolute;top:-20px;width:10px;height:14px;border-radius:3px;animation:kfall 2.8s linear forwards}
 @keyframes kfall{to{transform:translateY(110vh) rotate(540deg)}}
@@ -1166,7 +1169,7 @@ document.addEventListener('visibilitychange',()=>{if(document.visibilityState===
 
 function startRun(ranges,reps,kind,onDone,label,opts){
   stopRun(true); myAudio.pause();
-  const steps=ranges.map(r=>rangeTime(r.a,r.b)).filter(Boolean);
+  const steps=ranges.map(r=>r.s!=null?{s:r.s,e:r.e}:rangeTime(r.a,r.b)).filter(Boolean);
   if(!steps.length){setInfo('Minutage indisponible pour ce passage');return}
   run={steps,ranges,i:0,count:0,reps,kind,onDone,label}; if(opts) Object.assign(run,opts);
   requestWake(); setPlayIcon(true); playStep();
@@ -1178,6 +1181,11 @@ function playStep(){
   const go=()=>{
     if(!run) return; setSession('playback'); myAudio.pause();
     audio.playbackRate=settings.speed; try{audio.currentTime=st.s/1000}catch(e){}
+    if(run.waitSeek){
+      // on attend que le son soit positionné avant de lancer (évite de couper le début)
+      let started=false; const launch=()=>{if(started||!run)return;started=true;const p2=audio.play();if(p2&&p2.catch)p2.catch(()=>soundBlocked())};
+      audio.addEventListener('seeked',launch,{once:true}); setTimeout(launch,700); return;
+    }
     const pr=audio.play(); if(pr&&pr.catch) pr.catch(()=>soundBlocked());
   };
   if(audio.readyState>=1) go(); else audio.addEventListener('loadedmetadata',go,{once:true});
@@ -1697,7 +1705,20 @@ const saveKids=()=>LS.set('hk.kids',kids);
 const kStars=k=>Object.values(k.stars||{}).reduce((a,b)=>a+b,0);
 const young=()=>!!kid&&kid.age==='4-6';
 const ageLabel=a=>a==='4-6'?'4 à 6 ans':'7 à 12 ans';
-function kClear(){kTimers.forEach(t=>clearTimeout(t));kTimers=[];stopRun(true);kidEl={};const c=document.querySelector('.k-confetti');if(c)c.remove()}
+function kStop(){kTimers.forEach(t=>clearTimeout(t));kTimers=[];stopRun(true);document.querySelectorAll('.k-cd').forEach(x=>x.remove())}
+function kClear(){kStop();kidEl={};const c=document.querySelector('.k-confetti');if(c)c.remove()}
+// Autorise le son dès le toucher (iPhone), puis place la lecture au bon endroit pendant le compte à rebours
+function kUnlock(s){
+  try{audio.muted=true;const p=audio.play();const done=()=>{audio.pause();audio.muted=false;if(s!=null){try{audio.currentTime=s/1000}catch(e){}}};
+    if(p&&p.then)p.then(done,()=>{audio.muted=false});else done()}catch(e){audio.muted=false}
+}
+function kCountdown(then){
+  const o=document.createElement('div'); o.className='k-cd'; o.setAttribute('aria-live','polite'); $('kids').appendChild(o);
+  const seq=['3','2','1','Bismillah !']; let i=0;
+  const step=()=>{if(!o.isConnected)return;if(i>=seq.length){o.remove();then();return}
+    o.innerHTML='<span class="'+(i===3?'go':'')+'">'+seq[i]+'</span>';i++;kTimers.push(setTimeout(step,i<4?850:750))};
+  step();
+}
 function kView(html){kClear();$('kView').innerHTML=html;$('kids').scrollTop=0}
 function kTop(){
   const t=$('kTop');
@@ -1855,11 +1876,15 @@ function kListen(id){
   kWords($('kTxt'),allWords,true);
   const btn=$('kPlay');
   btn.onclick=()=>{
-    if(run){stopRun(true);btn.innerHTML=KICO.play;$('kLbl').textContent='Touche pour écouter';return}
-    const f=allWords[0], l=allWords[allWords.length-1];
-    btn.innerHTML=KICO.stop; $('kLbl').textContent='J’écoute…';
-    startRun([{a:{v:f.v,p:f.p},b:{v:l.v,p:l.p}}],1,'listen',()=>{
-      kMark(id,'listen'); if(!$('kPlay'))return; btn.innerHTML=KICO.play; $('kLbl').textContent='Bravo, tu as tout écouté !'; confetti();
+    if(run||kTimers.length){kStop();btn.innerHTML=KICO.play;$('kLbl').textContent='Touche pour écouter';return}
+    const f=allWords[0], l=allWords[allWords.length-1], end=wordTime(l.v,l.p);
+    btn.innerHTML=KICO.stop; $('kLbl').textContent='Prépare-toi…';
+    kUnlock(0);
+    kCountdown(()=>{
+      $('kLbl').textContent='J’écoute…';
+      startRun([{a:{v:f.v,p:f.p},b:{v:l.v,p:l.p},s:0,e:(end?end.e:0)+400}],1,'listen',()=>{
+        kMark(id,'listen'); if(!$('kPlay'))return; btn.innerHTML=KICO.play; $('kLbl').textContent='Bravo, tu as tout écouté !'; confetti();
+      },'',{waitSeek:true});
     });
   };
 }
@@ -1882,14 +1907,15 @@ function kRepeat(id){
   show(0); phase('ear');
   const go=$('kGo');
   go.onclick=()=>{
-    if(run||kTimers.length){kClear();show(0);phase('ear');go.textContent='▶ Commencer';return}
+    if(run||kTimers.length){kStop();show(0);phase('ear');go.textContent='▶ Commencer';return}
     go.textContent='■ Arrêter';
     const ranges=chunks.map(c=>({a:c.a,b:c.b}));
-    startRun(ranges,1,'kid',()=>{
+    const t0=rangeTime(chunks[0].a,chunks[0].b); kUnlock(t0?t0.s:0);
+    kCountdown(()=>startRun(ranges,1,'kid',()=>{
       const last=chunks[chunks.length-1], tt=rangeTime(last.a,last.b), g=gapOf(tt?tt.e-tt.s:2000);
       phase('you',g);
       kTimers.push(setTimeout(()=>{kTimers=[];kMark(id,'repeat');if(!$('kGo'))return;$('kPh').innerHTML='<span>Bravo, c’est fini !</span>';$('kPh').className='k-phase ear';go.textContent='↻ Recommencer';confetti()},g));
-    },'',{gapFn:gapOf,onStep:i=>{show(i);phase('ear')},onGap:g=>phase('you',g)});
+    },'',{gapFn:gapOf,waitSeek:true,onStep:i=>{show(i);phase('ear')},onGap:g=>phase('you',g)}));
   };
 }
 
@@ -1902,9 +1928,9 @@ function kGame(id){
   $('kBack').onclick=()=>kSurah(id);
   const box=$('kGame');
   const start=document.createElement('button'); start.className='k-btn go'; start.style.width='100%'; start.textContent='▶ Commencer le jeu';
-  start.onclick=()=>round(); box.appendChild(start);
-  function playFirst(q){startRun([{a:{v:q.c.v,p:q.c.ws[0].p},b:{v:q.c.v,p:q.c.ws[q.k-1].p}}],1,'listen')}
-  function playRest(q){startRun([{a:{v:q.c.v,p:q.c.ws[q.k].p},b:{v:q.c.v,p:q.c.ws[q.c.ws.length-1].p}}],1,'listen')}
+  start.onclick=()=>{start.disabled=true;kUnlock(null);kCountdown(round)}; box.appendChild(start);
+  function playFirst(q){startRun([{a:{v:q.c.v,p:q.c.ws[0].p},b:{v:q.c.v,p:q.c.ws[q.k-1].p}}],1,'listen',null,'',{waitSeek:true})}
+  function playRest(q){startRun([{a:{v:q.c.v,p:q.c.ws[q.k].p},b:{v:q.c.v,p:q.c.ws[q.c.ws.length-1].p}}],1,'listen',null,'',{waitSeek:true})}
   function round(){
     const q=g.qs[g.i]; stopRun(true);
     box.innerHTML='<p class="k-count">Question '+(g.i+1)+' sur '+g.qs.length+' · ★ '+g.score+'</p><div class="k-text big" id="kTxt"></div><div id="kAns"></div><p class="k-fb" id="kFb"></p><div class="k-row-btns" id="kCtl"><button class="k-btn" id="kAgain">↻ Réécouter</button></div>';
