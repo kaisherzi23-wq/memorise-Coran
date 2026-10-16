@@ -1,7 +1,7 @@
 {
-  "name": "Sourate Al-Kahf",
-  "short_name": "Al-Kahf",
-  "description": "Mémoriser la sourate Al-Kahf passage par passage, avec répétition, enchaînement, test et révision espacée.",
+  "name": "Mémorise le Coran",
+  "short_name": "Mémorise",
+  "description": "Mémoriser le Coran passage par passage : répétition, enchaînement, test, tajwid en couleurs et révision espacée.",
   "lang": "fr",
   "start_url": "./",
   "scope": "./",
@@ -10,8 +10,21 @@
   "background_color": "#EFE6D0",
   "theme_color": "#EFE6D0",
   "icons": [
-    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png" },
-    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png" },
-    { "src": "icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
   ]
 }
