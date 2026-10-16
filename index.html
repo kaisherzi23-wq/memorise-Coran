@@ -1924,36 +1924,41 @@ function kRepeat(id){
 /* Le jeu : quel mot vient après ? */
 function kGame(id){
   kTop();
-  // On travaille sur des versets entiers : l'enfant entend au moins 2 ou 3 mots avant le mot à trouver
-  const vpool=verses.map(v=>allWords.filter(w=>w.v===v.n)).filter(ws=>ws.length>=3);
-  const rounds=Math.min(young()?4:6,Math.max(1,vpool.length*2));
-  const minK=young()?2:3, qs=[];
-  let bag=shuffle(vpool);
-  for(let r=0;r<rounds&&vpool.length;r++){
-    if(!bag.length) bag=shuffle(vpool);
-    const ws=bag.pop(), lo=Math.min(minK,ws.length-1), k=lo+Math.floor(Math.random()*(ws.length-lo));
-    qs.push({c:{v:ws[0].v,ws},k,st:Math.max(0,k-6)});
+  // Contexte long : la fin du verset précédent (ou le verset entier) puis le début du verset, jusqu'au mot caché
+  const vlist=verses.filter(v=>v.w.length>=2), rounds=Math.min(young()?4:6,Math.max(1,vlist.length*2)), qs=[];
+  let bag=shuffle(vlist);
+  for(let r=0;r<rounds&&vlist.length;r++){
+    if(!bag.length) bag=shuffle(vlist);
+    const v=bag.pop(), ws=allWords.filter(w=>w.v===v.n);
+    const lo=Math.min(young()?2:3,ws.length-1), k=lo+Math.floor(Math.random()*(ws.length-lo));
+    const hid=ws[k], gi=allWords.indexOf(hid);
+    let start=gi-k;
+    if(k<8&&v.n>verses[0].n){const ps=allWords.findIndex(w=>w.v===v.n-1);if(ps>=0)start=ps}
+    start=Math.max(start,gi-16);
+    qs.push({ctx:allWords.slice(start,gi),hid,rest:ws.slice(k)});
   }
   const g={i:0,score:0,qs};
-  kView(kHead(id,'Le jeu')+'<p class="k-sub">'+(young()?'Écoute le début, puis dis le mot qui vient après !':'Écoute le début, puis trouve le mot qui vient après.')+'</p><div id="kGame"></div>');
+  kView(kHead(id,'Le jeu')+'<p class="k-sub">'+(young()?'Écoute bien, puis dis le mot qui vient après !':'Écoute bien, puis trouve le mot qui vient après.')+'</p><div id="kGame"></div>');
   $('kBack').onclick=()=>kSurah(id);
   const box=$('kGame');
   const start=document.createElement('button'); start.className='k-btn go'; start.style.width='100%'; start.textContent='▶ Commencer le jeu';
   start.onclick=()=>{start.disabled=true;kUnlock(null);kCountdown(round)}; box.appendChild(start);
   function playFirst(q){
-    const a=q.c.ws[q.st], b=q.c.ws[q.k-1], ta=wordTime(a.v,a.p), tb=wordTime(b.v,b.p);
-    // fin juste après le dernier mot entendu, pour ne pas dévoiler la réponse
+    const a=q.ctx[0], b=q.ctx[q.ctx.length-1], ta=wordTime(a.v,a.p), tb=wordTime(b.v,b.p);
+    // on s'arrête juste après le dernier mot entendu, pour ne pas dévoiler la réponse
     startRun([{a:{v:a.v,p:a.p},b:{v:b.v,p:b.p},s:Math.max(0,ta.s-250),e:tb.e+80}],1,'listen',null,'',{waitSeek:true});
   }
-  function playRest(q){startRun([{a:{v:q.c.v,p:q.c.ws[q.k].p},b:{v:q.c.v,p:q.c.ws[q.c.ws.length-1].p}}],1,'listen',null,'',{waitSeek:true})}
+  function playRest(q){const a=q.rest[0],b=q.rest[q.rest.length-1];startRun([{a:{v:a.v,p:a.p},b:{v:b.v,p:b.p}}],1,'listen',null,'',{waitSeek:true})}
   function round(){
     const q=g.qs[g.i]; stopRun(true);
-    box.innerHTML='<p class="k-count">Question '+(g.i+1)+' sur '+g.qs.length+' · ★ '+g.score+'</p><div class="k-text big" id="kTxt"></div><div id="kAns"></div><p class="k-fb" id="kFb"></p><div class="k-row-btns" id="kCtl"><button class="k-btn" id="kAgain">↻ Réécouter</button></div>';
-    const txt=$('kTxt'); kWords(txt,q.c.ws.slice(q.st,q.k),false);
+    box.innerHTML='<p class="k-count">Question '+(g.i+1)+' sur '+g.qs.length+' · ★ '+g.score+'</p><div class="k-text" id="kTxt"></div><div id="kAns"></div><p class="k-fb" id="kFb"></p><div class="k-row-btns" id="kCtl"><button class="k-btn" id="kAgain">↻ Réécouter</button></div>';
+    const txt=$('kTxt'); kWords(txt,q.ctx,true);
+    // le numéro du verset en cours ne doit pas apparaître avant le trou
+    const lastEl=txt.lastElementChild; if(lastEl&&lastEl.classList.contains('k-vn')) lastEl.remove();
     const hole=document.createElement('span'); hole.className='k-hole'; hole.textContent='؟'; txt.appendChild(hole);
     $('kAgain').onclick=()=>playFirst(q);
     playFirst(q);
-    const reveal=()=>{hole.textContent=q.c.ws[q.k].t;hole.classList.add('filled');playRest(q)};
+    const reveal=()=>{hole.textContent=q.hid.t;hole.classList.add('filled');playRest(q)};
     if(young()){
       const a=$('kAns'); a.innerHTML='<p class="k-say">'+KICO.you+'<span>Dis le mot qui vient après !</span></p><div class="k-row-btns"><button class="k-btn go wide" id="kReveal">Écouter la réponse</button></div>';
       $('kReveal').onclick=()=>{
@@ -1961,7 +1966,7 @@ function kGame(id){
         $('kYes').onclick=()=>answered(true); $('kNo').onclick=()=>answered(false);
       };
     }else{
-      const correct=q.c.ws[q.k].t, d=distractors(correct,allWords,2), opts=shuffle([correct,...d]);
+      const correct=q.hid.t, d=distractors(correct,allWords,2), opts=shuffle([correct,...d]);
       const a=$('kAns'); a.className='k-opts';
       opts.forEach((o,i)=>{const b=document.createElement('button');b.className='k-opt o'+i;b.textContent=o;b.onclick=()=>{
         [...a.children].forEach(x=>{x.disabled=true;x.classList.add(x.textContent===correct?'ok':'ko')});
