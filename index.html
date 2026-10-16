@@ -221,6 +221,75 @@ textarea{width:100%;min-height:70px;border-radius:10px;border:1px solid var(--li
 .rule .ex{grid-column:2;font-family:var(--f-ar);direction:rtl;text-align:right;font-size:1.6rem;line-height:1.9}
 .rule .ex span{font-family:var(--f-ui);font-size:.8rem;color:var(--muted);direction:ltr;display:inline-block;margin-right:8px}
 .cat{font-size:.78rem;text-transform:uppercase;letter-spacing:.07em;color:var(--gold);margin:16px 0 0}
+/* Comprendre & s'entraîner */
+.seccard{width:100%;display:flex;gap:12px;align-items:center;text-align:left;border:1px solid var(--line);background:var(--bg);border-radius:14px;padding:12px;margin-bottom:8px}
+.seccard .sn{width:36px;height:36px;flex:0 0 auto;display:grid;place-items:center;border:1.5px solid var(--gold);border-radius:50%;color:var(--gold);font-weight:700;font-variant-numeric:tabular-nums}
+.seccard div{flex:1;min-width:0}
+.seccard b{display:block;font-size:1rem}
+.seccard small{color:var(--muted);font-size:.82rem}
+.seccard .st2{display:flex;flex-direction:column;align-items:flex-end;gap:2px;font-size:.75rem;color:var(--muted);white-space:nowrap}
+.seccard .st2 .ok{color:var(--done);font-weight:700}
+.seccard .st2 .stars-s{color:var(--gold);font-size:1rem;letter-spacing:.05em}
+.lesson{position:fixed;inset:0;z-index:45;background:var(--bg);overflow:auto;-webkit-overflow-scrolling:touch}
+.les-head{position:sticky;top:0;z-index:2;background:var(--bg);border-bottom:1px solid var(--line);padding:calc(env(safe-area-inset-top,0px) + 8px) max(12px,env(safe-area-inset-right,0px)) 10px max(12px,env(safe-area-inset-left,0px))}
+.les-head-in{max-width:760px;margin:0 auto}
+.back{border:0;background:none;color:var(--accent);font-weight:700;padding:6px 0;font-size:.95rem}
+.les-head b{display:block;font-size:1.2rem;margin-top:2px}
+.les-head small{color:var(--muted);font-size:.85rem}
+.les-head .tabs{margin-top:10px}
+.les-head .tabs button{font-size:.88rem;padding:9px 4px}
+.les-body{max-width:760px;margin:0 auto;padding:14px max(12px,env(safe-area-inset-right,0px)) calc(env(safe-area-inset-bottom,0px) + 40px) max(12px,env(safe-area-inset-left,0px))}
+.vcard{background:var(--page);border:1px solid var(--line);border-radius:14px;padding:12px;margin-bottom:10px}
+.vhead{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.vbadge{min-width:30px;height:30px;padding:0 6px;display:grid;place-items:center;border-radius:50%;border:1.5px solid var(--gold);color:var(--gold);font-family:var(--f-orn);font-size:.95rem}
+.vplay{border:1px solid var(--line);background:var(--bg);border-radius:999px;padding:6px 12px;font-size:.85rem;font-weight:700}
+.var{font-family:var(--f-ar);direction:rtl;text-align:right;font-size:calc(var(--ar-size)*.9);line-height:2.1;margin:6px 0 2px}
+.vtr{font-size:.95rem;line-height:1.5;color:var(--muted);margin:2px 0 0}
+.vex{background:var(--bg);border-radius:10px;padding:10px 12px;margin-top:8px;font-size:.95rem;line-height:1.55}
+.vex .l{display:block;font-size:.72rem;letter-spacing:.07em;text-transform:uppercase;color:var(--gold);font-weight:700;margin-bottom:4px}
+.vex .fn{font-size:.85rem;color:var(--muted);margin-top:6px;white-space:pre-line}
+.src{font-size:.8rem;color:var(--muted);line-height:1.45;margin:12px 2px}
+.bigbtns{display:grid;gap:10px;margin:14px 0}
+.bigbtn{border:1px solid var(--line);background:var(--page);border-radius:14px;padding:14px;text-align:left;display:flex;gap:12px;align-items:center}
+.bigbtn b{display:block;font-size:1rem}
+.bigbtn small{color:var(--muted);font-size:.85rem;line-height:1.35}
+.bigbtn .bi{width:42px;height:42px;flex:0 0 auto;border-radius:50%;display:grid;place-items:center;background:var(--accent);color:var(--accent-ink);font-size:1.1rem}
+.bigbtn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);justify-content:center;font-weight:700;font-size:1.05rem}
+.intro{background:var(--page);border:1px solid var(--line);border-radius:14px;padding:14px;line-height:1.5}
+.intro h3{margin:0 0 6px;font-size:1.05rem}
+.intro ul{margin:8px 0 0;padding-left:20px}
+.qtop{display:flex;justify-content:space-between;font-size:.85rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.qbar{height:8px;border-radius:4px;background:var(--line);overflow:hidden;margin:6px 0 14px}
+.qbar i{display:block;height:100%;background:var(--accent);transition:width .25s}
+.qp{font-weight:700;font-size:1.05rem;margin:0 0 10px;line-height:1.35}
+.qar{font-family:var(--f-ar);direction:rtl;text-align:right;font-size:calc(var(--ar-size)*.9);line-height:2.1;background:var(--page);border:1px solid var(--line);border-radius:14px;padding:12px}
+.qar .vn{font-family:var(--f-orn);color:var(--gold);font-size:.7em}
+.hole{display:inline-block;min-width:2.6em;border-bottom:3px dashed var(--gold);color:var(--gold);text-align:center;line-height:1.2}
+.hole.filled{border-bottom-style:solid;color:var(--done)}
+.qtr{background:var(--page);border:1px solid var(--line);border-radius:14px;padding:12px;line-height:1.55}
+.qopts{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+.qopts.long{grid-template-columns:1fr}
+.qo{border:0;border-radius:14px;padding:12px 10px;font-family:var(--f-ar);font-size:1.45rem;line-height:1.7;color:#fff;min-height:62px;transition:opacity .2s,transform .1s}
+.qopts.long .qo{font-size:1.2rem;text-align:right;direction:rtl}
+.qo:active{transform:scale(.98)}
+.qo.c0{background:#2F5D50}.qo.c1{background:#9A7428}.qo.c2{background:#7A4A6E}.qo.c3{background:#3D6584}
+.qo.ko{opacity:.3}
+.qo.ok{box-shadow:0 0 0 3px var(--bg),0 0 0 6px var(--done)}
+.qfb{min-height:1.5em;font-weight:700;margin:12px 0 4px;line-height:1.4}
+.qfb.ok{color:var(--done)}.qfb.ko{color:var(--danger)}
+.qfb .sol{display:block;font-family:var(--f-ar);font-size:1.3rem;font-weight:400;color:var(--ink);direction:rtl;text-align:right}
+.answerline{min-height:62px;border:2px dashed var(--line);border-radius:14px;padding:8px;display:flex;flex-wrap:wrap;gap:8px;direction:rtl;align-items:center;margin-top:10px}
+.chipsrow{display:flex;flex-wrap:wrap;gap:8px;direction:rtl;margin-top:10px}
+.chip{font-family:var(--f-ar);font-size:1.35rem;line-height:1.6;border:1.5px solid var(--gold);background:var(--page);border-radius:12px;padding:2px 12px;color:var(--ink)}
+.chip.used{visibility:hidden}
+.answerline .chip{background:var(--gold-soft)}
+.answerline.ok{border-color:var(--done);border-style:solid}
+.answerline.ko{border-color:var(--danger);border-style:solid}
+.qnext{margin-top:14px;width:100%}
+.result{text-align:center;padding:16px 0}
+.result .stars{font-size:2.8rem;color:var(--gold);letter-spacing:.12em}
+.result h3{margin:6px 0;font-size:1.4rem}
+.result p{color:var(--muted);margin:0 0 6px}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important;scroll-behavior:auto!important}}
 </style>
 </head>
@@ -230,6 +299,7 @@ textarea{width:100%;min-height:70px;border-radius:10px;border:1px solid var(--li
     <b id="hTitle">Al-Kahf</b><span id="hAr">الكهف</span>
     <svg class="ico" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
   </button>
+  <button class="icon-btn" id="lesBtn" aria-label="Comprendre et s’entraîner"><svg class="ico" viewBox="0 0 24 24"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3.6 10.8c.7.6 1.1 1.3 1.1 2.1v.1h5v-.1c0-.8.4-1.5 1.1-2.1A6 6 0 0 0 12 3z"/></svg></button>
   <button class="icon-btn" id="tajBtn" aria-label="Règles du tajwid"><span class="tj">تجويد</span></button>
   <button class="icon-btn" id="progBtn" aria-label="Ma progression">
     <svg class="ico" viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>
@@ -377,6 +447,30 @@ textarea{width:100%;min-height:70px;border-radius:10px;border:1px solid var(--li
     <div class="sheet-head"><h2>Les règles du tajwid</h2><button class="close" data-close>OK</button></div>
     <p class="note" style="margin:0">Chaque couleur dans le texte correspond à une règle de lecture. Un « temps » (haraka) est la durée d’une voyelle brève.</p>
     <div id="rules"></div>
+  </div>
+</div>
+
+<!-- Comprendre : liste des passages -->
+<div class="sheet" id="lesSheet" hidden>
+  <div class="sheet-in" role="dialog" aria-label="Comprendre et s’entraîner">
+    <div class="grab"></div>
+    <div class="sheet-head"><h2 id="lesSheetTitle">Comprendre</h2><button class="close" data-close>OK</button></div>
+    <p class="note" style="margin:0 0 10px">Pour chaque passage : comprends le sens, mémorise-le, puis entraîne-toi avec des exercices.</p>
+    <div id="secList"></div>
+  </div>
+</div>
+
+<!-- Comprendre : une leçon -->
+<div class="lesson" id="lesson" hidden>
+  <div class="les-head"><div class="les-head-in">
+    <button class="back" id="lesBack">‹ Les passages</button>
+    <b id="lesTitle"></b><small id="lesRange"></small>
+    <div class="opts tabs" id="lesTabs"><button data-t="und" aria-pressed="true">1 · Comprendre</button><button data-t="memo" aria-pressed="false">2 · Mémoriser</button><button data-t="quiz" aria-pressed="false">3 · S’entraîner</button></div>
+  </div></div>
+  <div class="les-body">
+    <div id="lesUnd"></div>
+    <div id="lesMemo" hidden></div>
+    <div id="lesQuiz" hidden></div>
   </div>
 </div>
 
@@ -818,7 +912,7 @@ $('doRestore').onclick=()=>{
 };
 
 /* ---------- Panneaux ---------- */
-function openSheet(id){closeSheets();if(id==='progSheet'){showTab(progTab);renderProgress()}if(id==='surahSheet')renderSurahs();$(id).hidden=false}
+function openSheet(id){closeSheets();if(id==='progSheet'){showTab(progTab);renderProgress()}if(id==='surahSheet')renderSurahs();if(id==='lesSheet')renderSections();$(id).hidden=false}
 function closeSheets(){document.querySelectorAll('.sheet').forEach(s=>{s.hidden=true;s.querySelector('.sheet-in').style.transform=''})}
 $('setBtn').onclick=()=>openSheet('setSheet');
 $('progBtn').onclick=()=>openSheet('progSheet');
@@ -1173,6 +1267,7 @@ function paintHeader(){
   $('basmala').hidden=!(c.bismillah_pre!==false&&c.id!==1&&c.id!==9);
 }
 async function loadSurah(s){
+  if(!$('lesson').hidden) closeLesson();
   stopRun(true); $('testCard').hidden=true; document.body.classList.remove('testing');
   surah=s; LS.set('hk.surah',s); chapter=CHAPTERS[s-1]||CHAPTERS[17];
   paintHeader(); sel={a:null,b:null}; tajweed=null; trans=null; verses=[]; timing=null; marking=false;
@@ -1183,6 +1278,258 @@ async function loadSurah(s){
     verses=txt; tajweed=tj; trans=tr; loadProgress(); renderText(); resetStep(); updateBar();
     await chooseReciter(+reciterId);
   }catch(e){$('text').innerHTML='<div class="loading">Impossible de charger la sourate. Vérifie ta connexion internet.<br><br><button class="btn primary" id="retry">Réessayer</button></div>';$('retry').onclick=()=>loadSurah(s)}
+}
+
+/* ---------- Comprendre & s'entraîner ---------- */
+const EX_KEY='french_mokhtasar', QE='https://quranenc.com/api/v1/';
+let exVersion=LS.get('hk.exv','');
+// Découpage d'Al-Kahf selon ses récits
+const SECTIONS={18:[
+  [1,8,'Introduction : le Livre sans détour'],
+  [9,26,'Les gens de la caverne'],
+  [27,31,'Rester avec ceux qui invoquent leur Seigneur'],
+  [32,44,'L’homme aux deux jardins'],
+  [45,59,'La vie d’ici-bas et le Jour du Jugement'],
+  [60,82,'Moussa et Al-Khidr'],
+  [83,98,'Dhul-Qarnayn'],
+  [99,110,'Conclusion : le Jour dernier']
+]};
+function sectionsFor(s){
+  if(SECTIONS[s]) return SECTIONS[s].map(([a,b,t],i)=>({id:i,a,b,t}));
+  const N=verses.length||(CHAPTERS[s-1]||{}).verses_count||1, n=Math.max(1,Math.round(N/7)), out=[];
+  for(let i=0;i<n;i++){const a=Math.floor(i*N/n)+1,b=Math.floor((i+1)*N/n);out.push({id:i,a,b,t:a===b?'Verset '+a:'Versets '+a+' à '+b})}
+  return out;
+}
+async function loadExplain(s){
+  const ck='hk.ex.'+s; const c=LS.get(ck); if(c&&c.length) return c;
+  const d=await getJSON([QE+'translation/sura/'+EX_KEY+'/'+s]);
+  const rows=Array.isArray(d)?d:(d.result||d.translations||[]);
+  const arr=rows.map(x=>({a:+x.aya,t:String(x.translation||'').trim(),f:String(x.footnotes||'').trim()}));
+  if(arr.length) LS.set(ck,arr);
+  if(!exVersion){
+    try{const l=await getJSON([QE+'translations/list/fr',QE+'translations/list']);
+      const list=Array.isArray(l)?l:(l.translations||l.result||[]);
+      const it=list.find(t=>t.key===EX_KEY); if(it){exVersion=it.version||'';LS.set('hk.exv',exVersion)}}catch(e){}
+  }
+  return arr;
+}
+const lesProg=()=>LS.get('hk.les.'+surah,{});
+function saveLesProg(id,patch){const p=lesProg();p[id]=Object.assign(p[id]||{},patch);LS.set('hk.les.'+surah,p)}
+const starsTxt=n=>'★'.repeat(n)+'☆'.repeat(3-n);
+
+function renderSections(){
+  $('lesSheetTitle').textContent='Comprendre · '+chapter.name_simple;
+  const box=$('secList'); box.innerHTML='';
+  if(!verses.length){box.innerHTML='<p class="empty">La sourate se charge…</p>';return}
+  const pr=lesProg();
+  sectionsFor(surah).forEach((s,i)=>{
+    const p=pr[s.id]||{}, b=document.createElement('button'); b.className='seccard';
+    b.innerHTML='<span class="sn">'+fmtN(i+1)+'</span><div><b></b><small></small></div><span class="st2"></span>';
+    b.querySelector('b').textContent=s.t;
+    b.querySelector('small').textContent=s.a===s.b?'Verset '+s.a:'Versets '+s.a+' à '+s.b;
+    const st=b.querySelector('.st2');
+    if(p.read){const o=document.createElement('span');o.className='ok';o.textContent='Compris ✓';st.appendChild(o)}
+    if(p.stars!=null){const o=document.createElement('span');o.className='stars-s';o.textContent=starsTxt(p.stars);st.appendChild(o)}
+    b.onclick=()=>openLesson(s);
+    box.appendChild(b);
+  });
+}
+
+let lesSec=null, quiz=null;
+function lesTab(t){
+  document.querySelectorAll('#lesTabs button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.t===t));
+  $('lesUnd').hidden=t!=='und'; $('lesMemo').hidden=t!=='memo'; $('lesQuiz').hidden=t!=='quiz';
+  if(t==='und') renderUnderstand(); if(t==='memo') renderMemo(); if(t==='quiz') renderQuizIntro();
+  $('lesson').scrollTop=0;
+}
+document.querySelectorAll('#lesTabs button').forEach(b=>b.onclick=()=>lesTab(b.dataset.t));
+function openLesson(s){
+  closeSheets(); stopRun(true); lesSec=s; quiz=null;
+  $('lesTitle').textContent=s.t; $('lesRange').textContent=chapter.name_simple+' · '+(s.a===s.b?'verset '+s.a:'versets '+s.a+' à '+s.b);
+  $('lesson').hidden=false; document.body.style.overflow='hidden'; lesTab('und');
+}
+function closeLesson(){stopRun(true);$('lesson').hidden=true;document.body.style.overflow='';lesSec=null;quiz=null;updateBar()}
+$('lesBack').onclick=()=>{closeLesson();openSheet('lesSheet')};
+$('lesBtn').onclick=()=>openSheet('lesSheet');
+
+const verseWords=n=>allWords.filter(w=>w.v===n);
+const verseRange=n=>{const ws=verseWords(n);return {a:{v:n,p:ws[0].p},b:{v:n,p:ws[ws.length-1].p}}};
+function playVerse(n,btn){
+  if(run){stopRun(true);document.querySelectorAll('.vplay').forEach(x=>x.textContent='▶ Écouter');return}
+  if(!timing){if(btn)btn.textContent='Récitation en chargement…';return}
+  if(btn) btn.textContent='■ Arrêter';
+  startRun([verseRange(n)],1,'listen',()=>{if(btn)btn.textContent='▶ Écouter'});
+}
+
+async function renderUnderstand(){
+  const s=lesSec, box=$('lesUnd'); box.innerHTML='<p class="loading">Chargement des explications…</p>';
+  let ex=null; try{ex=await loadExplain(surah)}catch(e){ex=null}
+  if(!trans){try{trans=await loadTranslation(surah,settings.trId)}catch(e){}}
+  if(lesSec!==s) return;
+  box.innerHTML='';
+  const intro=document.createElement('div'); intro.className='intro';
+  intro.innerHTML='<h3>Comprendre avant de mémoriser</h3>Lis chaque verset avec sa traduction et son explication. Touche « Écouter » pour entendre le récitateur.';
+  box.appendChild(intro);
+  for(let n=s.a;n<=s.b;n++){
+    const c=document.createElement('div'); c.className='vcard';
+    c.innerHTML='<div class="vhead"><span class="vbadge"></span><button class="vplay">▶ Écouter</button></div><div class="var"></div><p class="vtr"></p>';
+    c.querySelector('.vbadge').textContent=fmtN(n);
+    c.querySelector('.var').textContent=verseWords(n).map(w=>w.t).join(' ');
+    c.querySelector('.vtr').textContent=trans&&trans[n-1]?trans[n-1]:'';
+    const pb=c.querySelector('.vplay'); pb.onclick=()=>playVerse(n,pb);
+    const e=ex&&ex.find(x=>x.a===n);
+    if(e&&e.t){const d=document.createElement('div');d.className='vex';d.innerHTML='<span class="l">Explication</span><div></div>';d.querySelector('div').textContent=e.t;
+      if(e.f){const f=document.createElement('div');f.className='fn';f.textContent=e.f;d.appendChild(f)}c.appendChild(d)}
+    box.appendChild(c);
+  }
+  const src=document.createElement('p'); src.className='src';
+  src.textContent=ex&&ex.length?'Explications : Résumé de l’Exégèse du noble Coran, traduction française (QuranEnc.com'+(exVersion?', version '+exVersion:'')+'). Texte reproduit sans modification.':'Les explications n’ont pas pu être chargées. Vérifie ta connexion internet et rouvre le passage.';
+  box.appendChild(src);
+  const done=document.createElement('button'); done.className='bigbtn primary'; done.style.width='100%'; done.textContent='J’ai compris ✓ · Passer à la mémorisation';
+  done.onclick=()=>{saveLesProg(s.id,{read:true});lesTab('memo')};
+  box.appendChild(done);
+}
+
+function renderMemo(){
+  const s=lesSec, box=$('lesMemo'), r={a:verseRange(s.a).a,b:verseRange(s.b).b};
+  box.innerHTML='<div class="intro"><h3>Mémoriser le passage</h3>Utilise les outils de l’app sur ce passage. Pour un long passage, commence verset par verset : touche un numéro de verset dans le texte pour le sélectionner.</div><div class="bigbtns"></div>';
+  const g=box.querySelector('.bigbtns');
+  const add=(ico,title,sub,fn)=>{const b=document.createElement('button');b.className='bigbtn';b.innerHTML='<span class="bi">'+ico+'</span><span><b></b><small></small></span>';b.querySelector('b').textContent=title;b.querySelector('small').textContent=sub;b.onclick=fn;g.appendChild(b)};
+  add('▶','Écouter et répéter tout le passage','Le récitateur le répète '+fmtReps(settings.reps)+', avec une pause pour réciter.',()=>{closeLesson();setMode('repeat');setSel(r.a,r.b);scrollToWord(r.a);startRun([r],settings.reps,'repeat')});
+  add('1','Commencer par le premier verset','Le verset '+s.a+' est sélectionné dans le texte : touche ▶ quand tu es prêt.',()=>{closeLesson();setMode('repeat');const v=verseRange(s.a);setSel(v.a,v.b);scrollToWord(v.a)});
+  add('?','Me tester sur le passage','Écoute le début, récite la suite, puis vérifie.',()=>{closeLesson();setSel(r.a,r.b);scrollToWord(r.a);setMode('test');testStart()});
+  add('★','Passer aux exercices','Textes à trous, ordre des mots, verset suivant…',()=>lesTab('quiz'));
+}
+
+/* Exercices */
+const baseOf=t=>t.replace(/[ً-ٰٟۖ-ۭـؐ-ؚ]/g,'');
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+const pickOne=a=>a[Math.floor(Math.random()*a.length)];
+function distractors(correct,pool,n){const seen=new Set([baseOf(correct)]),out=[];for(const w of shuffle(pool)){const b=baseOf(w.t);if(seen.has(b)||b.length<2)continue;seen.add(b);out.push(w.t);if(out.length>=n)break}return out}
+const vStart=(n,k=6)=>{const ws=verseWords(n);return ws.slice(0,k).map(w=>w.t).join(' ')+(ws.length>k?' …':'')};
+function makeQuestions(s){
+  const vs=[];for(let n=s.a;n<=s.b;n++)vs.push(n);
+  const pool=allWords.filter(w=>w.v>=s.a&&w.v<=s.b), used=new Set();
+  const fresh=list=>{const f=list.filter(v=>!used.has(v));return f.length?f:list};
+  const gen={
+    gap(){const c=fresh(vs.filter(v=>verseWords(v).length>=3));if(!c.length)return null;const n=pickOne(c);used.add(n);const ws=verseWords(n);const cand=ws.filter(w=>baseOf(w.t).length>=3);const g=pickOne(cand.length?cand:ws);const d=distractors(g.t,pool,3);if(d.length<1)return null;return {type:'gap',n,ws,gap:g.k,opts:shuffle([g.t,...d]),ans:g.t}},
+    order(){const c=fresh(vs.filter(v=>verseWords(v).length>=3));if(!c.length)return null;const n=pickOne(c);used.add(n);let ws=verseWords(n);if(ws.length>6){const st=Math.floor(Math.random()*(ws.length-5));ws=ws.slice(st,st+6)}const sh=shuffle(ws.map((w,i)=>({t:w.t,i})));if(sh.every((x,i)=>x.i===i))sh.reverse();return {type:'order',n,ws,sh,partial:verseWords(n).length>ws.length}},
+    next(){const c=vs.filter(v=>v<s.b);if(!c.length||vs.length<3)return null;const n=pickOne(fresh(c));used.add(n);const others=shuffle(vs.filter(v=>v!==n&&v!==n+1)).slice(0,2);return {type:'next',n,opts:shuffle([n+1,...others]),ans:n+1}},
+    meaning(){if(!trans||vs.length<2)return null;const n=pickOne(fresh(vs));used.add(n);if(!trans[n-1])return null;const others=shuffle(vs.filter(v=>v!==n)).slice(0,2);return {type:'meaning',n,opts:shuffle([n,...others]),ans:n}},
+    audio(){if(!timing)return null;const c=fresh(vs.filter(v=>verseWords(v).length>=4));if(!c.length)return null;const n=pickOne(c);used.add(n);const ws=verseWords(n);const k=1+Math.floor(Math.random()*(ws.length-2));return {type:'audio',n,ws,k}}
+  };
+  const plan=['gap','next','order','meaning','gap','audio','order','gap'], qs=[];
+  for(const t of plan){const q=gen[t]()||gen.gap()||gen.order();if(q)qs.push(q)}
+  return qs;
+}
+function renderQuizIntro(){
+  const box=$('lesQuiz'), p=lesProg()[lesSec.id]||{};
+  box.innerHTML='<div class="intro"><h3>8 questions sur ce passage</h3>Des exercices variés pour ancrer ce que tu as appris :<ul><li>retrouver le mot manquant</li><li>remettre les mots dans l’ordre</li><li>trouver le verset qui suit</li><li>relier un verset à son sens</li><li>compléter la récitation à voix haute</li></ul>'+(p.stars!=null?'<p style="margin:10px 0 0">Ton meilleur résultat : <b style="color:var(--gold)">'+starsTxt(p.stars)+'</b></p>':'')+'</div>';
+  const b=document.createElement('button'); b.className='bigbtn primary'; b.style.width='100%'; b.style.marginTop='14px'; b.textContent='Commencer';
+  b.onclick=startQuiz; box.appendChild(b);
+}
+function startQuiz(){
+  if(!trans) loadTranslation(surah,settings.trId).then(t=>{trans=t}).catch(()=>{});
+  const qs=makeQuestions(lesSec);
+  if(!qs.length){$('lesQuiz').innerHTML='<p class="empty">Ce passage est trop court pour les exercices.</p>';return}
+  quiz={qs,i:0,score:0}; renderQ();
+}
+function qShell(prompt){
+  const q=quiz, box=$('lesQuiz');
+  box.innerHTML='<div class="qtop"><span>Question '+(q.i+1)+' / '+q.qs.length+'</span><span>Score : '+q.score+'</span></div><div class="qbar"><i style="width:'+(q.i/q.qs.length*100)+'%"></i></div><p class="qp"></p><div id="qBody"></div><div class="qfb" id="qFb"></div>';
+  box.querySelector('.qp').textContent=prompt;
+  return $('qBody');
+}
+function qNextBtn(){
+  const b=document.createElement('button'); b.className='btn primary qnext'; b.textContent=quiz.i+1<quiz.qs.length?'Question suivante':'Voir mon résultat';
+  b.onclick=()=>{stopRun(true);quiz.i++;if(quiz.i<quiz.qs.length)renderQ();else endQuiz()}; $('lesQuiz').appendChild(b);
+}
+function qFeedback(ok,solution){
+  if(ok) quiz.score++;
+  const fb=$('qFb'); fb.className='qfb '+(ok?'ok':'ko');
+  fb.textContent=ok?pickOne(['Bravo, c’est juste !','Excellent !','Parfait, continue !']):'Pas tout à fait. La bonne réponse :';
+  if(!ok&&solution){const s=document.createElement('span');s.className='sol';s.textContent=solution;fb.appendChild(s)}
+  qNextBtn();
+}
+function optButtons(body,labels,long,onPick){
+  const g=document.createElement('div'); g.className='qopts'+(long?' long':'');
+  labels.forEach((l,i)=>{const b=document.createElement('button');b.className='qo c'+(i%4);b.textContent=l;b.onclick=()=>onPick(i,g);g.appendChild(b)});
+  body.appendChild(g); return g;
+}
+function markOpts(g,good,picked){[...g.children].forEach((b,i)=>{b.disabled=true;if(i===good)b.classList.add('ok');else b.classList.add('ko')})}
+function renderQ(){
+  const q=quiz.qs[quiz.i];
+  if(q.type==='gap'){
+    const body=qShell('Quel mot manque dans ce verset ?');
+    const ar=document.createElement('div'); ar.className='qar';
+    q.ws.forEach(w=>{if(w.k===q.gap){const h=document.createElement('span');h.className='hole';h.textContent='؟';ar.appendChild(h)}else ar.appendChild(document.createTextNode(w.t));ar.appendChild(document.createTextNode(' '))});
+    const vn=document.createElement('span');vn.className='vn';vn.textContent='('+fmtN(q.n)+')';ar.appendChild(vn);
+    body.appendChild(ar);
+    optButtons(body,q.opts,false,(i,g)=>{const good=q.opts.indexOf(q.ans);markOpts(g,good,i);const h=ar.querySelector('.hole');h.textContent=q.ans;h.classList.add('filled');qFeedback(i===good,null)});
+  }
+  else if(q.type==='next'||q.type==='meaning'){
+    const body=qShell(q.type==='next'?'Quel verset vient juste après ?':'Quel verset correspond à ce sens ?');
+    if(q.type==='next'){const ar=document.createElement('div');ar.className='qar';ar.textContent=verseWords(q.n).map(w=>w.t).join(' ')+' ';const vn=document.createElement('span');vn.className='vn';vn.textContent='('+fmtN(q.n)+')';ar.appendChild(vn);body.appendChild(ar)}
+    else{const t=document.createElement('div');t.className='qtr';t.textContent='« '+trans[q.n-1]+' »';body.appendChild(t)}
+    optButtons(body,q.opts.map(n=>vStart(n)),true,(i,g)=>{const good=q.opts.indexOf(q.ans);markOpts(g,good,i);qFeedback(i===good,i===good?null:vStart(q.ans,40)+' ('+q.ans+')')});
+  }
+  else if(q.type==='order'){
+    const body=qShell(q.partial?'Remets ce morceau du verset '+q.n+' dans l’ordre':'Remets les mots du verset '+q.n+' dans l’ordre');
+    const line=document.createElement('div'); line.className='answerline'; body.appendChild(line);
+    const row=document.createElement('div'); row.className='chipsrow'; body.appendChild(row);
+    const chosen=[];
+    q.sh.forEach((x,idx)=>{
+      const c=document.createElement('button'); c.className='chip'; c.textContent=x.t;
+      c.onclick=()=>{
+        if(c.classList.contains('used')||line.dataset.done) return;
+        c.classList.add('used'); chosen.push(x);
+        const p=document.createElement('button'); p.className='chip'; p.textContent=x.t;
+        p.onclick=()=>{if(line.dataset.done)return;const j=chosen.indexOf(x);if(j>=0)chosen.splice(j,1);p.remove();c.classList.remove('used')};
+        line.appendChild(p);
+        if(chosen.length===q.sh.length){
+          line.dataset.done=1;
+          const ok=chosen.every((y,i)=>y.t===q.ws[i].t);
+          line.classList.add(ok?'ok':'ko'); qFeedback(ok,q.ws.map(w=>w.t).join(' '));
+        }
+      };
+      row.appendChild(c);
+    });
+  }
+  else if(q.type==='audio'){
+    const body=qShell('Écoute le début du verset '+q.n+', puis récite à voix haute le mot suivant');
+    const ar=document.createElement('div'); ar.className='qar';
+    ar.textContent=q.ws.slice(0,q.k).map(w=>w.t).join(' ')+' '; const h=document.createElement('span'); h.className='hole'; h.textContent='؟'; ar.appendChild(h);
+    body.appendChild(ar);
+    const btns=document.createElement('div'); btns.className='btns'; btns.style.marginTop='12px';
+    btns.innerHTML='<button class="btn" id="qListen">▶ Écouter le début</button><button class="btn primary" id="qShow">Voir la réponse</button>';
+    body.appendChild(btns);
+    const listen=()=>{if(!timing)return;startRun([{a:{v:q.n,p:q.ws[0].p},b:{v:q.n,p:q.ws[q.k-1].p}}],1,'listen')};
+    $('qListen').onclick=listen; setTimeout(listen,300);
+    $('qShow').onclick=()=>{
+      h.textContent=q.ws[q.k].t; h.classList.add('filled'); btns.remove();
+      startRun([{a:{v:q.n,p:q.ws[q.k].p},b:{v:q.n,p:q.ws[q.ws.length-1].p}}],1,'listen');
+      const fb=$('qFb'); fb.className='qfb'; fb.textContent='Tu l’avais trouvé ?';
+      const g=document.createElement('div'); g.className='btns'; g.style.marginTop='8px';
+      g.innerHTML='<button class="btn ok" id="qYes">Oui ✓</button><button class="btn" id="qNo">Non</button>';
+      body.appendChild(g);
+      $('qYes').onclick=()=>{g.remove();qFeedback(true)}; $('qNo').onclick=()=>{g.remove();qFeedback(false,q.ws[q.k].t)};
+    };
+  }
+}
+function endQuiz(){
+  const q=quiz, t=q.qs.length, sc=q.score, stars=sc>=t-1?3:(sc>=Math.ceil(t*0.6)?2:(sc>=Math.ceil(t*0.3)?1:0));
+  const prev=(lesProg()[lesSec.id]||{}).stars;
+  saveLesProg(lesSec.id,{stars:Math.max(stars,prev||0)}); logSession();
+  const msg=stars===3?'Excellent, tu maîtrises ce passage !':stars===2?'Très bien, encore un petit effort.':stars===1?'C’est un bon début, repasse par la mémorisation.':'Reprends la compréhension et la mémorisation, puis réessaie.';
+  const box=$('lesQuiz');
+  box.innerHTML='<div class="result"><div class="stars">'+starsTxt(stars)+'</div><h3>'+sc+' / '+t+'</h3><p>'+msg+'</p></div>';
+  const g=document.createElement('div'); g.className='bigbtns';
+  const add=(txt,fn,primary)=>{const b=document.createElement('button');b.className='bigbtn'+(primary?' primary':'');b.textContent=txt;b.onclick=fn;g.appendChild(b)};
+  add('Recommencer avec de nouvelles questions',startQuiz,true);
+  add('Revoir la compréhension',()=>lesTab('und'));
+  const secs=sectionsFor(surah), nx=secs[lesSec.id+1];
+  if(nx) add('Passage suivant : '+nx.t,()=>openLesson(nx));
+  box.appendChild(g);
 }
 
 async function init(){

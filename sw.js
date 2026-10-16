@@ -1,6 +1,6 @@
 // Service worker : garde l'app, le texte, le minutage et les polices pour un usage hors connexion.
 // L'audio téléchargé est stocké à part (IndexedDB) par la page elle-même.
-const VERSION = 'kahf-v6';
+const VERSION = 'kahf-v7';
 const SHELL = ['./', './index.html', './manifest.json', './icon-180.png', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', e => {
@@ -52,7 +52,7 @@ self.addEventListener('fetch', e => {
   }
 
   // Texte, récitateurs et minutage quran.com
-  if (/(^|\.)quran\.com$|(^|\.)qurancdn\.com$/.test(url.hostname)) {
+  if (/(^|\.)quran\.com$|(^|\.)qurancdn\.com$|(^|\.)quranenc\.com$/.test(url.hostname)) {
     e.respondWith(networkFirst(req));
     return;
   }
