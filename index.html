@@ -773,7 +773,7 @@ function wordTime(v,p){
   const i=verse.w.findIndex(w=>w.p===p), N=verse.w.length||1, span=vt.to-vt.from;
   return {s:vt.from+span*i/N,e:vt.from+span*(i+1)/N};
 }
-function rangeTime(a,b){const s=wordTime(a.v,a.p),e=wordTime(b.v,b.p);if(!s||!e)return null;return {s:Math.max(0,s.s-60),e:e.e+180}}
+function rangeTime(a,b){const s=wordTime(a.v,a.p),e=wordTime(b.v,b.p);if(!s||!e)return null;return {s:Math.max(0,s.s-120),e:e.e+180}}
 function buildFlat(){flat=[];for(const w of allWords){const t=wordTime(w.v,w.p);if(t)flat.push({k:w.k,s:t.s,e:t.e,v:w.v})}flat.sort((x,y)=>x.s-y.s)}
 
 /* ---------- Texte ---------- */
@@ -1174,6 +1174,7 @@ function startRun(ranges,reps,kind,onDone,label,opts){
   run={steps,ranges,i:0,count:0,reps,kind,onDone,label}; if(opts) Object.assign(run,opts);
   requestWake(); setPlayIcon(true); playStep();
 }
+let audioUnlocked=false; audio.addEventListener('playing',()=>{audioUnlocked=true});
 function setSession(t){try{if(navigator.audioSession)navigator.audioSession.type=t}catch(e){}}
 function playStep(){
   if(!run) return; const st=run.steps[run.i]; runInfo(); run.blocked=false; if(run.onStep) run.onStep(run.i);
@@ -1181,9 +1182,10 @@ function playStep(){
   const go=()=>{
     if(!run) return; setSession('playback'); myAudio.pause();
     audio.playbackRate=settings.speed; try{audio.currentTime=st.s/1000}catch(e){}
-    if(run.waitSeek){
+    run.playAt=Date.now();
+    if(run.waitSeek||audioUnlocked){
       // on attend que le son soit positionné avant de lancer (évite de couper le début)
-      let started=false; const launch=()=>{if(started||!run)return;started=true;const p2=audio.play();if(p2&&p2.catch)p2.catch(()=>soundBlocked())};
+      let started=false; const launch=()=>{if(started||!run)return;started=true;run.playAt=Date.now();const p2=audio.play();if(p2&&p2.catch)p2.catch(()=>soundBlocked())};
       audio.addEventListener('seeked',launch,{once:true}); setTimeout(launch,700); return;
     }
     const pr=audio.play(); if(pr&&pr.catch) pr.catch(()=>soundBlocked());
@@ -1225,7 +1227,7 @@ function stepEnded(){
   else if(g>0&&run.kind!=='test') setInfo(null,'À toi de réciter… '+settings.gap+' s');
   gapTimer=setTimeout(()=>{gapTimer=null;playStep()},Math.max(g,120));
 }
-setInterval(()=>{if(!run||audio.paused||gapTimer)return;const ms=audio.currentTime*1000;paintNow(ms);if(ms>=run.steps[run.i].e)stepEnded()},40);
+setInterval(()=>{if(!run||audio.paused||gapTimer||audio.seeking)return;const ms=audio.currentTime*1000;{const s0=run.steps[run.i];if((ms<s0.s-1500||ms>s0.e+1500)&&Date.now()-(run.playAt||0)<1500)return}paintNow(ms);if(ms>=run.steps[run.i].e)stepEnded()},40);
 function clearNow(){if(nowKey!=null){if(wordEl[nowKey])wordEl[nowKey].classList.remove('now');if(kidEl[nowKey])kidEl[nowKey].classList.remove('now')}nowKey=null}
 function paintNow(ms){
   let lo=0,hi=flat.length-1,f=-1;while(lo<=hi){const m=(lo+hi)>>1;if(flat[m].s<=ms){f=m;lo=m+1}else hi=m-1}
@@ -1572,7 +1574,7 @@ function makeQuestions(s){
     order(){const c=fresh(vs.filter(v=>verseWords(v).length>=3));if(!c.length)return null;const n=pickOne(c);used.add(n);let ws=verseWords(n);if(ws.length>6){const st=Math.floor(Math.random()*(ws.length-5));ws=ws.slice(st,st+6)}const sh=shuffle(ws.map((w,i)=>({t:w.t,i})));if(sh.every((x,i)=>x.i===i))sh.reverse();return {type:'order',n,ws,sh,partial:verseWords(n).length>ws.length}},
     next(){const c=vs.filter(v=>v<s.b);if(!c.length||vs.length<3)return null;const n=pickOne(fresh(c));used.add(n);const others=shuffle(vs.filter(v=>v!==n&&v!==n+1)).slice(0,2);return {type:'next',n,opts:shuffle([n+1,...others]),ans:n+1}},
     meaning(){if(!trans||vs.length<2)return null;const n=pickOne(fresh(vs));used.add(n);if(!trans[n-1])return null;const others=shuffle(vs.filter(v=>v!==n)).slice(0,2);return {type:'meaning',n,opts:shuffle([n,...others]),ans:n}},
-    audio(){if(!timing)return null;const c=fresh(vs.filter(v=>verseWords(v).length>=4));if(!c.length)return null;const n=pickOne(c);used.add(n);const ws=verseWords(n);const k=1+Math.floor(Math.random()*(ws.length-2));return {type:'audio',n,ws,k}}
+    audio(){if(!timing)return null;const c=fresh(vs.filter(v=>verseWords(v).length>=4));if(!c.length)return null;const n=pickOne(c);used.add(n);const ws=verseWords(n);const k=2+Math.floor(Math.random()*(ws.length-3));return {type:'audio',n,ws,k}}
   };
   const plan=['gap','next','order','meaning','gap','audio','order','gap'], qs=[];
   for(const t of plan){const q=gen[t]()||gen.gap()||gen.order();if(q)qs.push(q)}
@@ -1659,7 +1661,7 @@ function renderQ(){
     const btns=document.createElement('div'); btns.className='btns'; btns.style.marginTop='12px';
     btns.innerHTML='<button class="btn" id="qListen">▶ Écouter le début</button><button class="btn primary" id="qShow">Voir la réponse</button>';
     body.appendChild(btns);
-    const listen=()=>{if(!timing)return;startRun([{a:{v:q.n,p:q.ws[0].p},b:{v:q.n,p:q.ws[q.k-1].p}}],1,'listen')};
+    const listen=()=>{if(!timing)return;const a=q.ws[0],b=q.ws[q.k-1],ta=wordTime(a.v,a.p),tb=wordTime(b.v,b.p);startRun([{a:{v:q.n,p:a.p},b:{v:q.n,p:b.p},s:Math.max(0,ta.s-250),e:tb.e+80}],1,'listen',null,'',{waitSeek:true})};
     $('qListen').onclick=listen; setTimeout(listen,300);
     $('qShow').onclick=()=>{
       h.textContent=q.ws[q.k].t; h.classList.add('filled'); btns.remove();
@@ -1922,19 +1924,32 @@ function kRepeat(id){
 /* Le jeu : quel mot vient après ? */
 function kGame(id){
   kTop();
-  const pool=kChunks().filter(c=>c.ws.length>=2), rounds=Math.min(young()?4:6,Math.max(1,pool.length));
-  const picks=shuffle(pool).slice(0,rounds), g={i:0,score:0,qs:picks.map(c=>({c,k:1+Math.floor(Math.random()*(c.ws.length-1))}))};
+  // On travaille sur des versets entiers : l'enfant entend au moins 2 ou 3 mots avant le mot à trouver
+  const vpool=verses.map(v=>allWords.filter(w=>w.v===v.n)).filter(ws=>ws.length>=3);
+  const rounds=Math.min(young()?4:6,Math.max(1,vpool.length*2));
+  const minK=young()?2:3, qs=[];
+  let bag=shuffle(vpool);
+  for(let r=0;r<rounds&&vpool.length;r++){
+    if(!bag.length) bag=shuffle(vpool);
+    const ws=bag.pop(), lo=Math.min(minK,ws.length-1), k=lo+Math.floor(Math.random()*(ws.length-lo));
+    qs.push({c:{v:ws[0].v,ws},k,st:Math.max(0,k-6)});
+  }
+  const g={i:0,score:0,qs};
   kView(kHead(id,'Le jeu')+'<p class="k-sub">'+(young()?'Écoute le début, puis dis le mot qui vient après !':'Écoute le début, puis trouve le mot qui vient après.')+'</p><div id="kGame"></div>');
   $('kBack').onclick=()=>kSurah(id);
   const box=$('kGame');
   const start=document.createElement('button'); start.className='k-btn go'; start.style.width='100%'; start.textContent='▶ Commencer le jeu';
   start.onclick=()=>{start.disabled=true;kUnlock(null);kCountdown(round)}; box.appendChild(start);
-  function playFirst(q){startRun([{a:{v:q.c.v,p:q.c.ws[0].p},b:{v:q.c.v,p:q.c.ws[q.k-1].p}}],1,'listen',null,'',{waitSeek:true})}
+  function playFirst(q){
+    const a=q.c.ws[q.st], b=q.c.ws[q.k-1], ta=wordTime(a.v,a.p), tb=wordTime(b.v,b.p);
+    // fin juste après le dernier mot entendu, pour ne pas dévoiler la réponse
+    startRun([{a:{v:a.v,p:a.p},b:{v:b.v,p:b.p},s:Math.max(0,ta.s-250),e:tb.e+80}],1,'listen',null,'',{waitSeek:true});
+  }
   function playRest(q){startRun([{a:{v:q.c.v,p:q.c.ws[q.k].p},b:{v:q.c.v,p:q.c.ws[q.c.ws.length-1].p}}],1,'listen',null,'',{waitSeek:true})}
   function round(){
     const q=g.qs[g.i]; stopRun(true);
     box.innerHTML='<p class="k-count">Question '+(g.i+1)+' sur '+g.qs.length+' · ★ '+g.score+'</p><div class="k-text big" id="kTxt"></div><div id="kAns"></div><p class="k-fb" id="kFb"></p><div class="k-row-btns" id="kCtl"><button class="k-btn" id="kAgain">↻ Réécouter</button></div>';
-    const txt=$('kTxt'); kWords(txt,q.c.ws.slice(0,q.k),false);
+    const txt=$('kTxt'); kWords(txt,q.c.ws.slice(q.st,q.k),false);
     const hole=document.createElement('span'); hole.className='k-hole'; hole.textContent='؟'; txt.appendChild(hole);
     $('kAgain').onclick=()=>playFirst(q);
     playFirst(q);
