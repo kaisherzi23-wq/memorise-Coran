@@ -206,6 +206,10 @@ textarea{width:100%;min-height:70px;border-radius:10px;border:1px solid var(--li
 .surah div small{display:block;color:var(--muted);font-size:.8rem}
 .surah .ar{font-family:var(--f-orn);font-size:1.3rem}
 .surah .pct{font-size:.75rem;font-weight:700;color:var(--done);min-width:36px;text-align:right}
+.surah .pct.l{color:var(--gold)}
+.tabs{margin:4px 0 2px}
+.tabs button{flex:1 1 0}
+.cell.sur{font-size:.72rem}
 
 /* Règles du tajwid */
 .rule{display:grid;grid-template-columns:14px 1fr;gap:4px 12px;padding:12px 0;border-bottom:1px solid var(--line)}
@@ -285,6 +289,7 @@ textarea{width:100%;min-height:70px;border-radius:10px;border:1px solid var(--li
       <button class="toggle" id="trToggle" aria-pressed="false"><span>Afficher la traduction française</span><i></i></button>
       <select id="trSelect" style="margin-top:8px" aria-label="Choix de la traduction"></select>
     </div>
+    <div class="group"><span class="lbl">Numéros des sourates et des versets</span><div class="opts wide" id="optDigits"></div></div>
     <div class="group"><span class="lbl">Taille du texte arabe</span>
       <div class="sizebox"><button class="small-btn" id="sizeDown" aria-label="Texte plus petit">A−</button><span>ٱلْقُرْءَان</span><button class="small-btn" id="sizeUp" aria-label="Texte plus grand">A+</button></div>
     </div>
@@ -308,6 +313,22 @@ textarea{width:100%;min-height:70px;border-radius:10px;border:1px solid var(--li
       <svg class="ring" viewBox="0 0 36 36" aria-hidden="true"><circle cx="18" cy="18" r="15" fill="none" stroke="var(--line)" stroke-width="4"/><circle id="ringArc" cx="18" cy="18" r="15" fill="none" stroke="var(--done)" stroke-width="4" stroke-linecap="round" stroke-dasharray="0 100" transform="rotate(-90 18 18)"/><text id="ringTxt" x="18" y="22" text-anchor="middle" font-size="10" font-weight="700" fill="var(--ink)">0/3</text></svg>
       <div><b id="todayTxt">Aujourd’hui : 0 séance sur 3</b><br><small id="streakTxt">Série : 0 jour</small></div>
     </div>
+    <div class="opts tabs" id="progTabs"><button data-tab="surah" aria-pressed="true" id="tabSurahBtn">Cette sourate</button><button data-tab="all" aria-pressed="false">Tout le Coran</button></div>
+    <div id="tabAll" hidden>
+      <div class="stats">
+        <div class="stat"><b id="gVerses">0</b><small>versets maîtrisés sur 6236</small></div>
+        <div class="stat"><b id="gSurahs">0</b><small>sourates maîtrisées</small></div>
+        <div class="stat"><b id="gPct">0 %</b><small>du Coran</small></div>
+      </div>
+      <div class="meter"><i id="gMeter"></i></div>
+      <div class="group"><span class="lbl">Carte des 114 sourates</span>
+        <div class="opts" style="margin-bottom:10px"><button id="markAllBtn" aria-pressed="false" style="flex:1 1 100%">Cocher mes sourates</button></div>
+        <p class="note" id="markAllHint" style="margin:0 0 8px">Touche une sourate pour l’ouvrir.</p>
+        <div class="grid" id="gridAll"></div>
+        <div class="legend"><span><i></i>pas commencée</span><span><i style="background:var(--learn);border-color:var(--learn)"></i>en cours</span><span><i style="background:var(--done);border-color:var(--done)"></i>maîtrisée</span></div>
+      </div>
+    </div>
+    <div id="tabSurah">
     <div class="stats">
       <div class="stat"><b id="stVerses">0</b><small>versets maîtrisés</small></div>
       <div class="stat"><b id="stPct">0 %</b><small>de la sourate</small></div>
@@ -324,6 +345,7 @@ textarea{width:100%;min-height:70px;border-radius:10px;border:1px solid var(--li
     <div class="group"><span class="lbl">Mes morceaux</span>
       <p class="note" style="margin:0 0 6px">Touche un morceau pour le charger. Coche ceux à enchaîner (1, puis 1+2, puis 1+2+3…). Touche l’étiquette pour changer son statut.</p>
       <div id="partsList"></div>
+    </div>
     </div>
     <div class="group"><span class="lbl">Sauvegarde</span>
       <p class="note" style="margin:0 0 8px">Ta progression (toutes les sourates) est gardée sur cet iPhone. Si tu effaces les données de Safari, elle disparaît. Copie le code et garde-le dans Notes.</p>
@@ -374,6 +396,14 @@ const FALLBACK_RECITERS=[
   {id:9,label:"Mohamed Siddiq Al-Minshawi · Murattal"},{id:3,label:"Abdur-Rahman As-Sudais"},
   {id:4,label:"Abu Bakr Al-Shatri"},{id:5,label:"Hani Ar-Rifai"},{id:10,label:"Saud Ash-Shuraim"}];
 const FALLBACK_TR=[{id:31,label:"Muhammad Hamidullah"},{id:136,label:"Montada Islamic Foundation"}];
+const S_FR=["Al-Fâtiha","Al-Baqara","Âl 'Imrân","An-Nisâ'","Al-Mâ'ida","Al-An'âm","Al-A'râf","Al-Anfâl","At-Tawba","Yûnus","Hûd","Yûsuf","Ar-Ra'd","Ibrâhîm","Al-Hijr","An-Nahl","Al-Isrâ'","Al-Kahf","Maryam","Tâ-Hâ","Al-Anbiyâ'","Al-Hajj","Al-Mu'minûn","An-Nûr","Al-Furqân","Ash-Shu'arâ'","An-Naml","Al-Qasas","Al-'Ankabût","Ar-Rûm","Luqmân","As-Sajda","Al-Ahzâb","Saba'","Fâtir","Yâ-Sîn","As-Sâffât","Sâd","Az-Zumar","Ghâfir","Fussilat","Ash-Shûrâ","Az-Zukhruf","Ad-Dukhân","Al-Jâthiya","Al-Ahqâf","Muhammad","Al-Fath","Al-Hujurât","Qâf","Adh-Dhâriyât","At-Tûr","An-Najm","Al-Qamar","Ar-Rahmân","Al-Wâqi'a","Al-Hadîd","Al-Mujâdala","Al-Hashr","Al-Mumtahana","As-Saff","Al-Jumu'a","Al-Munâfiqûn","At-Taghâbun","At-Talâq","At-Tahrîm","Al-Mulk","Al-Qalam","Al-Hâqqa","Al-Ma'ârij","Nûh","Al-Jinn","Al-Muzzammil","Al-Muddaththir","Al-Qiyâma","Al-Insân","Al-Mursalât","An-Naba'","An-Nâzi'ât","'Abasa","At-Takwîr","Al-Infitâr","Al-Mutaffifîn","Al-Inshiqâq","Al-Burûj","At-Târiq","Al-A'lâ","Al-Ghâshiya","Al-Fajr","Al-Balad","Ash-Shams","Al-Layl","Ad-Duhâ","Ash-Sharh","At-Tîn","Al-'Alaq","Al-Qadr","Al-Bayyina","Az-Zalzala","Al-'Âdiyât","Al-Qâri'a","At-Takâthur","Al-'Asr","Al-Humaza","Al-Fîl","Quraysh","Al-Mâ'ûn","Al-Kawthar","Al-Kâfirûn","An-Nasr","Al-Masad","Al-Ikhlâs","Al-Falaq","An-Nâs"];
+const S_MEAN=["L'Ouverture","La Vache","La Famille d'Imrân","Les Femmes","La Table servie","Les Bestiaux","Les Murailles","Le Butin","Le Repentir","Jonas","Hûd","Joseph","Le Tonnerre","Abraham","Al-Hijr","Les Abeilles","Le Voyage nocturne","La Caverne","Marie","Tâ-Hâ","Les Prophètes","Le Pèlerinage","Les Croyants","La Lumière","Le Discernement","Les Poètes","Les Fourmis","Le Récit","L'Araignée","Les Romains","Luqmân","La Prosternation","Les Coalisés","Saba","Le Créateur","Yâ-Sîn","Les Rangés","Sâd","Les Groupes","Le Pardonneur","Les Versets détaillés","La Consultation","L'Ornement","La Fumée","L'Agenouillée","Al-Ahqâf","Muhammad","La Victoire","Les Appartements","Qâf","Qui éparpillent","Le Mont","L'Étoile","La Lune","Le Tout Miséricordieux","L'Événement","Le Fer","La Discussion","L'Exode","L'Éprouvée","Le Rang","Le Vendredi","Les Hypocrites","La Grande Perte","Le Divorce","L'Interdiction","La Royauté","La Plume","Celle qui montre la vérité","Les Voies d'ascension","Noé","Les Djinns","L'Enveloppé","Le Revêtu d'un manteau","La Résurrection","L'Homme","Les Envoyés","La Nouvelle","Ceux qui arrachent","Il s'est renfrogné","L'Obscurcissement","La Rupture","Les Fraudeurs","La Déchirure","Les Constellations","L'Astre nocturne","Le Très-Haut","L'Enveloppante","L'Aube","La Cité","Le Soleil","La Nuit","Le Jour montant","L'Ouverture de la poitrine","Le Figuier","L'Adhérence","La Destinée","La Preuve","La Secousse","Les Coursiers","Le Fracas","La Course aux richesses","Le Temps","Les Calomniateurs","L'Éléphant","Quraysh","L'Ustensile","L'Abondance","Les Infidèles","Le Secours","Les Fibres","Le Monothéisme pur","L'Aube naissante","Les Hommes"];
+const S_AR="الفاتحة البقرة آل_عمران النساء المائدة الأنعام الأعراف الأنفال التوبة يونس هود يوسف الرعد إبراهيم الحجر النحل الإسراء الكهف مريم طه الأنبياء الحج المؤمنون النور الفرقان الشعراء النمل القصص العنكبوت الروم لقمان السجدة الأحزاب سبأ فاطر يس الصافات ص الزمر غافر فصلت الشورى الزخرف الدخان الجاثية الأحقاف محمد الفتح الحجرات ق الذاريات الطور النجم القمر الرحمن الواقعة الحديد المجادلة الحشر الممتحنة الصف الجمعة المنافقون التغابن الطلاق التحريم الملك القلم الحاقة المعارج نوح الجن المزمل المدثر القيامة الإنسان المرسلات النبأ النازعات عبس التكوير الانفطار المطففين الانشقاق البروج الطارق الأعلى الغاشية الفجر البلد الشمس الليل الضحى الشرح التين العلق القدر البينة الزلزلة العاديات القارعة التكاثر العصر الهمزة الفيل قريش الماعون الكوثر الكافرون النصر المسد الإخلاص الفلق الناس".split(' ').map(s=>s.replace('_',' '));
+const S_N=[7,286,200,176,120,165,206,75,129,109,123,111,43,52,99,128,111,110,98,135,112,78,118,64,77,227,93,88,69,60,34,30,73,54,45,83,182,88,75,85,54,53,89,59,37,35,38,29,18,45,60,49,62,55,78,96,29,22,24,13,14,11,11,18,12,12,30,52,52,44,28,28,20,56,40,31,50,40,46,42,29,19,36,25,22,17,19,26,30,20,15,21,11,8,8,19,5,8,8,11,11,8,3,9,5,4,7,3,6,3,5,4,5,6];
+const MEDINAN=new Set([2,3,4,5,8,9,13,22,24,33,47,48,49,55,57,58,59,60,61,62,63,64,65,66,76,98,99,110]);
+const CHAPTERS=S_FR.map((n,i)=>({id:i+1,name_simple:n,name_arabic:S_AR[i],verses_count:S_N[i],revelation_place:MEDINAN.has(i+1)?'madinah':'makkah',bismillah_pre:i!==0&&i!==8,translated_name:{name:S_MEAN[i]}}));
+const TOTAL_VERSES=S_N.reduce((a,b)=>a+b,0);
+
 const KAHF={id:18,name_simple:'Al-Kahf',name_arabic:'الكهف',verses_count:110,revelation_place:'makkah',bismillah_pre:true,translated_name:{name:'La caverne'}};
 const MODES=[['repeat','Répéter'],['chain','Enchaîner'],['test','Test'],['read','Lecture']];
 const MODE_NOTE={repeat:'Répète le passage sélectionné.',chain:'Enchaîne les morceaux cochés : 1, puis 1+2, puis 1+2+3…',test:'Écoute le début, récite la suite, enregistre-toi et vérifie.',read:'Lit la sourate d’un trait à partir du marque-page (ou de ta sélection).'};
@@ -383,13 +413,14 @@ const REPS=[1,3,5,7,10,Infinity], GAPS=[0,2,4,6,8], SPEEDS=[0.75,0.85,1,1.25], S
 const ST_LABEL={new:'À apprendre',learning:'En cours',mastered:'Maîtrisé'};
 
 /* ---------- État ---------- */
-let surah=LS.get('hk.surah',18), chapters=[KAHF], chapter=KAHF;
+let surah=LS.get('hk.surah',18), chapters=CHAPTERS, chapter=CHAPTERS[17];
 let verses=[], allWords=[], tajweed=null, trans=null, timing=null, flat=[], wordEl={}, numEl={};
 let reciterId=LS.get('hk.reciter',7);
-let settings=Object.assign({reps:5,gap:2,speed:1,mode:'repeat',size:2,display:'full',tj:true,tr:false,trId:31,goal:3},LS.get('hk.settings',{}));
+let settings=Object.assign({reps:5,gap:2,speed:1,mode:'repeat',size:2,display:'full',tj:true,tr:false,trId:31,goal:3,digits:'arabic'},LS.get('hk.settings',{}));
 if(settings.reps==='inf') settings.reps=Infinity;
 if(settings.hide){settings.display='hidden';delete settings.hide}
-let parts=[], manual={}, marking=false;
+let parts=[], manual={}, marking=false, markingAll=false, progTab=LS.get('hk.progTab','surah');
+let smanual=LS.get('hk.smanual',{}); // sourate -> 'l' en cours, 'm' maîtrisée, 'n' pas commencée
 let sel={a:null,b:null};
 let run=null, gapTimer=null, nowKey=null, wakeLock=null, userScrolledAt=0, stepIdx=-1, bookmark=1;
 
@@ -403,6 +434,7 @@ let run=null, gapTimer=null, nowKey=null, wakeLock=null, userScrolledAt=0, stepI
 
 const key=(v,p)=>v*1000+p;
 const arNum=n=>n.toLocaleString('ar-EG');
+const fmtN=n=>settings.digits==='latin'?String(n):arNum(n);
 const today=()=>{const d=new Date();d.setHours(0,0,0,0);return d.getTime()};
 const dayStr=t=>{const d=new Date(t);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
 const fmtReps=r=>r===Infinity?'∞':r+'×';
@@ -531,7 +563,7 @@ function renderText(){
       s.innerHTML='<span class="f">'+(tj?tj[i]:esc(w.t))+'</span><span class="i">'+esc(firstLetter(w.t))+'</span>';
       wordEl[k]=s; ay.appendChild(s); ay.appendChild(document.createTextNode(' '));
     });
-    const n=document.createElement('button'); n.className='num'; n.textContent=arNum(v.n);
+    const n=document.createElement('button'); n.className='num'; n.textContent=fmtN(v.n);
     n.dataset.verse=v.n; n.setAttribute('aria-label','Sélectionner le verset '+v.n); numEl[v.n]=n;
     ay.appendChild(n); ay.appendChild(document.createTextNode(' '));
     if(settings.tr&&trans&&trans[vi]){const tr=document.createElement('span');tr.className='tr';tr.innerHTML='<b>'+v.n+'</b>';tr.appendChild(document.createTextNode(trans[vi]));ay.appendChild(tr)}
@@ -651,6 +683,7 @@ function coverage(){
     let m=0,any=0; for(const w of v.w){const s=st[key(v.n,w.p)];if(s)any++;if(s==='m')m++}
     let s=m===v.w.length?'m':(any?'l':'');
     const man=manual[v.n]; if(man){s=man==='n'?'':man;m=man==='m'?v.w.length:0}
+    else if(smanual[surah]==='m'){s='m';m=v.w.length}
     mWords+=m; vs[v.n]=s;
   }
   return {vs,pct:allWords.length?Math.round(mWords*100/allWords.length):0};
@@ -660,13 +693,55 @@ function refreshProgress(){
   const c=coverage(), due=parts.filter(isDue).length;
   for(const v of verses){const s=c.vs[v.n];if(s)numEl[v.n].dataset.st=s;else delete numEl[v.n].dataset.st}
   $('dueBadge').hidden=!due; $('dueBadge').textContent=due;
-  const sums=LS.get('hk.sum',{}); sums[surah]={pct:c.pct,mv:Object.values(c.vs).filter(x=>x==='m').length,due}; LS.set('hk.sum',sums);
+  const sums=LS.get('hk.sum',{}); sums[surah]={pct:c.pct,mv:Object.values(c.vs).filter(x=>x==='m').length,any:Object.values(c.vs).filter(Boolean).length,due}; LS.set('hk.sum',sums);
   if(!$('progSheet').hidden) renderProgress(c);
 }
 function dueText(p){if(p.status!=='mastered')return '';const d=Math.round((p.due-today())/DAY);return d<=0?'À réviser aujourd’hui':(d===1?'Révision demain':'Révision dans '+d+' jours')}
+function surahInfo(id,sums){
+  const c=CHAPTERS[id-1], s=sums[id]||{}, man=smanual[id];
+  let mv=Math.min(s.mv||0,c.verses_count), st=mv>=c.verses_count?'m':((s.any||mv)?'l':'');
+  if(man==='m'){mv=c.verses_count;st='m'} else if(man==='l'){st='l'} else if(man==='n'){mv=0;st=''}
+  return {mv,st,pct:Math.round(mv*100/c.verses_count)};
+}
+function renderAll(){
+  const sums=LS.get('hk.sum',{}); let tv=0, ms=0;
+  const g=$('gridAll'); g.innerHTML=''; g.classList.toggle('marking',markingAll);
+  for(const c of CHAPTERS){
+    const inf=surahInfo(c.id,sums); tv+=inf.mv; if(inf.st==='m') ms++;
+    const cell=document.createElement('button'); cell.className='cell sur'; cell.textContent=fmtN(c.id);
+    if(inf.st) cell.dataset.st=inf.st;
+    if(c.id===surah) cell.style.outline='2px solid var(--gold)';
+    cell.setAttribute('aria-label','Sourate '+c.id+' '+c.name_simple);
+    cell.onclick=()=>{
+      if(!markingAll){closeSheets();if(c.id!==surah)loadSurah(c.id);return}
+      const next=inf.st===''?'l':inf.st==='l'?'m':'n';
+      smanual[c.id]=next; LS.set('hk.smanual',smanual);
+      if(c.id===surah) refreshProgress();
+      renderAll();
+    };
+    g.appendChild(cell);
+  }
+  const pct=Math.round(tv*1000/TOTAL_VERSES)/10;
+  $('gVerses').textContent=tv; $('gSurahs').textContent=ms; $('gPct').textContent=String(pct).replace('.',',')+' %'; $('gMeter').style.width=pct+'%';
+}
+function showTab(t){
+  progTab=t; LS.set('hk.progTab',t);
+  document.querySelectorAll('#progTabs button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.tab===t));
+  $('tabAll').hidden=t!=='all'; $('tabSurah').hidden=t!=='surah';
+  if(t==='all') renderAll();
+}
+document.querySelectorAll('#progTabs button').forEach(b=>b.onclick=()=>showTab(b.dataset.tab));
+$('markAllBtn').onclick=()=>{
+  markingAll=!markingAll; $('markAllBtn').setAttribute('aria-pressed',markingAll);
+  $('markAllBtn').textContent=markingAll?'Terminé':'Cocher mes sourates';
+  $('markAllHint').textContent=markingAll?'Touche une sourate : 1 fois = en cours, 2 fois = maîtrisée, 3 fois = pas commencée.':'Touche une sourate pour l’ouvrir.';
+  renderAll();
+};
 function renderProgress(c){
   c=c||coverage(); paintToday();
-  $('progTitle').textContent='Ma progression · '+chapter.name_simple;
+  $('tabSurahBtn').textContent=chapter.name_simple;
+  if(progTab==='all') renderAll();
+  $('progTitle').textContent='Ma progression';
   $('gridLbl').textContent='Carte des '+verses.length+' versets';
   const mv=Object.values(c.vs).filter(s=>s==='m').length, due=parts.filter(isDue);
   $('stVerses').textContent=mv; $('stPct').textContent=c.pct+' %'; $('stDue').textContent=due.length; $('meter').style.width=c.pct+'%';
@@ -681,7 +756,7 @@ function renderProgress(c){
   }
   const g=$('grid'); g.innerHTML=''; g.classList.toggle('marking',marking);
   for(const v of verses){
-    const cell=document.createElement('button'); cell.className='cell'; cell.textContent=v.n;
+    const cell=document.createElement('button'); cell.className='cell'; cell.textContent=fmtN(v.n);
     if(c.vs[v.n]) cell.dataset.st=c.vs[v.n];
     cell.setAttribute('aria-label','Verset '+v.n);
     cell.onclick=()=>{
@@ -719,7 +794,7 @@ $('markBtn').onclick=()=>{
 
 /* Sauvegarde (toutes les sourates) */
 function backupCode(){
-  const data={v:2,settings:Object.assign({},settings,{reps:settings.reps===Infinity?'inf':settings.reps}),reciterId,days:LS.get('hk.days',{}),s:{}};
+  const data={v:2,settings:Object.assign({},settings,{reps:settings.reps===Infinity?'inf':settings.reps}),reciterId,days:LS.get('hk.days',{}),sm:smanual,s:{}};
   for(let i=1;i<=114;i++){const p=LS.get('hk.parts.'+i),m=LS.get('hk.manual.'+i),b=LS.get('hk.bm.'+i);if(p||m||b)data.s[i]={p,m,b}}
   return btoa(unescape(encodeURIComponent(JSON.stringify(data))));
 }
@@ -733,7 +808,7 @@ $('showRestore').onclick=()=>{$('restoreBox').hidden=!$('restoreBox').hidden};
 $('doRestore').onclick=()=>{
   try{
     const d=JSON.parse(decodeURIComponent(escape(atob($('restoreTxt').value.trim()))));
-    if(d.v===2&&d.s){for(const i in d.s){const x=d.s[i];if(x.p)LS.set('hk.parts.'+i,x.p);if(x.m)LS.set('hk.manual.'+i,x.m);if(x.b)LS.set('hk.bm.'+i,x.b)}if(d.days)LS.set('hk.days',d.days)}
+    if(d.v===2&&d.s){for(const i in d.s){const x=d.s[i];if(x.p)LS.set('hk.parts.'+i,x.p);if(x.m)LS.set('hk.manual.'+i,x.m);if(x.b)LS.set('hk.bm.'+i,x.b)}if(d.days)LS.set('hk.days',d.days);if(d.sm){smanual=d.sm;LS.set('hk.smanual',smanual)}}
     else if(Array.isArray(d.parts)){LS.set('hk.parts.18',d.parts);if(d.manual)LS.set('hk.manual.18',d.manual)}
     else throw 0;
     if(d.settings){settings=Object.assign(settings,d.settings);if(settings.reps==='inf')settings.reps=Infinity}
@@ -743,7 +818,7 @@ $('doRestore').onclick=()=>{
 };
 
 /* ---------- Panneaux ---------- */
-function openSheet(id){closeSheets();if(id==='progSheet')renderProgress();if(id==='surahSheet')renderSurahs();$(id).hidden=false}
+function openSheet(id){closeSheets();if(id==='progSheet'){showTab(progTab);renderProgress()}if(id==='surahSheet')renderSurahs();$(id).hidden=false}
 function closeSheets(){document.querySelectorAll('.sheet').forEach(s=>{s.hidden=true;s.querySelector('.sheet-in').style.transform=''})}
 $('setBtn').onclick=()=>openSheet('setSheet');
 $('progBtn').onclick=()=>openSheet('progSheet');
@@ -763,14 +838,13 @@ const norm=s=>String(s).toLowerCase().normalize('NFD').replace(/[̀-ͯ'’`\-\s]
 function renderSurahs(){
   const raw=($('surahSearch').value||'').trim(), q=norm(raw), box=$('surahList'), sums=LS.get('hk.sum',{});
   box.innerHTML='';
-  if(chapters.length<114) box.innerHTML='<p class="empty">La liste complète des sourates se charge avec internet.</p>';
   const list=chapters.filter(c=>!q||String(c.id)===q||norm(c.name_simple).includes(q)||norm(c.translated_name.name).includes(q)||(raw&&c.name_arabic.includes(raw)));
   for(const c of list){
     const b=document.createElement('button'); b.className='surah'+(c.id===surah?' cur':'');
-    const sm=sums[c.id];
-    b.innerHTML='<span class="n">'+c.id+'</span><div><b></b><small></small></div><span class="ar"></span><span class="pct">'+(sm&&sm.pct?sm.pct+' %':'')+'</span>';
+    const inf=surahInfo(c.id,sums);
+    b.innerHTML='<span class="n">'+fmtN(c.id)+'</span><div><b></b><small></small></div><span class="ar"></span><span class="pct '+(inf.st||'')+'">'+(inf.st==='m'?'✓':(inf.st?(inf.pct?inf.pct+' %':'en cours'):''))+'</span>';
     b.querySelector('b').textContent=c.name_simple;
-    b.querySelector('small').textContent=(c.translated_name.name?c.translated_name.name+' · ':'')+c.verses_count+' versets';
+    b.querySelector('small').textContent=c.translated_name.name+' · '+c.verses_count+' versets';
     b.querySelector('.ar').textContent=c.name_arabic;
     b.onclick=()=>{closeSheets();if(c.id!==surah)loadSurah(c.id)};
     box.appendChild(b);
@@ -832,6 +906,7 @@ function applySettings(){
   opts('optSpeed',SPEEDS,settings.speed,fmtSpeed,v=>{settings.speed=v;audio.playbackRate=v;applySettings()});
   opts('optDisplay',DISPLAYS.map(d=>d[0]),settings.display,v=>DISPLAYS.find(d=>d[0]===v)[1],v=>{settings.display=v;resetStep();applySettings()});
   $('displayNote').textContent=DISPLAY_NOTE[settings.display];
+  opts('optDigits',['arabic','latin'],settings.digits,v=>v==='arabic'?'١ ٢ ٣ (arabes)':'1 2 3 (latins)',v=>{settings.digits=v;applySettings();if(verses.length)renderText()});
   opts('optGoal',GOALS,settings.goal,v=>String(v),v=>{settings.goal=v;applySettings();paintToday()});
   $('tjToggle').setAttribute('aria-pressed',!!settings.tj); $('trToggle').setAttribute('aria-pressed',!!settings.tr);
   $('trSelect').hidden=!settings.tr;
@@ -1099,7 +1174,7 @@ function paintHeader(){
 }
 async function loadSurah(s){
   stopRun(true); $('testCard').hidden=true; document.body.classList.remove('testing');
-  surah=s; LS.set('hk.surah',s); chapter=chapters.find(c=>c.id===s)||(s===18?KAHF:{id:s,name_simple:'Sourate '+s,name_arabic:'',verses_count:'',revelation_place:'',bismillah_pre:true,translated_name:{name:''}});
+  surah=s; LS.set('hk.surah',s); chapter=CHAPTERS[s-1]||CHAPTERS[17];
   paintHeader(); sel={a:null,b:null}; tajweed=null; trans=null; verses=[]; timing=null; marking=false;
   $('text').innerHTML='<div class="loading">Chargement de la sourate…</div>';
   window.scrollTo(0,0);
@@ -1113,8 +1188,7 @@ async function loadSurah(s){
 async function init(){
   renderRules(); applySettings(); layout(); paintFriday();
   loadTranslations().then(l=>{const s=$('trSelect');s.innerHTML='';for(const t of l){const o=document.createElement('option');o.value=t.id;o.textContent=t.label;s.appendChild(o)}if(!l.some(t=>t.id==settings.trId)){settings.trId=l[0].id;saveSettings()}s.value=settings.trId});
-  const [recs,chs]=await Promise.all([loadReciters(),loadChapters().catch(()=>[KAHF])]);
-  chapters=chs;
+  const recs=await loadReciters();
   const s=$('reciter'); s.innerHTML='';
   for(const r of recs){const o=document.createElement('option');o.value=r.id;o.textContent=r.label;s.appendChild(o)}
   if(!recs.some(r=>r.id==reciterId)) reciterId=recs[0].id;
