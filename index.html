@@ -388,6 +388,27 @@ textarea{width:100%;min-height:70px;border-radius:10px;border:1px solid var(--li
 .k-cd{position:fixed;inset:0;z-index:7;display:grid;place-items:center;background:rgba(233,246,255,.82);pointer-events:none}
 .k-cd span{font-size:7rem;font-weight:800;color:#2B6CB0;line-height:1;animation:kpop .5s both}
 .k-cd span.go{font-size:3.4rem;color:#2E9E6A}
+.k-stage{width:180px;height:180px;margin:6px auto 4px;border-radius:50%;display:grid;place-items:center;background:#fff;box-shadow:0 8px 0 #D3E6F3}
+.k-stage-av{width:140px;height:140px;border-radius:50%;display:grid;place-items:center;font-size:5rem;line-height:1}
+.k-stage.playing .k-stage-av{animation:kdance 1.1s ease-in-out infinite}
+@keyframes kdance{25%{transform:rotate(-8deg) scale(1.04)}75%{transform:rotate(8deg) scale(1.04)}}
+.k-dots{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin:10px 0 12px}
+.k-dots i{width:18px;height:18px;border-radius:50%;background:#D5E3EE}
+.k-dots i.on{background:#FFC93C;box-shadow:0 0 0 3px #FFF1C2}
+.k-phase.big{flex-direction:column;font-size:2.2rem;min-height:150px}
+.k-phase.big svg{width:96px;height:96px}
+.k-listen-start{display:flex;align-items:center;gap:12px;margin:0 auto 14px;border:0;border-radius:999px;background:#fff;padding:8px 20px 8px 8px;font:inherit;font-weight:800;font-size:1.3rem;color:#2B6CB0;box-shadow:0 5px 0 #D3E6F3}
+.k-listen-start .k-ico{width:52px;height:52px;background:#E3F1FB}
+.k-pair{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.k-animal{display:flex;flex-direction:column;align-items:center;gap:10px;transition:opacity .2s}
+.k-animal-play{width:100%;aspect-ratio:1;max-width:100%;border:0;border-radius:28px;display:grid;place-items:center;box-shadow:0 7px 0 rgba(0,0,0,.14);position:relative}
+.k-animal-play span{font-size:4.6rem;line-height:1}
+.k-animal-play small{position:absolute;bottom:10px;right:14px;font-size:1.3rem;color:#24324A;opacity:.7}
+.k-pick{width:100%;border:0;border-radius:18px;padding:12px 6px;font:inherit;font-weight:800;font-size:1.25rem;background:#2E9E6A;color:#fff;box-shadow:0 5px 0 #1F7A50}
+.k-animal.hop .k-animal-play{animation:khop .45s}
+@keyframes khop{40%{transform:translateY(-12px)}}
+.k-animal.good .k-animal-play{box-shadow:0 0 0 6px #fff,0 0 0 11px #2E9E6A}
+.k-animal.dim{opacity:.35}
 .k-confetti{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:5}
 .k-confetti i{position:absolute;top:-20px;width:10px;height:14px;border-radius:3px;animation:kfall 2.8s linear forwards}
 @keyframes kfall{to{transform:translateY(110vh) rotate(540deg)}}
@@ -1235,6 +1256,7 @@ function paintNow(ms){
   clearNow(); nowKey=k;
   if(k!=null&&wordEl[k]){
     wordEl[k].classList.add('now');
+    if(kidOnNow) kidOnNow(k);
     if(kidEl[k]){kidEl[k].classList.add('now');const r=kidEl[k].getBoundingClientRect();if(r.top<90||r.bottom>window.innerHeight-40)kidEl[k].scrollIntoView({block:'center',behavior:'smooth'})}
     else if($('kids').hidden&&Date.now()-userScrolledAt>2500)keepVisible(wordEl[k]);
     if(run&&run.kind==='read'){const v=Math.floor(k/1000);if(v!==bookmark){bookmark=v;LS.set('hk.bm.'+surah,v);runInfo()}}
@@ -1702,13 +1724,13 @@ const KICO={
   play:'<svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>',
   stop:'<svg viewBox="0 0 24 24"><path d="M7 7h10v10H7z"/></svg>'
 };
-let kids=LS.get('hk.kids',[]), kid=null, kidEl={}, kidPrevSurah=null, kTimers=[];
+let kids=LS.get('hk.kids',[]), kid=null, kidEl={}, kidPrevSurah=null, kTimers=[], kidOnNow=null;
 const saveKids=()=>LS.set('hk.kids',kids);
 const kStars=k=>Object.values(k.stars||{}).reduce((a,b)=>a+b,0);
 const young=()=>!!kid&&kid.age==='4-6';
 const ageLabel=a=>a==='4-6'?'4 à 6 ans':'7 à 12 ans';
 function kStop(){kTimers.forEach(t=>clearTimeout(t));kTimers=[];stopRun(true);document.querySelectorAll('.k-cd').forEach(x=>x.remove())}
-function kClear(){kStop();kidEl={};const c=document.querySelector('.k-confetti');if(c)c.remove()}
+function kClear(){kStop();kidEl={};kidOnNow=null;const c=document.querySelector('.k-confetti');if(c)c.remove()}
 // Autorise le son dès le toucher (iPhone), puis place la lecture au bon endroit pendant le compte à rebours
 function kUnlock(s){
   try{audio.muted=true;const p=audio.play();const done=()=>{audio.pause();audio.muted=false;if(s!=null){try{audio.currentTime=s/1000}catch(e){}}};
@@ -1847,12 +1869,12 @@ async function kSurah(id){
   $('kActs').innerHTML='<div class="k-acts">'+
     act('listen','mint',KICO.ear,'Écoute','Toute la sourate, mot après mot',d.listen?'✓':'')+
     act('repeat','sun',KICO.mouth,'Répète après moi','Petit morceau par petit morceau',d.repeat?'✓':'')+
-    act('game','coral',KICO.star,'Le jeu','Quel mot vient après ?',st?starsTxt(st):'')+'</div>';
-  document.querySelectorAll('.k-act').forEach(b=>b.onclick=()=>({listen:kListen,repeat:kRepeat,game:kGame})[b.dataset.a](id));
+    act('game','coral',KICO.star,'Le jeu',young()?'Écoute et trouve la suite':'Quel mot vient après ?',st?starsTxt(st):'')+'</div>';
+  document.querySelectorAll('.k-act').forEach(b=>b.onclick=()=>({listen:kListen,repeat:kRepeat,game:young()?kGameYoung:kGame})[b.dataset.a](id));
 }
 function kMark(id,key){kid.done[id]=Object.assign(kid.done[id]||{},{[key]:true});saveKids()}
 function kChunks(){
-  const max=young()?4:6, out=[];
+  const max=young()?3:6, out=[];
   for(const v of verses){
     const ws=allWords.filter(w=>w.v===v.n), n=Math.ceil(ws.length/max);
     for(let i=0;i<n;i++){const part=ws.slice(Math.floor(i*ws.length/n),Math.floor((i+1)*ws.length/n));if(part.length)out.push({v:v.n,ws:part,a:{v:v.n,p:part[0].p},b:{v:v.n,p:part[part.length-1].p}})}
@@ -1871,21 +1893,34 @@ function kHead(id,title){
 }
 
 /* Écoute */
+function kStage(){
+  return '<div class="k-stage" id="kStage"><span class="k-stage-av" style="background:'+kid.color+'">'+kid.av+'</span></div><div class="k-dots" id="kDots"></div>';
+}
+function kDots(n){const d=$('kDots');d.innerHTML='';for(let i=0;i<n;i++)d.appendChild(document.createElement('i'))}
+function kDotsFill(n){const d=$('kDots');if(!d)return;[...d.children].forEach((x,i)=>x.classList.toggle('on',i<n))}
+function kTextToggle(){return '<button class="k-link" id="kShowTxt">Voir le texte (pour les parents)</button>'}
+function bindTextToggle(){const b=$('kShowTxt');if(!b)return;b.onclick=()=>{const t=$('kTxt');t.hidden=!t.hidden;b.textContent=t.hidden?'Voir le texte (pour les parents)':'Cacher le texte'}}
 function kListen(id){
   kTop();
-  kView(kHead(id,'Écoute')+'<p class="k-sub">Écoute bien et suis les mots qui s’allument.</p><div class="k-text" id="kTxt"></div><button class="k-big-btn" id="kPlay" aria-label="Écouter">'+KICO.play+'</button><p class="k-label" id="kLbl">Touche pour écouter</p>');
+  const y=young();
+  kView(kHead(id,'Écoute')+(y?kStage():'<p class="k-sub">Écoute bien et suis les mots qui s’allument.</p>')+'<div class="k-text" id="kTxt"'+(y?' hidden':'')+'></div><button class="k-big-btn" id="kPlay" aria-label="Écouter">'+KICO.play+'</button><p class="k-label" id="kLbl">Touche pour écouter</p>'+(y?kTextToggle():''));
   $('kBack').onclick=()=>kSurah(id);
   kWords($('kTxt'),allWords,true);
+  if(y){
+    // une bulle s'allume à chaque verset écouté, l'avatar danse pendant la récitation
+    const vn=verses.map(v=>v.n); kDots(vn.length); bindTextToggle();
+    kidOnNow=k=>{const v=Math.floor(k/1000);kDotsFill(vn.indexOf(v)+1);const s=$('kStage');if(s)s.classList.add('playing')};
+  }
   const btn=$('kPlay');
   btn.onclick=()=>{
-    if(run||kTimers.length){kStop();btn.innerHTML=KICO.play;$('kLbl').textContent='Touche pour écouter';return}
+    if(run||kTimers.length){kStop();btn.innerHTML=KICO.play;$('kLbl').textContent='Touche pour écouter';if($('kStage'))$('kStage').classList.remove('playing');return}
     const f=allWords[0], l=allWords[allWords.length-1], end=wordTime(l.v,l.p);
     btn.innerHTML=KICO.stop; $('kLbl').textContent='Prépare-toi…';
     kUnlock(0);
     kCountdown(()=>{
       $('kLbl').textContent='J’écoute…';
       startRun([{a:{v:f.v,p:f.p},b:{v:l.v,p:l.p},s:0,e:(end?end.e:0)+400}],1,'listen',()=>{
-        kMark(id,'listen'); if(!$('kPlay'))return; btn.innerHTML=KICO.play; $('kLbl').textContent='Bravo, tu as tout écouté !'; confetti();
+        kMark(id,'listen'); if(!$('kPlay'))return; btn.innerHTML=KICO.play; $('kLbl').textContent='Bravo, tu as tout écouté !'; if($('kStage'))$('kStage').classList.remove('playing'); kDotsFill(999); confetti();
       },'',{waitSeek:true});
     });
   };
@@ -1894,14 +1929,15 @@ function kListen(id){
 /* Répète après moi */
 function kRepeat(id){
   kTop();
-  const chunks=kChunks(), factor=young()?1.7:1.3;
-  const gapOf=dur=>Math.min(10000,Math.max(1800,dur*factor+700));
-  kView(kHead(id,'Répète après moi')+'<p class="k-count" id="kCnt"></p><div class="k-phase ear" id="kPh"></div><div class="k-timer"><i id="kTm"></i></div><div class="k-text big" id="kTxt"></div><div class="k-row-btns"><button class="k-btn go wide" id="kGo">▶ Commencer</button></div>');
+  const y=young(), chunks=kChunks(), factor=y?2.2:1.3;
+  const gapOf=dur=>Math.min(12000,Math.max(y?2600:1800,dur*factor+(y?1200:700)));
+  kView(kHead(id,'Répète après moi')+(y?'<div class="k-dots" id="kDots"></div>':'<p class="k-count" id="kCnt"></p>')+'<div class="k-phase ear'+(y?' big':'')+'" id="kPh"></div><div class="k-timer"><i id="kTm"></i></div><div class="k-text big" id="kTxt"'+(y?' hidden':'')+'></div><div class="k-row-btns"><button class="k-btn go wide" id="kGo">▶ Commencer</button></div>'+(y?kTextToggle():''));
   $('kBack').onclick=()=>kSurah(id);
-  const show=i=>{const c=chunks[Math.min(i,chunks.length-1)];kWords($('kTxt'),c.ws,false);$('kCnt').textContent='Morceau '+(Math.min(i,chunks.length-1)+1)+' sur '+chunks.length};
+  if(y){kDots(chunks.length);bindTextToggle()}
+  const show=i=>{const j=Math.min(i,chunks.length-1),c=chunks[j];kWords($('kTxt'),c.ws,false);if($('kCnt'))$('kCnt').textContent='Morceau '+(j+1)+' sur '+chunks.length;kDotsFill(j)};
   const phase=(kind,ms)=>{
     const p=$('kPh'), t=$('kTm'); if(!p) return;
-    p.className='k-phase '+(kind==='you'?'you':'ear');
+    p.className='k-phase '+(kind==='you'?'you':'ear')+(y?' big':'');
     p.innerHTML=(kind==='you'?KICO.you+'<span>À toi !</span>':KICO.ear+'<span>Écoute bien…</span>');
     t.style.transition='none'; t.style.width=kind==='you'?'100%':'0';
     if(kind==='you'){void t.offsetWidth;t.style.transition='width '+ms+'ms linear';t.style.width='0'}
@@ -1916,7 +1952,7 @@ function kRepeat(id){
     kCountdown(()=>startRun(ranges,1,'kid',()=>{
       const last=chunks[chunks.length-1], tt=rangeTime(last.a,last.b), g=gapOf(tt?tt.e-tt.s:2000);
       phase('you',g);
-      kTimers.push(setTimeout(()=>{kTimers=[];kMark(id,'repeat');if(!$('kGo'))return;$('kPh').innerHTML='<span>Bravo, c’est fini !</span>';$('kPh').className='k-phase ear';go.textContent='↻ Recommencer';confetti()},g));
+      kTimers.push(setTimeout(()=>{kTimers=[];kMark(id,'repeat');if(!$('kGo'))return;$('kPh').innerHTML='<span>Bravo, c’est fini !</span>';$('kPh').className='k-phase ear'+(y?' big':'');kDotsFill(999);go.textContent='↻ Recommencer';confetti()},g));
     },'',{gapFn:gapOf,waitSeek:true,onStep:i=>{show(i);phase('ear')},onGap:g=>phase('you',g)}));
   };
 }
@@ -1982,6 +2018,57 @@ function kGame(id){
     const nx=document.createElement('button'); nx.className='k-btn go wide'; nx.textContent=g.i+1<g.qs.length?'Question suivante →':'Voir mes étoiles';
     nx.onclick=()=>{g.i++; if(g.i<g.qs.length) round(); else kResult(id,g.score,g.qs.length)};
     ctl.appendChild(nx);
+  }
+}
+/* Jeu 4-6 ans : on écoute le début, puis on choisit entre deux suites qu'on écoute (aucune lecture) */
+function kGameYoung(id){
+  kTop();
+  const vw=verses.map(v=>allWords.filter(w=>w.v===v.n)), cands=vw.filter(ws=>ws.length>=3);
+  const pool=cands.length?cands:vw.filter(ws=>ws.length>=2);
+  const qs=[], bag=shuffle(pool);
+  for(let r=0;r<3&&pool.length;r++){
+    const ws=bag[r%bag.length], k=Math.max(1,Math.floor(ws.length/2));
+    const good=ws.slice(k,Math.min(ws.length,k+3));
+    // la mauvaise suite vient d'un autre verset, pour qu'elle sonne vraiment différemment
+    const others=vw.filter(o=>o!==ws&&o.length>=2&&baseOf(o[0].t)!==baseOf(good[0].t));
+    let bad;
+    if(others.length){const o=pickOne(others),s=Math.floor(Math.random()*Math.max(1,o.length-2));bad=o.slice(s,s+Math.min(3,o.length))}
+    else bad=ws.slice(0,Math.min(3,k));
+    qs.push({ctx:ws.slice(0,k),good,bad,goodFirst:Math.random()<.5});
+  }
+  const g={i:0,score:0,qs};
+  kView(kHead(id,'Le jeu')+'<p class="k-sub">Écoute le début. Puis écoute les deux animaux, et touche celui qui dit la suite !</p><div id="kGame"></div>');
+  $('kBack').onclick=()=>kSurah(id);
+  const box=$('kGame');
+  const start=document.createElement('button'); start.className='k-btn go'; start.style.width='100%'; start.textContent='▶ On joue !';
+  start.onclick=()=>{start.disabled=true;kUnlock(null);kCountdown(round)}; box.appendChild(start);
+  const playWords=(ws,cb)=>{const a=ws[0],b=ws[ws.length-1],ta=wordTime(a.v,a.p),tb=wordTime(b.v,b.p);startRun([{a:{v:a.v,p:a.p},b:{v:b.v,p:b.p},s:Math.max(0,ta.s-250),e:tb.e+120}],1,'listen',cb||null,'',{waitSeek:true})};
+  const ANIM=[['🐸','#7CD992'],['🐥','#FFD54A']];
+  function round(){
+    const q=g.qs[g.i]; stopRun(true);
+    const opts=q.goodFirst?[q.good,q.bad]:[q.bad,q.good];
+    box.innerHTML='<div class="k-dots" id="kDots"></div><button class="k-listen-start" id="kStart"><span class="k-ico">'+KICO.ear+'</span><b>Le début</b></button><div class="k-pair" id="kPair"></div><p class="k-fb" id="kFb"></p><div class="k-row-btns" id="kCtl"></div>';
+    kDots(g.qs.length); kDotsFill(g.i);
+    const pair=$('kPair');
+    opts.forEach((o,i)=>{
+      const c=document.createElement('div'); c.className='k-animal';
+      c.innerHTML='<button class="k-animal-play" style="background:'+ANIM[i][1]+'" aria-label="Écouter la suite '+(i+1)+'"><span>'+ANIM[i][0]+'</span><small>▶</small></button><button class="k-pick">C’est lui !</button>';
+      c.querySelector('.k-animal-play').onclick=()=>{c.classList.remove('hop');void c.offsetWidth;c.classList.add('hop');playWords(o)};
+      c.querySelector('.k-pick').onclick=()=>choose(o===q.good,c,pair,q);
+      pair.appendChild(c);
+    });
+    $('kStart').onclick=()=>playWords(q.ctx);
+    playWords(q.ctx);
+  }
+  function choose(ok,card,pair,q){
+    [...pair.querySelectorAll('button')].forEach(b=>b.disabled=true);
+    [...pair.children].forEach(c=>{const isGood=c.querySelector('.k-pick')&&c===card?ok:!ok;c.classList.add(isGood?'good':'dim')});
+    if(ok){g.score++;confetti()}
+    const fb=$('kFb'); fb.className='k-fb '+(ok?'ok':'ko'); fb.textContent=ok?pickOne(['Bravo !','Super !','Machallah !']):'Presque ! Écoute la bonne suite.';
+    playWords(q.ctx.concat(q.good));
+    const nx=document.createElement('button'); nx.className='k-btn go wide'; nx.textContent=g.i+1<g.qs.length?'Encore !':'Mes étoiles';
+    nx.onclick=()=>{g.i++;if(g.i<g.qs.length)round();else kResult(id,g.score,g.qs.length)};
+    $('kCtl').appendChild(nx);
   }
 }
 function confetti(){
