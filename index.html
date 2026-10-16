@@ -110,7 +110,7 @@ body.masque .w:not(.now):not(.reveal){filter:blur(7px)}
 .group > label,.group > .lbl{display:block;font-size:.78rem;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:8px}
 .opts{display:flex;gap:6px;flex-wrap:wrap}
 .opts button{flex:1 0 auto;min-width:48px;border:1px solid var(--line);background:var(--bg);border-radius:10px;padding:10px 8px;font-variant-numeric:tabular-nums}
-#hideBtn{flex:1 1 100%;white-space:normal;line-height:1.3}
+#hideBtn,#markBtn{flex:1 1 100%;white-space:normal;line-height:1.3}
 .opts button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:700}
 select{width:100%;padding:11px 12px;border-radius:10px;border:1px solid var(--line);background:var(--bg)}
 .sizebox{display:flex;align-items:center;gap:10px}
@@ -126,6 +126,7 @@ select{width:100%;padding:11px 12px;border-radius:10px;border:1px solid var(--li
 .grid{display:grid;grid-template-columns:repeat(10,1fr);gap:4px;direction:ltr}
 .cell{aspect-ratio:1;max-width:100%;border-radius:6px;border:1px solid var(--line);background:var(--bg);font-size:.68rem;display:grid;place-items:center;padding:0;font-variant-numeric:tabular-nums;color:var(--muted)}
 .cell[data-st="l"]{background:var(--learn);border-color:var(--learn);color:var(--now-ink)}
+.grid.marking .cell{border-style:dashed;border-color:var(--gold)}
 .cell[data-st="m"]{background:var(--done);border-color:var(--done);color:var(--page);font-weight:700}
 .legend{display:flex;gap:14px;font-size:.78rem;color:var(--muted);margin-top:8px;flex-wrap:wrap}
 .legend i{display:inline-block;width:12px;height:12px;border-radius:3px;vertical-align:-2px;margin-right:4px;border:1px solid var(--line)}
@@ -229,6 +230,8 @@ textarea{width:100%;min-height:70px;border-radius:10px;border:1px solid var(--li
     <div class="group"><span class="lbl">À réviser aujourd’hui</span><div id="dueList"></div></div>
 
     <div class="group"><span class="lbl">Carte des 110 versets</span>
+      <div class="opts" style="margin-bottom:10px"><button id="markBtn" aria-pressed="false">Cocher mes versets</button></div>
+      <p class="note" id="markHint" style="margin:0 0 8px">Touche un verset pour l’afficher dans le texte.</p>
       <div class="grid" id="grid"></div>
       <div class="legend"><span><i></i>pas commencé</span><span><i style="background:var(--learn);border-color:var(--learn)"></i>en cours</span><span><i style="background:var(--done);border-color:var(--done)"></i>maîtrisé</span></div>
     </div>
@@ -274,6 +277,8 @@ let reciterId=LS.get('hk.reciter',7);
 let settings=Object.assign({reps:5,gap:2,speed:1,mode:'repeat',size:2,hide:false},LS.get('hk.settings',{}));
 if(settings.reps==='inf') settings.reps=Infinity;
 let parts=LS.get('hk.parts',[]).map(p=>Object.assign({status:'new',level:0,due:0,on:true},p));
+let manual=LS.get('hk.manual',{}); // verset -> 'l' en cours, 'm' maîtrisé, 'n' pas commencé (choix manuel)
+let marking=false;
 let sel={a:null,b:null};
 let run=null, gapTimer=null, nowKey=null, wakeLock=null, userScrolledAt=0;
 
@@ -430,7 +435,10 @@ function coverage(){
   const vs={}; let mWords=0;
   for(const v of verses){
     let m=0,any=0; for(const w of v.w){const s=st[key(v.n,w.p)]; if(s)any++; if(s==='m')m++;}
-    mWords+=m; vs[v.n]= m===v.w.length?'m':(any?'l':'');
+    let s= m===v.w.length?'m':(any?'l':'');
+    const man=manual[v.n];
+    if(man){ s= man==='n'?'':man; m= man==='m'?v.w.length:0; }
+    mWords+=m; vs[v.n]=s;
   }
   return {vs,pct:allWords.length?Math.round(mWords*100/allWords.length):0};
 }
@@ -461,12 +469,16 @@ function renderProgress(c){
     row.append(b,t); dl.appendChild(row);
   }
   // grille
-  const g=$('grid'); g.innerHTML='';
+  const g=$('grid'); g.innerHTML=''; g.classList.toggle('marking',marking);
   for(const v of verses){
     const cell=document.createElement('button'); cell.className='cell'; cell.textContent=v.n;
     if(c.vs[v.n]) cell.dataset.st=c.vs[v.n];
     cell.setAttribute('aria-label','Verset '+v.n);
-    cell.onclick=()=>{closeSheets();scrollToWord({v:v.n,p:v.w[0].p});};
+    cell.onclick=()=>{
+      if(!marking){closeSheets();scrollToWord({v:v.n,p:v.w[0].p});return}
+      const cur=c.vs[v.n]||'', next=cur===''?'l':cur==='l'?'m':'n';
+      manual[v.n]=next; LS.set('hk.manual',manual); refreshProgress(); renderProgress();
+    };
     g.appendChild(cell);
   }
   // morceaux
@@ -491,12 +503,18 @@ function renderProgress(c){
 }
 
 /* Sauvegarde */
-function backupCode(){return btoa(unescape(encodeURIComponent(JSON.stringify({v:1,parts,settings:Object.assign({},settings,{reps:settings.reps===Infinity?'inf':settings.reps}),reciterId}))))}
+function backupCode(){return btoa(unescape(encodeURIComponent(JSON.stringify({v:1,parts,manual,settings:Object.assign({},settings,{reps:settings.reps===Infinity?'inf':settings.reps}),reciterId}))))}
 $('copyBackup').onclick=()=>{
   const code=backupCode(), ta=$('backupTxt');
   const done=()=>{$('backupMsg').textContent='Code copié. Colle-le dans Notes pour le garder.'};
   const fallback=()=>{ta.hidden=false;ta.value=code;ta.focus();ta.select();$('backupMsg').textContent='Sélectionne ce code et copie-le dans Notes.'};
   try{navigator.clipboard.writeText(code).then(done,fallback)}catch(e){fallback()}
+};
+$('markBtn').onclick=()=>{
+  marking=!marking; $('markBtn').setAttribute('aria-pressed',marking);
+  $('markBtn').textContent=marking?'Terminé':'Cocher mes versets';
+  $('markHint').textContent=marking?'Touche un verset : 1 fois = en cours, 2 fois = maîtrisé, 3 fois = pas commencé.':'Touche un verset pour l’afficher dans le texte.';
+  renderProgress();
 };
 $('showRestore').onclick=()=>{$('restoreBox').hidden=!$('restoreBox').hidden};
 $('doRestore').onclick=()=>{
@@ -504,6 +522,7 @@ $('doRestore').onclick=()=>{
     const d=JSON.parse(decodeURIComponent(escape(atob($('restoreTxt').value.trim()))));
     if(!d||!Array.isArray(d.parts)) throw 0;
     parts=d.parts.map(p=>Object.assign({status:'new',level:0,due:0,on:true},p));
+    manual=d.manual||{}; LS.set('hk.manual',manual);
     if(d.settings){settings=Object.assign(settings,d.settings);if(settings.reps==='inf')settings.reps=Infinity;applySettings()}
     saveParts(); renderProgress(); updateBar(); $('restoreBox').hidden=true; $('restoreTxt').value='';
     $('backupMsg').textContent='Progression restaurée : '+parts.length+' morceaux.';
