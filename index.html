@@ -21,7 +21,7 @@
 <meta name="theme-color" content="#120F0A" media="(prefers-color-scheme: dark)">
 <title>Sourate Al-Kahf</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Amiri+Quran&family=Amiri:wght@400;700&family=Atkinson+Hyperlegible:wght@400;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Amiri+Quran&family=Amiri:wght@400;700&family=Atkinson+Hyperlegible:wght@400;700&family=Baloo+2:wght@500;700;800&display=swap">
 <style>
 /* Mise en page : une page de mushaf (cadre doré, texte continu) qui occupe l'écran ; une barre fine en bas ; réglages, progression, sourates et tajwid dans des panneaux */
 :root{
@@ -63,7 +63,7 @@ button{cursor:pointer}
 .title-btn b{font-size:1rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .title-btn span{font-family:var(--f-orn);color:var(--gold);font-size:1.25rem;white-space:nowrap}
 .title-btn .ico{width:16px;height:16px;flex:0 0 auto;color:var(--muted)}
-.icon-btn{width:40px;height:40px;border-radius:12px;border:1px solid var(--line);background:var(--page);display:grid;place-items:center;flex:0 0 auto;position:relative}
+.icon-btn{width:38px;height:38px;border-radius:12px;border:1px solid var(--line);background:var(--page);display:grid;place-items:center;flex:0 0 auto;position:relative}
 .icon-btn .tj{font-family:var(--f-orn);font-size:1.05rem;line-height:1;background:linear-gradient(90deg,var(--tj-qalqala),var(--tj-ghunna) 40%,var(--tj-idgham-g) 70%,var(--tj-madd2));-webkit-background-clip:text;background-clip:text;color:transparent;font-weight:700}
 .badge{position:absolute;top:-5px;right:-5px;min-width:18px;height:18px;border-radius:9px;background:var(--danger);color:#fff;font-size:.7rem;font-weight:700;display:grid;place-items:center;padding:0 4px}
 
@@ -290,6 +290,133 @@ textarea{width:100%;min-height:70px;border-radius:10px;border:1px solid var(--li
 .result .stars{font-size:2.8rem;color:var(--gold);letter-spacing:.12em}
 .result h3{margin:6px 0;font-size:1.4rem}
 .result p{color:var(--muted);margin:0 0 6px}
+/* Espace enfants : univers à part, clair et coloré (choix assumé d'un seul thème) */
+.kids{position:fixed;inset:0;z-index:46;overflow:auto;-webkit-overflow-scrolling:touch;background:#E9F6FF;color:#24324A;font-family:"Baloo 2","Atkinson Hyperlegible",-apple-system,sans-serif;color-scheme:light}
+.kids button{cursor:pointer}
+.k-top{position:sticky;top:0;z-index:3;display:flex;align-items:center;gap:10px;background:#E9F6FF;padding:calc(env(safe-area-inset-top,0px) + 10px) max(14px,env(safe-area-inset-right,0px)) 10px max(14px,env(safe-area-inset-left,0px))}
+.k-brand{flex:1;font-size:1.35rem;font-weight:800;color:#2B6CB0}
+.k-me{flex:1;min-width:0;display:flex;align-items:center;gap:8px;border:0;background:none;text-align:left;font:inherit;font-weight:800;font-size:1.25rem;color:inherit}
+.k-me b{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.k-av{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;font-size:1.6rem;flex:0 0 auto;line-height:1}
+.k-av.big{width:96px;height:96px;font-size:3.2rem;box-shadow:0 6px 0 rgba(0,0,0,.08)}
+.k-av.plus{background:#E3EEF7;color:#7A8CA5;font-size:3rem;font-weight:800}
+.k-total{background:#FFD54A;border-radius:999px;padding:4px 12px;font-weight:800;white-space:nowrap}
+.k-exit{border:2px solid #C9DDEC;background:#fff;border-radius:999px;padding:6px 12px;font:inherit;font-weight:700;color:#5B6B82}
+#kView{max-width:640px;margin:0 auto;padding:6px max(16px,env(safe-area-inset-right,0px)) calc(env(safe-area-inset-bottom,0px) + 40px) max(16px,env(safe-area-inset-left,0px))}
+.k-h1{font-size:1.9rem;line-height:1.1;margin:10px 0 6px;font-weight:800;text-align:center;text-wrap:balance}
+.k-sub{text-align:center;color:#5B6B82;font-size:1.1rem;margin:0 0 14px;line-height:1.35}
+.k-profiles{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-top:16px}
+.k-prof{border:0;background:#fff;border-radius:26px;padding:16px 8px;display:flex;flex-direction:column;align-items:center;gap:6px;font:inherit;color:inherit;box-shadow:0 6px 0 #D3E6F3}
+.k-prof b{font-size:1.3rem;line-height:1.1}
+.k-prof small{color:#8A6A00;font-weight:700}
+.k-link{display:block;margin:22px auto 0;border:0;background:none;color:#2B6CB0;font:inherit;font-weight:700;text-decoration:underline;text-underline-offset:3px}
+/* chemin */
+.k-path{display:flex;flex-direction:column;padding:8px 0 30px}
+.k-row{display:flex;flex-direction:column;align-items:center}
+.k-row.p0{align-items:flex-start;padding-left:4%}.k-row.p2{align-items:flex-end;padding-right:4%}
+.k-trail{width:6px;height:30px;margin:4px 67px;background:repeating-linear-gradient(#B9D7EC 0 6px,transparent 6px 12px);border-radius:3px}
+.k-stop{border:0;background:none;display:flex;flex-direction:column;align-items:center;gap:2px;font:inherit;color:inherit;width:140px}
+.k-dot{width:78px;height:78px;border-radius:50%;display:grid;place-items:center;font-size:1.7rem;font-weight:800;color:#fff;background:#C9D6E2;box-shadow:0 6px 0 rgba(0,0,0,.12)}
+.k-stop.locked .k-dot{background:#D5DEE6;color:#8A9AAE;font-size:1.5rem}
+.k-stop.locked b{color:#8A9AAE}
+.k-stop.cur .k-dot{animation:kbounce 1.4s ease-in-out infinite;box-shadow:0 0 0 6px #fff,0 0 0 10px #FFD54A,0 6px 0 rgba(0,0,0,.12)}
+.k-stop.cur b{margin-top:12px}
+.k-stop.gold .k-dot{background:#FFC93C!important;color:#7A4B00}
+.k-stop b{font-size:1.05rem;line-height:1.2;text-align:center}
+.k-st{color:#F5A623;letter-spacing:.06em;font-size:1.05rem}
+@keyframes kbounce{50%{transform:translateY(-6px)}}
+/* sourate */
+.k-back{border:0;background:none;font:inherit;font-weight:800;color:#2B6CB0;font-size:1.1rem;padding:6px 0}
+.k-title{text-align:center;margin:4px 0 16px}
+.k-title .k-ar{display:block;font-family:var(--f-orn);font-size:2.6rem;line-height:1.35;color:#2B6CB0}
+.k-title b{font-size:1.6rem;display:block;line-height:1.15}
+.k-title small{color:#5B6B82;font-size:1rem}
+.k-acts{display:grid;gap:14px}
+.k-act{display:flex;align-items:center;gap:14px;border:0;border-radius:24px;padding:16px;text-align:left;font:inherit;color:#24324A;box-shadow:0 6px 0 rgba(0,0,0,.1)}
+.k-act.mint{background:#BFF0E1}.k-act.sun{background:#FFE8A3}.k-act.coral{background:#FFD0C9}
+.k-act b{display:block;font-size:1.35rem;font-weight:800;line-height:1.2}
+.k-act small{font-size:1rem;color:#4A5A70;line-height:1.25}
+.k-act > span:nth-child(2){flex:1;min-width:0}
+.k-ico{width:64px;height:64px;border-radius:20px;background:#fff;display:grid;place-items:center;flex:0 0 auto}
+.k-ico svg{width:38px;height:38px}
+.k-check{font-size:1.3rem;color:#2E9E6A;font-weight:800;white-space:nowrap}
+.k-load{text-align:center;color:#5B6B82;font-size:1.15rem;padding:20px 0}
+/* texte */
+.k-text{background:#fff;border-radius:22px;padding:14px;direction:rtl;text-align:right;font-family:var(--f-ar);font-size:2rem;line-height:2.2;box-shadow:0 6px 0 #D3E6F3}
+.k-text.big{font-size:2.5rem;text-align:center;min-height:150px;display:flex;flex-wrap:wrap;justify-content:center;align-items:center;column-gap:.3em}
+.kw{border-radius:10px;padding:0 .08em;transition:background .15s}
+.kw.now{background:#FFD54A}
+.k-vn{display:inline-block;font-family:var(--f-orn);color:#2B6CB0;font-size:.55em;border:2px solid #9CC9EA;border-radius:999px;padding:0 .4em;margin:0 .2em;line-height:1.5;vertical-align:middle}
+.k-big-btn{width:96px;height:96px;border-radius:50%;border:0;background:#2B6CB0;color:#fff;display:grid;place-items:center;margin:18px auto 6px;box-shadow:0 8px 0 #1D4E80}
+.k-big-btn svg{width:44px;height:44px;fill:#fff}
+.k-label{text-align:center;font-weight:700;color:#5B6B82;font-size:1.1rem}
+.k-phase{display:flex;align-items:center;justify-content:center;gap:10px;font-size:1.7rem;font-weight:800;margin:4px 0 8px;min-height:56px}
+.k-phase.you{color:#E2574C}.k-phase.ear{color:#2B6CB0}
+.k-phase svg{width:44px;height:44px}
+.k-timer{height:12px;border-radius:6px;background:#D9E8F3;overflow:hidden;margin:0 0 12px}
+.k-timer i{display:block;height:100%;width:0;background:#E2574C}
+.k-count{text-align:center;color:#5B6B82;font-weight:700;margin-bottom:8px}
+/* jeu */
+.k-opts{display:grid;gap:12px;margin-top:16px}
+.k-opt{border:0;border-radius:22px;padding:12px;font-family:var(--f-ar);font-size:2.2rem;line-height:1.6;color:#fff;box-shadow:0 6px 0 rgba(0,0,0,.15)}
+.k-opt.o0{background:#4FA3E0}.k-opt.o1{background:#9C8CFF}.k-opt.o2{background:#FF8A65}
+.k-opt.ok{background:#2E9E6A}.k-opt.ko{opacity:.35}
+.shake{animation:kshake .4s}
+@keyframes kshake{25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+.k-hole{display:inline-block;min-width:2.2em;border-bottom:4px dashed #F5A623;color:#F5A623;text-align:center;line-height:1.3}
+.k-hole.filled{border-bottom-style:solid;color:#2E9E6A}
+.k-fb{text-align:center;font-size:1.5rem;font-weight:800;margin:14px 0 4px;min-height:1.4em;line-height:1.3}
+.k-fb.ok{color:#2E9E6A}.k-fb.ko{color:#E2574C}
+.k-row-btns{display:flex;gap:12px;margin-top:14px;flex-wrap:wrap}
+.k-btn{flex:1 1 0;min-width:0;border:0;border-radius:20px;padding:14px 10px;font:inherit;font-weight:800;font-size:1.2rem;background:#fff;color:#24324A;box-shadow:0 5px 0 #D3E6F3;line-height:1.2}
+.k-btn.go{background:#2B6CB0;color:#fff;box-shadow:0 5px 0 #1D4E80}
+.k-btn.yes{background:#2E9E6A;color:#fff;box-shadow:0 5px 0 #1F7A50}
+.k-btn.wide{flex-basis:100%}
+.k-q{text-align:center;font-size:1.4rem;font-weight:800;margin:6px 0 12px;line-height:1.25}
+.k-say{display:flex;align-items:center;justify-content:center;gap:10px;font-size:1.3rem;font-weight:800;color:#E2574C;margin:14px 0 0}
+.k-say svg{width:40px;height:40px}
+/* récompense */
+.k-result{text-align:center;padding:16px 0}
+.k-stars{font-size:4rem;color:#FFC93C;letter-spacing:.1em;line-height:1.1}
+.k-stars span{display:inline-block;animation:kpop .5s both}
+.k-stars span:nth-child(2){animation-delay:.25s}.k-stars span:nth-child(3){animation-delay:.5s}
+.k-stars span.off{color:#D5DEE6}
+.k-result h2{font-size:2rem;margin:8px 0 4px}
+.k-result p{font-size:1.15rem;color:#5B6B82;margin:0 0 6px}
+.k-unlock{background:#fff;border-radius:20px;padding:12px;margin:12px 0;font-weight:800;color:#2B6CB0;box-shadow:0 5px 0 #D3E6F3}
+@keyframes kpop{0%{transform:scale(0)}70%{transform:scale(1.3)}100%{transform:scale(1)}}
+.k-confetti{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:5}
+.k-confetti i{position:absolute;top:-20px;width:10px;height:14px;border-radius:3px;animation:kfall 2.8s linear forwards}
+@keyframes kfall{to{transform:translateY(110vh) rotate(540deg)}}
+/* accès parents */
+.k-gate{position:fixed;inset:0;z-index:60;background:rgba(20,30,50,.5);display:grid;place-items:center;padding:20px}
+.k-gate-in{background:#fff;border-radius:22px;padding:20px;width:100%;max-width:360px;font-family:var(--f-ui);color:#24324A}
+.k-gate-in b{font-size:1.2rem}
+.k-gate-in p{margin:6px 0}
+.k-gate-in input{width:100%;font-size:1.6rem;text-align:center;padding:10px;border-radius:12px;border:2px solid #C9DDEC;margin:8px 0 12px;color:#24324A;background:#fff}
+.k-gate-msg{color:#C0392B;min-height:1.2em}
+.k-form{background:#fff;border-radius:24px;padding:16px;font-family:var(--f-ui);display:grid;gap:14px;box-shadow:0 6px 0 #D3E6F3;color:#24324A}
+.k-form label{font-weight:700;display:block;margin-bottom:6px}
+.k-form input{width:100%;font-size:1.2rem;padding:10px 12px;border-radius:12px;border:2px solid #C9DDEC;color:#24324A;background:#fff}
+.k-avs{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+.k-avs button{font-size:2rem;border:3px solid transparent;border-radius:16px;background:#F1F7FC;padding:6px 0;line-height:1.2}
+.k-avs button[aria-pressed="true"]{border-color:#2B6CB0;background:#E1F0FB}
+.k-age{display:flex;gap:8px}
+.k-age button{flex:1;border:2px solid #C9DDEC;background:#fff;border-radius:14px;padding:12px 6px;font:inherit;font-weight:700;color:#24324A;line-height:1.25}
+.k-age button small{display:block;font-weight:400;font-size:.8rem;color:#5B6B82}
+.k-age button[aria-pressed="true"]{background:#2B6CB0;color:#fff;border-color:#2B6CB0}
+.k-age button[aria-pressed="true"] small{color:#DCEBF8}
+.k-plist{display:grid;gap:10px;font-family:var(--f-ui)}
+.k-prow{background:#fff;border-radius:18px;padding:12px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;box-shadow:0 4px 0 #D3E6F3}
+.k-prow > div{flex:1;min-width:110px}
+.k-prow small{color:#5B6B82;display:block}
+.k-sbtn{border:2px solid #C9DDEC;background:#fff;border-radius:12px;padding:8px 10px;font:inherit;font-weight:700;font-size:.9rem;color:#24324A}
+.k-sbtn.danger{color:#C0392B;border-color:#F1C4BE}
+.k-srow{display:flex;align-items:center;gap:10px;background:#fff;border-radius:14px;padding:10px 12px;font-family:var(--f-ui)}
+.k-srow b{flex:1;min-width:0}
+.k-srow .k-st{min-width:64px;text-align:right}
+@media (prefers-reduced-motion:reduce){.k-stop.cur .k-dot,.k-stars span,.k-confetti i,.shake{animation:none!important}}
+
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important;scroll-behavior:auto!important}}
 </style>
 </head>
@@ -299,6 +426,7 @@ textarea{width:100%;min-height:70px;border-radius:10px;border:1px solid var(--li
     <b id="hTitle">Al-Kahf</b><span id="hAr">الكهف</span>
     <svg class="ico" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
   </button>
+  <button class="icon-btn" id="kidsBtn" aria-label="Espace enfants"><svg class="ico" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8.5 14.5a4.5 4.5 0 0 0 7 0"/><circle cx="9" cy="10" r=".6" fill="currentColor"/><circle cx="15" cy="10" r=".6" fill="currentColor"/></svg></button>
   <button class="icon-btn" id="lesBtn" aria-label="Comprendre et s’entraîner"><svg class="ico" viewBox="0 0 24 24"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3.6 10.8c.7.6 1.1 1.3 1.1 2.1v.1h5v-.1c0-.8.4-1.5 1.1-2.1A6 6 0 0 0 12 3z"/></svg></button>
   <button class="icon-btn" id="tajBtn" aria-label="Règles du tajwid"><span class="tj">تجويد</span></button>
   <button class="icon-btn" id="progBtn" aria-label="Ma progression">
@@ -474,6 +602,8 @@ textarea{width:100%;min-height:70px;border-radius:10px;border:1px solid var(--li
   </div>
 </div>
 
+<!-- Espace enfants -->
+<div class="kids" id="kids" hidden><div class="k-top" id="kTop"></div><div id="kView"></div><div class="k-gate" id="kGate" hidden></div></div>
 <audio id="audio" preload="auto" playsinline></audio>
 
 <script>
@@ -1034,17 +1164,31 @@ async function requestWake(){try{if('wakeLock' in navigator&&!wakeLock){wakeLock
 function releaseWake(){try{wakeLock&&wakeLock.release()}catch(e){}wakeLock=null}
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&run)requestWake()});
 
-function startRun(ranges,reps,kind,onDone,label){
+function startRun(ranges,reps,kind,onDone,label,opts){
   stopRun(true); myAudio.pause();
   const steps=ranges.map(r=>rangeTime(r.a,r.b)).filter(Boolean);
   if(!steps.length){setInfo('Minutage indisponible pour ce passage');return}
-  run={steps,ranges,i:0,count:0,reps,kind,onDone,label};
+  run={steps,ranges,i:0,count:0,reps,kind,onDone,label}; if(opts) Object.assign(run,opts);
   requestWake(); setPlayIcon(true); playStep();
 }
-async function playStep(){
-  if(!run) return; const st=run.steps[run.i]; runInfo(); await ready(); if(!run) return;
-  audio.playbackRate=settings.speed; audio.currentTime=st.s/1000;
-  try{await audio.play()}catch(e){stopRun();setInfo('Touche ▶ pour lancer le son')}
+function setSession(t){try{if(navigator.audioSession)navigator.audioSession.type=t}catch(e){}}
+function playStep(){
+  if(!run) return; const st=run.steps[run.i]; runInfo(); run.blocked=false; if(run.onStep) run.onStep(run.i);
+  // Lecture lancée tout de suite (sans attente) pour garder l'autorisation du toucher sur iPhone
+  const go=()=>{
+    if(!run) return; setSession('playback'); myAudio.pause();
+    audio.playbackRate=settings.speed; try{audio.currentTime=st.s/1000}catch(e){}
+    const pr=audio.play(); if(pr&&pr.catch) pr.catch(()=>soundBlocked());
+  };
+  if(audio.readyState>=1) go(); else audio.addEventListener('loadedmetadata',go,{once:true});
+}
+function soundBlocked(){
+  if(!run) return; run.blocked=true; setPlayIcon(false);
+  setInfo('Touche ▶ pour lancer le son','L’iPhone a bloqué la lecture');
+  if(!$('testCard').hidden&&!$('tResume')){
+    const b=document.createElement('button'); b.className='btn primary'; b.id='tResume'; b.textContent='▶ Lancer le son';
+    b.onclick=()=>{b.remove();if(run){setPlayIcon(true);playStep()}}; $('testIn').appendChild(b); layout();
+  }
 }
 function runInfo(){
   if(!run) return; const r=run.ranges[run.i];
@@ -1058,7 +1202,7 @@ function runInfo(){
 }
 function stopRun(silent){clearTimeout(gapTimer);gapTimer=null;audio.pause();const wasRead=run&&run.kind==='read';run=null;setPlayIcon(false);releaseWake();clearNow();if(wasRead)paintBookmark();if(!silent)updateBar()}
 function stepEnded(){
-  audio.pause(); run.count++;
+  audio.pause(); const fin=run.steps[run.i], lastDur=fin.e-fin.s; run.count++;
   if(!(run.reps===Infinity||run.count<run.reps)){run.count=0;run.i++}
   if(run.i>=run.steps.length){
     const cb=run.onDone,kind=run.kind,rs=run.ranges; stopRun(true); updateBar();
@@ -1068,18 +1212,21 @@ function stepEnded(){
     if(cb) cb(); return;
   }
   runInfo();
-  const g=settings.gap*1000; if(g>0&&run.kind!=='test') setInfo(null,'À toi de réciter… '+settings.gap+' s');
+  let g=settings.gap*1000;
+  if(run.gapFn){g=run.gapFn(lastDur);if(run.onGap)run.onGap(g)}
+  else if(g>0&&run.kind!=='test') setInfo(null,'À toi de réciter… '+settings.gap+' s');
   gapTimer=setTimeout(()=>{gapTimer=null;playStep()},Math.max(g,120));
 }
 setInterval(()=>{if(!run||audio.paused||gapTimer)return;const ms=audio.currentTime*1000;paintNow(ms);if(ms>=run.steps[run.i].e)stepEnded()},40);
-function clearNow(){if(nowKey!=null&&wordEl[nowKey])wordEl[nowKey].classList.remove('now');nowKey=null}
+function clearNow(){if(nowKey!=null){if(wordEl[nowKey])wordEl[nowKey].classList.remove('now');if(kidEl[nowKey])kidEl[nowKey].classList.remove('now')}nowKey=null}
 function paintNow(ms){
   let lo=0,hi=flat.length-1,f=-1;while(lo<=hi){const m=(lo+hi)>>1;if(flat[m].s<=ms){f=m;lo=m+1}else hi=m-1}
   const k=f>=0&&ms<=flat[f].e+250?flat[f].k:null; if(k===nowKey)return;
   clearNow(); nowKey=k;
   if(k!=null&&wordEl[k]){
     wordEl[k].classList.add('now');
-    if(Date.now()-userScrolledAt>2500)keepVisible(wordEl[k]);
+    if(kidEl[k]){kidEl[k].classList.add('now');const r=kidEl[k].getBoundingClientRect();if(r.top<90||r.bottom>window.innerHeight-40)kidEl[k].scrollIntoView({block:'center',behavior:'smooth'})}
+    else if($('kids').hidden&&Date.now()-userScrolledAt>2500)keepVisible(wordEl[k]);
     if(run&&run.kind==='read'){const v=Math.floor(k/1000);if(v!==bookmark){bookmark=v;LS.set('hk.bm.'+surah,v);runInfo()}}
   }
 }
@@ -1109,17 +1256,17 @@ function endTest(r){revealRange(r,false);document.body.classList.remove('testing
 async function startRec(onStop){
   if(!navigator.mediaDevices||!window.MediaRecorder){setInfo('Enregistrement impossible sur cet appareil');return false}
   try{
-    myAudio.pause(); audio.pause();
+    myAudio.pause(); audio.pause(); setSession('play-and-record');
     const stream=await navigator.mediaDevices.getUserMedia({audio:true});
     const type=['audio/mp4','audio/webm','audio/ogg'].find(t=>MediaRecorder.isTypeSupported&&MediaRecorder.isTypeSupported(t));
     const rec=new MediaRecorder(stream,type?{mimeType:type}:undefined); recChunks=[];
     rec.ondataavailable=e=>{if(e.data&&e.data.size)recChunks.push(e.data)};
-    rec.onstop=()=>{stream.getTracks().forEach(t=>t.stop());const b=new Blob(recChunks,{type:rec.mimeType||type||'audio/mp4'});if(myUrl)URL.revokeObjectURL(myUrl);myUrl=URL.createObjectURL(b);const cb=rec._cb;recorder=null;if(cb)cb()};
+    rec.onstop=()=>{stream.getTracks().forEach(t=>t.stop());setSession('playback');const b=new Blob(recChunks,{type:rec.mimeType||type||'audio/mp4'});if(myUrl)URL.revokeObjectURL(myUrl);myUrl=URL.createObjectURL(b);const cb=rec._cb;recorder=null;if(cb)cb()};
     rec._cb=onStop; recorder=rec; rec.start(); return true;
-  }catch(e){setInfo('Micro refusé','Autorise le micro : Réglages › Safari › Micro');return false}
+  }catch(e){setSession('playback');setInfo('Micro refusé','Autorise le micro : Réglages › Safari › Micro');return false}
 }
 function stopRec(silent){if(recorder&&recorder.state!=='inactive'){if(silent)recorder._cb=null;recorder.stop()}}
-function playMine(){if(!myUrl)return;stopRun(true);myAudio.src=myUrl;myAudio.play().catch(()=>{})}
+function playMine(){if(!myUrl)return;stopRun(true);setSession('playback');audio.pause();myAudio.src=myUrl;myAudio.play().catch(()=>setInfo('Touche à nouveau « Ma voix »'))}
 
 function testStart(){
   const r=curRange(); if(!r||!sel.b){setInfo('Choisis d’abord un passage','Touche le premier puis le dernier mot');return}
@@ -1156,6 +1303,7 @@ function check(r){
 function bindEnd(r){$('tAgain').onclick=()=>testStart();$('tEnd').onclick=()=>endTest(r);updateBar()}
 
 $('playBtn').onclick=()=>{
+  if(run&&run.blocked){setPlayIcon(true);playStep();return}
   if(run){stopRun();return}
   if(!timing){setInfo('La récitation charge encore…');return}
   if(settings.mode==='chain') return startChain();
@@ -1530,6 +1678,283 @@ function endQuiz(){
   const secs=sectionsFor(surah), nx=secs[lesSec.id+1];
   if(nx) add('Passage suivant : '+nx.t,()=>openLesson(nx));
   box.appendChild(g);
+}
+
+/* ---------- Espace enfants ---------- */
+const KID_PATH=[1].concat(Array.from({length:37},(_,i)=>114-i)); // Al-Fâtiha, puis An-Nâs → An-Naba'
+const AVATARS=['🦁','🐼','🦊','🐢','🐳','🦉','🐰','🐝','🐧','🦒'];
+const KCOLORS=['#5ED3B5','#FFB74D','#9C8CFF','#FF8A80','#4FC3F7','#AED581'];
+const KICO={
+  ear:'<svg viewBox="0 0 24 24" fill="none" stroke="#2B6CB0" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15v-3a8 8 0 0 1 16 0v3"/><rect x="3" y="14" width="4" height="6" rx="1.5"/><rect x="17" y="14" width="4" height="6" rx="1.5"/></svg>',
+  mouth:'<svg viewBox="0 0 24 24" fill="none" stroke="#D08A00" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16v10H9l-5 4z"/><path d="M8 9h8M8 12h5"/></svg>',
+  you:'<svg viewBox="0 0 24 24" fill="none" stroke="#E2574C" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16v10H9l-5 4z"/><path d="M8 9h8M8 12h5"/></svg>',
+  star:'<svg viewBox="0 0 24 24" fill="#E2574C"><path d="m12 2.8 2.8 5.8 6.3.9-4.6 4.4 1.1 6.3L12 17.3l-5.6 2.9 1.1-6.3-4.6-4.4 6.3-.9z"/></svg>',
+  play:'<svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>',
+  stop:'<svg viewBox="0 0 24 24"><path d="M7 7h10v10H7z"/></svg>'
+};
+let kids=LS.get('hk.kids',[]), kid=null, kidEl={}, kidPrevSurah=null, kTimers=[];
+const saveKids=()=>LS.set('hk.kids',kids);
+const kStars=k=>Object.values(k.stars||{}).reduce((a,b)=>a+b,0);
+const young=()=>!!kid&&kid.age==='4-6';
+const ageLabel=a=>a==='4-6'?'4 à 6 ans':'7 à 12 ans';
+function kClear(){kTimers.forEach(t=>clearTimeout(t));kTimers=[];stopRun(true);kidEl={};const c=document.querySelector('.k-confetti');if(c)c.remove()}
+function kView(html){kClear();$('kView').innerHTML=html;$('kids').scrollTop=0}
+function kTop(){
+  const t=$('kTop');
+  if(!kid) t.innerHTML='<b class="k-brand">Espace enfants</b><button class="k-exit" id="kExit">Sortir</button>';
+  else{
+    t.innerHTML='<button class="k-me" id="kMe" aria-label="Changer d’enfant"><span class="k-av"></span><b></b></button><span class="k-total">★ '+kStars(kid)+'</span><button class="k-exit" id="kExit">Sortir</button>';
+    t.querySelector('.k-av').textContent=kid.av; t.querySelector('.k-av').style.background=kid.color; t.querySelector('b').textContent=kid.name;
+    $('kMe').onclick=()=>{kid=null;kPicker()};
+  }
+  $('kExit').onclick=()=>gate(exitKids);
+}
+function openKids(){
+  closeSheets(); if(!$('lesson').hidden) closeLesson(); stopRun(true);
+  kidPrevSurah=surah; kid=null; $('kids').hidden=false; document.body.style.overflow='hidden'; kPicker();
+}
+function exitKids(){kClear();$('kids').hidden=true;document.body.style.overflow='';kid=null;if(kidPrevSurah&&surah!==kidPrevSurah)loadSurah(kidPrevSurah);else updateBar()}
+$('kidsBtn').onclick=openKids;
+
+/* Accès parents : une multiplication à résoudre */
+function gate(ok){
+  const a=3+Math.floor(Math.random()*7), b=3+Math.floor(Math.random()*7), g=$('kGate');
+  g.innerHTML='<div class="k-gate-in" role="dialog" aria-label="Espace parents"><b>Espace parents</b><p>Pour continuer, combien font '+a+' × '+b+' ?</p><input id="kGateIn" inputmode="numeric" pattern="[0-9]*" autocomplete="off" aria-label="Réponse"><div class="btns"><button class="btn" id="kGateNo">Annuler</button><button class="btn primary" id="kGateOk">Valider</button></div><p class="k-gate-msg" id="kGateMsg"></p></div>';
+  g.hidden=false; const inp=$('kGateIn'); setTimeout(()=>inp.focus(),60);
+  $('kGateNo').onclick=()=>{g.hidden=true};
+  const check=()=>{if(+inp.value===a*b){g.hidden=true;ok()}else{$('kGateMsg').textContent='Ce n’est pas la bonne réponse.';inp.value=''}};
+  $('kGateOk').onclick=check; inp.onkeydown=e=>{if(e.key==='Enter')check()};
+}
+
+/* Choix du profil */
+function kPicker(){
+  kid=null; kTop();
+  let h;
+  if(!kids.length){
+    h='<h1 class="k-h1">Bienvenue dans l’espace enfants</h1><p class="k-sub">Un parent crée d’abord un profil pour chaque enfant. Les enfants apprennent ensuite sur ce téléphone, chacun avec ses étoiles.</p><div class="k-profiles" style="grid-template-columns:1fr"><button class="k-prof" id="kAdd"><span class="k-av big plus">+</span><b>Créer un profil</b><small>espace parents</small></button></div>';
+  }else{
+    h='<h1 class="k-h1">Qui apprend aujourd’hui ?</h1><div class="k-profiles">';
+    kids.forEach((k,i)=>{h+='<button class="k-prof" data-i="'+i+'"><span class="k-av big" style="background:'+k.color+'">'+k.av+'</span><b></b><small>★ '+kStars(k)+'</small></button>'});
+    h+='<button class="k-prof" id="kAdd"><span class="k-av big plus">+</span><b>Ajouter</b><small>espace parents</small></button></div><button class="k-link" id="kParent">Espace parents : gérer les profils</button>';
+  }
+  kView(h);
+  document.querySelectorAll('.k-prof[data-i]').forEach(b=>{b.querySelector('b').textContent=kids[+b.dataset.i].name;b.onclick=()=>{kid=kids[+b.dataset.i];kPath()}});
+  $('kAdd').onclick=()=>gate(()=>kForm(null));
+  if($('kParent')) $('kParent').onclick=()=>gate(kParent);
+}
+function kForm(k){
+  const edit=!!k; k=k||{name:'',av:AVATARS[kids.length%AVATARS.length],age:'7-12'};
+  kTop();
+  kView('<button class="k-back" id="kBack">‹ Retour</button><h1 class="k-h1">'+(edit?'Modifier le profil':'Nouveau profil')+'</h1><div class="k-form"><div><label for="kName">Prénom</label><input id="kName" maxlength="20" autocomplete="off"></div><div><label>Âge</label><div class="k-age"><button data-a="4-6">4 à 6 ans<small>écoute et voix, peu de lecture</small></button><button data-a="7-12">7 à 12 ans<small>lecture et jeux de mots</small></button></div></div><div><label>Avatar</label><div class="k-avs"></div></div><button class="k-btn go" id="kSave">Enregistrer</button><p class="k-gate-msg" id="kFormMsg"></p></div>');
+  $('kName').value=k.name;
+  let age=k.age, av=k.av;
+  const paintAge=()=>document.querySelectorAll('.k-age button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.a===age));
+  document.querySelectorAll('.k-age button').forEach(b=>b.onclick=()=>{age=b.dataset.a;paintAge()}); paintAge();
+  const box=document.querySelector('.k-avs');
+  AVATARS.forEach(a=>{const b=document.createElement('button');b.textContent=a;b.setAttribute('aria-label','Avatar '+a);b.onclick=()=>{av=a;[...box.children].forEach(x=>x.setAttribute('aria-pressed',x===b))};b.setAttribute('aria-pressed',a===av);box.appendChild(b)});
+  $('kBack').onclick=()=>edit?kParent():kPicker();
+  $('kSave').onclick=()=>{
+    const name=$('kName').value.trim(); if(!name){$('kFormMsg').textContent='Écris le prénom de l’enfant.';return}
+    if(edit){Object.assign(k,{name,age,av})}
+    else kids.push({id:Date.now(),name,age,av,color:KCOLORS[kids.length%KCOLORS.length],stars:{},done:{}});
+    saveKids(); edit?kParent():kPicker();
+  };
+}
+function kParent(){
+  kid=null; kTop();
+  kView('<button class="k-back" id="kBack">‹ Retour aux profils</button><h1 class="k-h1">Espace parents</h1><p class="k-sub">Gère les profils et valide une sourate si ton enfant la connaît déjà.</p><div class="k-plist" id="kPl"></div><button class="k-link" id="kAdd2">+ Ajouter un enfant</button>');
+  $('kBack').onclick=kPicker; $('kAdd2').onclick=()=>kForm(null);
+  const pl=$('kPl');
+  kids.forEach((k,i)=>{
+    const r=document.createElement('div'); r.className='k-prow';
+    r.innerHTML='<span class="k-av"></span><div><b></b><small></small></div><button class="k-sbtn" data-x="s">Sourates</button><button class="k-sbtn" data-x="e">Modifier</button><button class="k-sbtn danger" data-x="d">Supprimer</button>';
+    r.querySelector('.k-av').textContent=k.av; r.querySelector('.k-av').style.background=k.color;
+    r.querySelector('b').textContent=k.name; r.querySelector('small').textContent=ageLabel(k.age)+' · ★ '+kStars(k);
+    r.querySelector('[data-x=s]').onclick=()=>kParentSurahs(k);
+    r.querySelector('[data-x=e]').onclick=()=>kForm(k);
+    const d=r.querySelector('[data-x=d]'); d.onclick=()=>{if(d.dataset.c){kids.splice(i,1);saveKids();kParent()}else{d.dataset.c=1;d.textContent='Confirmer ?'}};
+    pl.appendChild(r);
+  });
+}
+function kParentSurahs(k){
+  kView('<button class="k-back" id="kBack">‹ Espace parents</button><h1 class="k-h1"></h1><p class="k-sub">« Valider » donne 3 étoiles et débloque la sourate suivante.</p><div class="k-plist" id="kSl"></div>');
+  document.querySelector('.k-h1').textContent='Sourates de '+k.name;
+  $('kBack').onclick=kParent;
+  const box=$('kSl');
+  KID_PATH.forEach(id=>{
+    const c=CHAPTERS[id-1], st=k.stars[id]||0, r=document.createElement('div'); r.className='k-srow';
+    r.innerHTML='<b></b><span class="k-st">'+starsTxt(st)+'</span><button class="k-sbtn"></button>';
+    r.querySelector('b').textContent=c.id+'. '+c.name_simple;
+    const b=r.querySelector('button'); b.textContent=st===3?'Remettre à 0':'Valider';
+    b.onclick=()=>{k.stars[id]=st===3?0:3;saveKids();kParentSurahs(k)};
+    box.appendChild(r);
+  });
+}
+
+/* Le chemin */
+const kUnlocked=(k,i)=>i===0||(k.stars[KID_PATH[i-1]]||0)>=1;
+function kPath(){
+  kTop();
+  let h='<h1 class="k-h1"></h1><p class="k-sub">'+(young()?'Touche le rond qui saute pour commencer !':'Choisis ta sourate sur le chemin.')+'</p><div class="k-path">', cur=-1;
+  KID_PATH.forEach((id,i)=>{
+    const st=kid.stars[id]||0, un=kUnlocked(kid,i), c=CHAPTERS[id-1];
+    if(un&&!st&&cur<0) cur=i;
+    const pos=[1,2,1,0][i%4];
+    h+='<div class="k-row p'+pos+'">'+(i?'<span class="k-trail"></span>':'')+'<button class="k-stop'+(un?'':' locked')+(i===cur?' cur':'')+(st===3?' gold':'')+'" data-id="'+id+'"'+(un?'':' disabled aria-disabled="true"')+'><span class="k-dot" style="'+(un?'background:'+KCOLORS[i%KCOLORS.length]:'')+'">'+(un?(st===3?'★':fmtN(id)):'🔒')+'</span><b>'+esc(c.name_simple)+'</b><span class="k-st">'+starsTxt(st)+'</span></button></div>';
+  });
+  h+='</div>';
+  kView(h);
+  document.querySelector('.k-h1').textContent='Salam '+kid.name+' !';
+  document.querySelectorAll('.k-stop:not(.locked)').forEach(b=>b.onclick=()=>kSurah(+b.dataset.id));
+  setTimeout(()=>{const c=document.querySelector('.k-stop.cur');if(c)c.scrollIntoView({block:'center'})},60);
+}
+
+/* Une sourate */
+async function kSurah(id){
+  kTop(); const c=CHAPTERS[id-1];
+  kView('<button class="k-back" id="kBack">‹ Mon chemin</button><div class="k-title"><span class="k-ar"></span><b></b><small></small></div><div id="kActs"><p class="k-load">Je prépare la sourate…</p></div>');
+  document.querySelector('.k-title .k-ar').textContent=c.name_arabic; document.querySelector('.k-title b').textContent=c.name_simple;
+  document.querySelector('.k-title small').textContent=c.translated_name.name+' · '+c.verses_count+' versets';
+  $('kBack').onclick=kPath;
+  if(surah!==id||!timing) await loadSurah(id);
+  if(!$('kActs')) return;
+  if(!verses.length||!timing){$('kActs').innerHTML='<p class="k-load">Oups, la sourate n’a pas pu se charger. Vérifie la connexion internet.</p>';return}
+  const d=kid.done[id]||{}, st=kid.stars[id]||0;
+  const act=(key,cls,ico,title,sub,mark)=>'<button class="k-act '+cls+'" data-a="'+key+'"><span class="k-ico">'+ico+'</span><span><b>'+title+'</b><small>'+sub+'</small></span><span class="k-check">'+mark+'</span></button>';
+  $('kActs').innerHTML='<div class="k-acts">'+
+    act('listen','mint',KICO.ear,'Écoute','Toute la sourate, mot après mot',d.listen?'✓':'')+
+    act('repeat','sun',KICO.mouth,'Répète après moi','Petit morceau par petit morceau',d.repeat?'✓':'')+
+    act('game','coral',KICO.star,'Le jeu','Quel mot vient après ?',st?starsTxt(st):'')+'</div>';
+  document.querySelectorAll('.k-act').forEach(b=>b.onclick=()=>({listen:kListen,repeat:kRepeat,game:kGame})[b.dataset.a](id));
+}
+function kMark(id,key){kid.done[id]=Object.assign(kid.done[id]||{},{[key]:true});saveKids()}
+function kChunks(){
+  const max=young()?4:6, out=[];
+  for(const v of verses){
+    const ws=allWords.filter(w=>w.v===v.n), n=Math.ceil(ws.length/max);
+    for(let i=0;i<n;i++){const part=ws.slice(Math.floor(i*ws.length/n),Math.floor((i+1)*ws.length/n));if(part.length)out.push({v:v.n,ws:part,a:{v:v.n,p:part[0].p},b:{v:v.n,p:part[part.length-1].p}})}
+  }
+  return out;
+}
+function kWords(box,ws,withNums){
+  kidEl={}; box.innerHTML='';
+  ws.forEach((w,i)=>{
+    const s=document.createElement('span'); s.className='kw'; s.textContent=w.t; kidEl[w.k]=s; box.appendChild(s); box.appendChild(document.createTextNode(' '));
+    if(withNums&&(!ws[i+1]||ws[i+1].v!==w.v)){const n=document.createElement('span');n.className='k-vn';n.textContent=fmtN(w.v);box.appendChild(n);box.appendChild(document.createTextNode(' '))}
+  });
+}
+function kHead(id,title){
+  return '<button class="k-back" id="kBack">‹ '+esc(CHAPTERS[id-1].name_simple)+'</button><h1 class="k-h1">'+title+'</h1>';
+}
+
+/* Écoute */
+function kListen(id){
+  kTop();
+  kView(kHead(id,'Écoute')+'<p class="k-sub">Écoute bien et suis les mots qui s’allument.</p><div class="k-text" id="kTxt"></div><button class="k-big-btn" id="kPlay" aria-label="Écouter">'+KICO.play+'</button><p class="k-label" id="kLbl">Touche pour écouter</p>');
+  $('kBack').onclick=()=>kSurah(id);
+  kWords($('kTxt'),allWords,true);
+  const btn=$('kPlay');
+  btn.onclick=()=>{
+    if(run){stopRun(true);btn.innerHTML=KICO.play;$('kLbl').textContent='Touche pour écouter';return}
+    const f=allWords[0], l=allWords[allWords.length-1];
+    btn.innerHTML=KICO.stop; $('kLbl').textContent='J’écoute…';
+    startRun([{a:{v:f.v,p:f.p},b:{v:l.v,p:l.p}}],1,'listen',()=>{
+      kMark(id,'listen'); if(!$('kPlay'))return; btn.innerHTML=KICO.play; $('kLbl').textContent='Bravo, tu as tout écouté !'; confetti();
+    });
+  };
+}
+
+/* Répète après moi */
+function kRepeat(id){
+  kTop();
+  const chunks=kChunks(), factor=young()?1.7:1.3;
+  const gapOf=dur=>Math.min(10000,Math.max(1800,dur*factor+700));
+  kView(kHead(id,'Répète après moi')+'<p class="k-count" id="kCnt"></p><div class="k-phase ear" id="kPh"></div><div class="k-timer"><i id="kTm"></i></div><div class="k-text big" id="kTxt"></div><div class="k-row-btns"><button class="k-btn go wide" id="kGo">▶ Commencer</button></div>');
+  $('kBack').onclick=()=>kSurah(id);
+  const show=i=>{const c=chunks[Math.min(i,chunks.length-1)];kWords($('kTxt'),c.ws,false);$('kCnt').textContent='Morceau '+(Math.min(i,chunks.length-1)+1)+' sur '+chunks.length};
+  const phase=(kind,ms)=>{
+    const p=$('kPh'), t=$('kTm'); if(!p) return;
+    p.className='k-phase '+(kind==='you'?'you':'ear');
+    p.innerHTML=(kind==='you'?KICO.you+'<span>À toi !</span>':KICO.ear+'<span>Écoute bien…</span>');
+    t.style.transition='none'; t.style.width=kind==='you'?'100%':'0';
+    if(kind==='you'){void t.offsetWidth;t.style.transition='width '+ms+'ms linear';t.style.width='0'}
+  };
+  show(0); phase('ear');
+  const go=$('kGo');
+  go.onclick=()=>{
+    if(run||kTimers.length){kClear();show(0);phase('ear');go.textContent='▶ Commencer';return}
+    go.textContent='■ Arrêter';
+    const ranges=chunks.map(c=>({a:c.a,b:c.b}));
+    startRun(ranges,1,'kid',()=>{
+      const last=chunks[chunks.length-1], tt=rangeTime(last.a,last.b), g=gapOf(tt?tt.e-tt.s:2000);
+      phase('you',g);
+      kTimers.push(setTimeout(()=>{kTimers=[];kMark(id,'repeat');if(!$('kGo'))return;$('kPh').innerHTML='<span>Bravo, c’est fini !</span>';$('kPh').className='k-phase ear';go.textContent='↻ Recommencer';confetti()},g));
+    },'',{gapFn:gapOf,onStep:i=>{show(i);phase('ear')},onGap:g=>phase('you',g)});
+  };
+}
+
+/* Le jeu : quel mot vient après ? */
+function kGame(id){
+  kTop();
+  const pool=kChunks().filter(c=>c.ws.length>=2), rounds=Math.min(young()?4:6,Math.max(1,pool.length));
+  const picks=shuffle(pool).slice(0,rounds), g={i:0,score:0,qs:picks.map(c=>({c,k:1+Math.floor(Math.random()*(c.ws.length-1))}))};
+  kView(kHead(id,'Le jeu')+'<p class="k-sub">'+(young()?'Écoute le début, puis dis le mot qui vient après !':'Écoute le début, puis trouve le mot qui vient après.')+'</p><div id="kGame"></div>');
+  $('kBack').onclick=()=>kSurah(id);
+  const box=$('kGame');
+  const start=document.createElement('button'); start.className='k-btn go'; start.style.width='100%'; start.textContent='▶ Commencer le jeu';
+  start.onclick=()=>round(); box.appendChild(start);
+  function playFirst(q){startRun([{a:{v:q.c.v,p:q.c.ws[0].p},b:{v:q.c.v,p:q.c.ws[q.k-1].p}}],1,'listen')}
+  function playRest(q){startRun([{a:{v:q.c.v,p:q.c.ws[q.k].p},b:{v:q.c.v,p:q.c.ws[q.c.ws.length-1].p}}],1,'listen')}
+  function round(){
+    const q=g.qs[g.i]; stopRun(true);
+    box.innerHTML='<p class="k-count">Question '+(g.i+1)+' sur '+g.qs.length+' · ★ '+g.score+'</p><div class="k-text big" id="kTxt"></div><div id="kAns"></div><p class="k-fb" id="kFb"></p><div class="k-row-btns" id="kCtl"><button class="k-btn" id="kAgain">↻ Réécouter</button></div>';
+    const txt=$('kTxt'); kWords(txt,q.c.ws.slice(0,q.k),false);
+    const hole=document.createElement('span'); hole.className='k-hole'; hole.textContent='؟'; txt.appendChild(hole);
+    $('kAgain').onclick=()=>playFirst(q);
+    playFirst(q);
+    const reveal=()=>{hole.textContent=q.c.ws[q.k].t;hole.classList.add('filled');playRest(q)};
+    if(young()){
+      const a=$('kAns'); a.innerHTML='<p class="k-say">'+KICO.you+'<span>Dis le mot qui vient après !</span></p><div class="k-row-btns"><button class="k-btn go wide" id="kReveal">Écouter la réponse</button></div>';
+      $('kReveal').onclick=()=>{
+        reveal(); a.innerHTML='<p class="k-q">Tu l’avais dit ?</p><div class="k-row-btns"><button class="k-btn yes" id="kYes">Oui !</button><button class="k-btn" id="kNo">Pas encore</button></div>';
+        $('kYes').onclick=()=>answered(true); $('kNo').onclick=()=>answered(false);
+      };
+    }else{
+      const correct=q.c.ws[q.k].t, d=distractors(correct,allWords,2), opts=shuffle([correct,...d]);
+      const a=$('kAns'); a.className='k-opts';
+      opts.forEach((o,i)=>{const b=document.createElement('button');b.className='k-opt o'+i;b.textContent=o;b.onclick=()=>{
+        [...a.children].forEach(x=>{x.disabled=true;x.classList.add(x.textContent===correct?'ok':'ko')});
+        if(o!==correct) b.classList.add('shake');
+        reveal(); answered(o===correct);
+      };a.appendChild(b)});
+    }
+  }
+  function answered(ok){
+    if(ok) g.score++;
+    const fb=$('kFb'); fb.className='k-fb '+(ok?'ok':'ko'); fb.textContent=ok?pickOne(['Bravo !','Super !','Machallah, bien joué !']):'Presque ! Écoute bien la réponse.';
+    const ctl=$('kCtl'); ctl.innerHTML='';
+    const nx=document.createElement('button'); nx.className='k-btn go wide'; nx.textContent=g.i+1<g.qs.length?'Question suivante →':'Voir mes étoiles';
+    nx.onclick=()=>{g.i++; if(g.i<g.qs.length) round(); else kResult(id,g.score,g.qs.length)};
+    ctl.appendChild(nx);
+  }
+}
+function confetti(){
+  const old=document.querySelector('.k-confetti'); if(old) old.remove();
+  const c=document.createElement('div'); c.className='k-confetti';
+  for(let i=0;i<28;i++){const s=document.createElement('i');s.style.left=Math.random()*100+'%';s.style.background=KCOLORS[i%KCOLORS.length];s.style.animationDelay=(Math.random()*0.8)+'s';s.style.transform='rotate('+Math.random()*180+'deg)';c.appendChild(s)}
+  $('kids').appendChild(c); kTimers.push(setTimeout(()=>c.remove(),4000));
+}
+function kResult(id,score,total){
+  const stars=score>=total-(total>4?1:0)?3:(score>=Math.ceil(total/2)?2:(score>=1?1:0));
+  const before=kid.stars[id]||0, idx=KID_PATH.indexOf(id), nextId=KID_PATH[idx+1];
+  const wasLocked=nextId&&!kUnlocked(kid,idx+1);
+  kid.stars[id]=Math.max(before,stars); kMark(id,'game'); saveKids(); kTop();
+  const unlocked=wasLocked&&kUnlocked(kid,idx+1);
+  const msg=stars===3?'Tu connais très bien cette sourate !':stars===2?'Très bien ! Encore un peu d’entraînement.':stars===1?'C’est un bon début, continue !':'Écoute encore la sourate, puis rejoue.';
+  kView('<div class="k-result"><div class="k-stars">'+[0,1,2].map(i=>'<span class="'+(i<stars?'':'off')+'">★</span>').join('')+'</div><h2></h2><p>'+score+' bonne'+(score>1?'s':'')+' réponse'+(score>1?'s':'')+' sur '+total+'</p><p>'+msg+'</p>'+(unlocked?'<div class="k-unlock">Nouvelle sourate débloquée : '+esc(CHAPTERS[nextId-1].name_simple)+' !</div>':'')+'<div class="k-row-btns"><button class="k-btn" id="kReplay">↻ Rejouer</button><button class="k-btn go" id="kToPath">Mon chemin</button></div></div>');
+  document.querySelector('.k-result h2').textContent=stars?'Bravo '+kid.name+' !':'Continue '+kid.name+' !';
+  $('kReplay').onclick=()=>kGame(id); $('kToPath').onclick=kPath;
+  if(stars) confetti();
 }
 
 async function init(){
