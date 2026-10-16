@@ -4,7 +4,19 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Sourate Al-Kahf">
+<meta name="apple-mobile-web-app-title" content="Al-Kahf">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="apple-touch-startup-image" href="splash-750x1334.png" media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
+<link rel="apple-touch-startup-image" href="splash-1170x2532.png" media="(device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
+<link rel="apple-touch-startup-image" href="splash-1179x2556.png" media="(device-width: 393px) and (device-height: 852px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
+<link rel="apple-touch-startup-image" href="splash-1206x2622.png" media="(device-width: 402px) and (device-height: 874px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
+<link rel="apple-touch-startup-image" href="splash-1284x2778.png" media="(device-width: 428px) and (device-height: 926px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
+<link rel="apple-touch-startup-image" href="splash-1290x2796.png" media="(device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
+<link rel="apple-touch-startup-image" href="splash-1320x2868.png" media="(device-width: 440px) and (device-height: 956px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
 <meta name="theme-color" content="#EFE6D0" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#120F0A" media="(prefers-color-scheme: dark)">
 <title>Sourate Al-Kahf</title>
@@ -98,6 +110,7 @@ body.masque .w:not(.now):not(.reveal){filter:blur(7px)}
 .group > label,.group > .lbl{display:block;font-size:.78rem;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:8px}
 .opts{display:flex;gap:6px;flex-wrap:wrap}
 .opts button{flex:1 0 auto;min-width:48px;border:1px solid var(--line);background:var(--bg);border-radius:10px;padding:10px 8px;font-variant-numeric:tabular-nums}
+#hideBtn{flex:1 1 100%;white-space:normal;line-height:1.3}
 .opts button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:700}
 select{width:100%;padding:11px 12px;border-radius:10px;border:1px solid var(--line);background:var(--bg)}
 .sizebox{display:flex;align-items:center;gap:10px}
@@ -133,6 +146,12 @@ select{width:100%;padding:11px 12px;border-radius:10px;border:1px solid var(--li
 .small-btn{border:1px solid var(--line);background:var(--bg);border-radius:9px;padding:8px 12px;font-size:.85rem;font-weight:700}
 textarea{width:100%;min-height:70px;border-radius:10px;border:1px solid var(--line);background:var(--bg);padding:10px;font-size:.8rem}
 .note{font-size:.85rem;color:var(--muted);line-height:1.45;margin:6px 0 0}
+.install{margin:0 auto 8px;max-width:760px;background:var(--page);border:1px solid var(--gold);border-radius:12px;padding:10px 12px;display:flex;gap:10px;align-items:center;font-size:.9rem;line-height:1.4}
+.install img{width:40px;height:40px;border-radius:10px;flex:0 0 auto}
+.install div{flex:1;min-width:0}
+.install button{border:0;background:none;padding:6px;font-size:1.1rem;color:var(--muted)}
+.dlbar{height:6px;border-radius:3px;background:var(--line);overflow:hidden;margin-top:8px}
+.dlbar i{display:block;height:100%;width:0;background:var(--accent);transition:width .2s}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
 </style>
 </head>
@@ -149,6 +168,11 @@ textarea{width:100%;min-height:70px;border-radius:10px;border:1px solid var(--li
 </header>
 
 <main>
+  <div class="install" id="installTip" hidden>
+    <img src="icon-180.png" alt="">
+    <div><b>Installe l’app sur ton iPhone</b><br>Touche <b>Partager</b> puis <b>« Sur l’écran d’accueil »</b>.</div>
+    <button id="installClose" aria-label="Fermer">✕</button>
+  </div>
   <div class="page">
     <div class="cartouche">سُورَةُ الكَهْفِ</div>
     <div class="meta">110 versets · mecquoise</div>
@@ -182,6 +206,11 @@ textarea{width:100%;min-height:70px;border-radius:10px;border:1px solid var(--li
       <div class="opts" style="margin-top:10px"><button id="hideBtn" aria-pressed="false">Masquer le texte (seul le mot récité reste visible)</button></div>
     </div>
     <div class="group"><label for="reciter">Récitateur</label><select id="reciter"></select></div>
+    <div class="group"><span class="lbl">Hors connexion</span>
+      <p class="note" id="offMsg" style="margin:0 0 8px">Télécharge la récitation pour t’entraîner sans internet (métro, avion…).</p>
+      <div class="btns"><button class="btn primary" id="dlBtn">Télécharger cette récitation</button><button class="btn ghost" id="dlDel" hidden>Supprimer</button></div>
+      <div class="dlbar" id="dlBar" hidden><i id="dlFill"></i></div>
+    </div>
   </div>
 </div>
 
@@ -612,11 +641,73 @@ if('mediaSession' in navigator){try{
   navigator.mediaSession.setActionHandler('previoustrack',()=>{if(run){clearTimeout(gapTimer);gapTimer=null;playStep()}});
 }catch(e){}}
 
+/* ---------- Audio hors connexion (IndexedDB) ---------- */
+const idb={
+  open(){return new Promise((res,rej)=>{const r=indexedDB.open('kahf',1);r.onupgradeneeded=()=>r.result.createObjectStore('audio');r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)})},
+  async get(k){const db=await this.open();return new Promise((res,rej)=>{const q=db.transaction('audio').objectStore('audio').get(k);q.onsuccess=()=>res(q.result);q.onerror=()=>rej(q.error)})},
+  async set(k,v){const db=await this.open();return new Promise((res,rej)=>{const t=db.transaction('audio','readwrite');t.objectStore('audio').put(v,k);t.oncomplete=()=>res();t.onerror=()=>rej(t.error)})},
+  async del(k){const db=await this.open();return new Promise((res,rej)=>{const t=db.transaction('audio','readwrite');t.objectStore('audio').delete(k);t.oncomplete=()=>res();t.onerror=()=>rej(t.error)})}
+};
+let objUrl=null, downloading=false;
+const mb=n=>(n/1048576).toFixed(0)+' Mo';
+async function offlineBlob(id){try{return await idb.get('r'+id)}catch(e){return null}}
+async function paintOffline(){
+  const b=await offlineBlob(reciterId);
+  $('dlDel').hidden=!b; $('dlBtn').hidden=!!b||downloading;
+  if(!downloading) $('offMsg').textContent=b?'Récitation disponible sans internet ('+mb(b.size)+').':'Télécharge la récitation pour t’entraîner sans internet (métro, avion…).';
+}
+$('dlBtn').onclick=async()=>{
+  if(!timing||downloading) return;
+  downloading=true; $('dlBtn').hidden=true; $('dlBar').hidden=false; $('dlFill').style.width='0';
+  $('offMsg').textContent='Téléchargement en cours… garde l’app ouverte.';
+  const id=reciterId;
+  try{
+    if(navigator.storage&&navigator.storage.persist) navigator.storage.persist().catch(()=>{});
+    const res=await fetch(timing.url,{mode:'cors'}); if(!res.ok) throw new Error('HTTP '+res.status);
+    const total=+res.headers.get('content-length')||0, chunks=[]; let got=0;
+    if(res.body&&res.body.getReader){
+      const rd=res.body.getReader();
+      for(;;){const {done,value}=await rd.read(); if(done)break; chunks.push(value); got+=value.length;
+        if(total){$('dlFill').style.width=Math.round(got*100/total)+'%'; $('offMsg').textContent='Téléchargement… '+mb(got)+' sur '+mb(total);} else $('offMsg').textContent='Téléchargement… '+mb(got);}
+    } else { chunks.push(new Uint8Array(await res.arrayBuffer())); }
+    const blob=new Blob(chunks,{type:res.headers.get('content-type')||'audio/mpeg'});
+    await idb.set('r'+id,blob);
+    downloading=false; $('dlBar').hidden=true;
+    if(id===reciterId) useAudio(blob);
+    paintOffline();
+  }catch(e){
+    downloading=false; $('dlBar').hidden=true; $('dlBtn').hidden=false;
+    $('offMsg').textContent='Le téléchargement n’a pas abouti. Vérifie ta connexion et réessaie. Si ça recommence, ce récitateur ne permet pas le téléchargement : la lecture en ligne reste possible.';
+  }
+};
+$('dlDel').onclick=async()=>{
+  if(!$('dlDel').dataset.c){$('dlDel').dataset.c=1;$('dlDel').textContent='Confirmer ?';return}
+  delete $('dlDel').dataset.c; $('dlDel').textContent='Supprimer';
+  try{await idb.del('r'+reciterId)}catch(e){}
+  if(objUrl){URL.revokeObjectURL(objUrl);objUrl=null}
+  if(timing){stopRun(true);audio.src=timing.url;audio.load()}
+  paintOffline();
+};
+function useAudio(blob){
+  const wasRunning=!!run; if(wasRunning) stopRun(true);
+  if(objUrl) URL.revokeObjectURL(objUrl);
+  objUrl=URL.createObjectURL(blob); audio.src=objUrl; audio.load();
+}
+
+/* ---------- Installation ---------- */
+(function(){
+  const standalone=window.navigator.standalone||matchMedia('(display-mode: standalone)').matches;
+  const ios=/iphone|ipad|ipod/i.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+  if(ios&&!standalone&&!LS.get('hk.installTipClosed',false)) $('installTip').hidden=false;
+  $('installClose').onclick=()=>{$('installTip').hidden=true;LS.set('hk.installTipClosed',true)};
+  if('serviceWorker' in navigator) window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
+})();
+
 async function chooseReciter(id){
   stopRun(true); reciterId=id; LS.set('hk.reciter',id); timing=null;
   setInfo('Chargement de la récitation…','');
   try{
-    timing=await loadTiming(id); audio.src=timing.url; audio.load(); buildFlat();
+    timing=await loadTiming(id); const b=await offlineBlob(id); if(b) useAudio(b); else {if(objUrl){URL.revokeObjectURL(objUrl);objUrl=null} audio.src=timing.url; audio.load();} buildFlat(); paintOffline();
     if('mediaSession' in navigator){try{navigator.mediaSession.metadata=new MediaMetadata({title:'Sourate Al-Kahf',artist:($('reciter').selectedOptions[0]||{}).textContent||''})}catch(e){}}
     updateBar();
   }catch(e){setInfo('Récitation introuvable','Choisis un autre récitateur dans les réglages')}
