@@ -207,6 +207,21 @@ textarea{width:100%;min-height:70px;border-radius:10px;border:1px solid var(--li
 .surah .ar{font-family:var(--f-orn);font-size:1.3rem}
 .surah .pct{font-size:.75rem;font-weight:700;color:var(--done);min-width:36px;text-align:right}
 .surah .pct.l{color:var(--gold)}
+.srow{display:flex;align-items:center;gap:6px;border-bottom:1px solid var(--line)}
+.srow .surah{border-bottom:0;flex:1;min-width:0}
+.scheck{flex:0 0 auto;display:flex;flex-direction:column;align-items:center;gap:2px;border:0;background:none;padding:6px 4px;font-size:.68rem;color:var(--muted);min-width:58px}
+.scheck i{width:30px;height:30px;border-radius:50%;border:2px solid var(--line);display:grid;place-items:center;font-style:normal;font-weight:700;color:transparent;background:var(--page)}
+.scheck[aria-pressed="true"] i{background:var(--done);border-color:var(--done);color:var(--page)}
+.scheck[aria-pressed="true"]{color:var(--done);font-weight:700}
+.vpop{position:fixed;z-index:35;width:236px;background:var(--page);border:1px solid var(--gold);border-radius:14px;box-shadow:0 10px 28px rgba(40,28,8,.22);padding:6px;display:grid;gap:2px}
+.vpop b{display:block;font-size:.8rem;color:var(--muted);padding:6px 8px 4px;text-transform:uppercase;letter-spacing:.06em}
+.vpop button{border:0;background:none;text-align:left;padding:10px;border-radius:10px;font-size:.95rem;display:flex;align-items:center;gap:10px}
+.vpop button:active{background:var(--bg)}
+.vpop button[aria-pressed="true"]{background:var(--bg);font-weight:700}
+.vpop .dot{width:14px;height:14px;border-radius:50%;flex:0 0 auto;border:2px solid var(--line)}
+.vpop .dot.m{background:var(--done);border-color:var(--done)}
+.vpop .dot.l{background:var(--learn);border-color:var(--learn)}
+.vpop hr{border:0;border-top:1px solid var(--line);margin:2px 4px}
 .tabs{margin:4px 0 2px}
 .tabs button{flex:1 1 0}
 .cell.sur{font-size:.72rem}
@@ -481,6 +496,7 @@ textarea{width:100%;min-height:70px;border-radius:10px;border:1px solid var(--li
   </div>
 </main>
 
+<div class="vpop" id="vpop" hidden role="menu"></div>
 <div class="testcard" id="testCard" hidden><div class="testcard-in" id="testIn"></div></div>
 
 <div class="bar" id="bar">
@@ -824,7 +840,7 @@ function renderText(){
 }
 $('text').addEventListener('click',e=>{
   const num=e.target.closest('.num');
-  if(num){const n=+num.dataset.verse,v=verses.find(x=>x.n===n);setSel({v:n,p:v.w[0].p},{v:n,p:v.w[v.w.length-1].p});return}
+  if(num){openVerseMenu(+num.dataset.verse,num);return}
   const w=e.target.closest('.w'); if(!w) return;
   const pt={v:+w.dataset.v,p:+w.dataset.p};
   if(!sel.a||sel.b) setSel(pt,null); else setSel(sel.a,pt);
@@ -936,6 +952,46 @@ function coverage(){
   }
   return {vs,pct:allWords.length?Math.round(mWords*100/allWords.length):0};
 }
+/* Cocher un verset ou une sourate */
+function setVerseStates(list,st){
+  // si la sourate entière était cochée, on fige d'abord ses versets en « maîtrisé »
+  if(smanual[surah]==='m'){for(const v of verses) if(!manual[v.n]) manual[v.n]='m'; delete smanual[surah]; LS.set('hk.smanual',smanual)}
+  for(const n of list) manual[n]=st;
+  LS.set('hk.manual.'+surah,manual); refreshProgress();
+}
+function setSurahMastered(id,on){
+  const sums=LS.get('hk.sum',{});
+  if(on){smanual[id]='m'; LS.set('hk.manual.'+id,{});}
+  else{delete smanual[id]; LS.set('hk.manual.'+id,{}); if(sums[id]){sums[id].mv=0;sums[id].any=0;LS.set('hk.sum',sums)}}
+  LS.set('hk.smanual',smanual);
+  if(id===surah){manual={}; refreshProgress()}
+}
+function closeVerseMenu(){$('vpop').hidden=true}
+function openVerseMenu(n,el){
+  const pop=$('vpop'), v=verses.find(x=>x.n===n); if(!v) return;
+  const cur=coverage().vs[n]||'';
+  const item=(act,dot,label,on)=>'<button data-a="'+act+'"'+(on!=null?' aria-pressed="'+on+'"':'')+'>'+(dot!=null?'<span class="dot '+dot+'"></span>':'')+label+'</button>';
+  pop.innerHTML='<b>Verset '+n+'</b>'+
+    item('sel',null,'▶ Travailler ce verset')+'<hr>'+
+    item('m','m','Je le connais par cœur',cur==='m')+
+    item('l','l','En cours',cur==='l')+
+    item('n','','Pas commencé',cur==='')+
+    (n>verses[0].n?'<hr>'+item('upto','m','Tous jusqu’ici : par cœur'):'');
+  pop.hidden=false; vpopY=window.scrollY;
+  const r=el.getBoundingClientRect(), W=pop.offsetWidth, H=pop.offsetHeight;
+  let left=Math.min(Math.max(8,r.left+r.width/2-W/2),window.innerWidth-W-8);
+  let top=r.bottom+8; if(top+H>window.innerHeight-$('bar').offsetHeight-8) top=Math.max(8,r.top-H-8);
+  pop.style.left=left+'px'; pop.style.top=top+'px';
+  pop.querySelectorAll('button').forEach(b=>b.onclick=()=>{
+    const a=b.dataset.a; closeVerseMenu();
+    if(a==='sel') setSel({v:n,p:v.w[0].p},{v:n,p:v.w[v.w.length-1].p});
+    else if(a==='upto') setVerseStates(verses.filter(x=>x.n<=n).map(x=>x.n),'m');
+    else setVerseStates([n],a);
+    if(a!=='sel') setInfo('Verset '+n+' : '+(a==='m'||a==='upto'?'par cœur ✓':a==='l'?'en cours':'pas commencé'),a==='upto'?'Versets 1 à '+n+' cochés':null);
+  });
+}
+document.addEventListener('click',e=>{if(!$('vpop').hidden&&!e.target.closest('#vpop')&&!e.target.closest('.num'))closeVerseMenu()},true);
+let vpopY=0; window.addEventListener('scroll',()=>{if(!$('vpop').hidden&&Math.abs(window.scrollY-vpopY)>60)closeVerseMenu()},{passive:true});
 function refreshProgress(){
   if(!verses.length) return;
   const c=coverage(), due=parts.filter(isDue).length;
@@ -1010,7 +1066,7 @@ function renderProgress(c){
     cell.onclick=()=>{
       if(!marking){closeSheets();scrollToWord({v:v.n,p:v.w[0].p});return}
       const cur=c.vs[v.n]||'', next=cur===''?'l':cur==='l'?'m':'n';
-      manual[v.n]=next; LS.set('hk.manual.'+surah,manual); refreshProgress(); renderProgress();
+      setVerseStates([v.n],next); renderProgress();
     };
     g.appendChild(cell);
   }
@@ -1088,6 +1144,7 @@ function renderSurahs(){
   box.innerHTML='';
   const list=chapters.filter(c=>!q||String(c.id)===q||norm(c.name_simple).includes(q)||norm(c.translated_name.name).includes(q)||(raw&&c.name_arabic.includes(raw)));
   for(const c of list){
+    const row=document.createElement('div'); row.className='srow';
     const b=document.createElement('button'); b.className='surah'+(c.id===surah?' cur':'');
     const inf=surahInfo(c.id,sums);
     b.innerHTML='<span class="n">'+fmtN(c.id)+'</span><div><b></b><small></small></div><span class="ar"></span><span class="pct '+(inf.st||'')+'">'+(inf.st==='m'?'✓':(inf.st?(inf.pct?inf.pct+' %':'en cours'):''))+'</span>';
@@ -1095,7 +1152,17 @@ function renderSurahs(){
     b.querySelector('small').textContent=c.translated_name.name+' · '+c.verses_count+' versets';
     b.querySelector('.ar').textContent=c.name_arabic;
     b.onclick=()=>{closeSheets();if(c.id!==surah)loadSurah(c.id)};
-    box.appendChild(b);
+    const ck=document.createElement('button'); ck.className='scheck'; ck.setAttribute('aria-pressed',inf.st==='m');
+    ck.setAttribute('aria-label',(inf.st==='m'?'Décocher ':'Cocher ')+c.name_simple+' comme apprise par cœur');
+    ck.innerHTML='<i>✓</i><span>'+(inf.st==='m'?'Par cœur':'Cocher')+'</span>';
+    ck.onclick=()=>{
+      if(inf.st==='m'){
+        if(!ck.dataset.c){ck.dataset.c=1;ck.querySelector('span').textContent='Retirer ?';setTimeout(()=>{if(ck.isConnected){delete ck.dataset.c;ck.querySelector('span').textContent='Par cœur'}},3000);return}
+        setSurahMastered(c.id,false);
+      } else setSurahMastered(c.id,true);
+      renderSurahs();
+    };
+    row.append(b,ck); box.appendChild(row);
   }
 }
 $('surahSearch').addEventListener('input',renderSurahs);
