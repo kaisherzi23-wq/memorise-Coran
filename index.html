@@ -668,7 +668,14 @@ function wordTime(v,p){
   const i=verse.w.findIndex(w=>w.p===p), N=verse.w.length||1, span=vt.to-vt.from;
   return {s:vt.from+span*i/N,e:vt.from+span*(i+1)/N};
 }
-function rangeTime(a,b){const s=wordTime(a.v,a.p),e=wordTime(b.v,b.p);if(!s||!e)return null;return {s:Math.max(0,s.s-120),e:e.e+180}}
+function rangeTime(a,b){
+  const s=wordTime(a.v,a.p),e=wordTime(b.v,b.p);if(!s||!e)return null;
+  let end=e.e+150;
+  // on s'arrête avant que le mot suivant commence
+  const i=allWords.findIndex(w=>w.v===b.v&&w.p===b.p), nx=i>=0?allWords[i+1]:null, tn=nx?wordTime(nx.v,nx.p):null;
+  if(tn&&tn.s>e.s) end=Math.min(end,Math.max(e.e-40,tn.s-60));
+  return {s:Math.max(0,s.s-120),e:end};
+}
 function buildFlat(){flat=[];for(const w of allWords){const t=wordTime(w.v,w.p);if(t)flat.push({k:w.k,s:t.s,e:t.e,v:w.v})}flat.sort((x,y)=>x.s-y.s)}
 
 /* ---------- Texte ---------- */
@@ -1167,9 +1174,10 @@ function runInfo(){
   else sub='Répétition '+(run.count+1)+' / '+(run.reps===Infinity?'∞':run.reps)+' · '+fmtSpeed(settings.speed);
   setInfo(main,sub);
 }
-function stopRun(silent){clearTimeout(gapTimer);gapTimer=null;audio.pause();const wasRead=run&&run.kind==='read';run=null;setPlayIcon(false);releaseWake();clearNow();if(wasRead)paintBookmark();if(!silent)updateBar()}
+var endTimer=null;
+function stopRun(silent){clearTimeout(endTimer);clearTimeout(gapTimer);gapTimer=null;audio.pause();const wasRead=run&&run.kind==='read';run=null;setPlayIcon(false);releaseWake();clearNow();if(wasRead)paintBookmark();if(!silent)updateBar()}
 function stepEnded(){
-  audio.pause(); const fin=run.steps[run.i], lastDur=fin.e-fin.s; run.count++;
+  audio.pause(); clearTimeout(endTimer); clearNow(); const fin=run.steps[run.i], lastDur=fin.e-fin.s; run.count++;
   if(!(run.reps===Infinity||run.count<run.reps)){run.count=0;run.i++}
   if(run.i>=run.steps.length){
     const cb=run.onDone,kind=run.kind,rs=run.ranges; stopRun(true); updateBar();
@@ -1184,7 +1192,21 @@ function stepEnded(){
   else if(g>0&&run.kind!=='test') setInfo(null,'À toi de réciter… '+settings.gap+' s');
   gapTimer=setTimeout(()=>{gapTimer=null;playStep()},Math.max(g,120));
 }
-setInterval(()=>{if(!run||audio.paused||gapTimer||audio.seeking)return;const ms=audio.currentTime*1000;{const s0=run.steps[run.i];if((ms<s0.s-1500||ms>s0.e+1500)&&Date.now()-(run.playAt||0)<1500)return}paintNow(ms);if(ms>=run.steps[run.i].e)stepEnded()},40);
+function checkEnd(){
+  if(!run||audio.paused||gapTimer) return;
+  const ms=audio.currentTime*1000, s0=run.steps[run.i];
+  // juste après un saut, l'iPhone peut encore donner l'ancienne position : on l'ignore un court instant
+  if(Date.now()-(run.playAt||0)<350&&(ms<s0.s-400||ms>s0.e)) return;
+  paintNow(ms);
+  if(ms>=s0.e-(audio.playbackRate>1?60:30)) stepEnded();
+}
+setInterval(checkEnd,25);
+// minuteur précis en plus : coupe à l'heure prévue même si l'iPhone met à jour la position trop lentement
+audio.addEventListener('playing',()=>{
+  clearTimeout(endTimer); if(!run) return;
+  const st=run.steps[run.i], left=(st.e-audio.currentTime*1000)/(audio.playbackRate||1);
+  if(left>0&&left<120000){const step=run.i,count=run.count;endTimer=setTimeout(()=>{if(run&&run.i===step&&run.count===count&&!audio.paused&&!gapTimer)stepEnded()},left)}
+});
 function clearNow(){if(nowKey!=null&&wordEl[nowKey])wordEl[nowKey].classList.remove('now');nowKey=null}
 function paintNow(ms){
   let lo=0,hi=flat.length-1,f=-1;while(lo<=hi){const m=(lo+hi)>>1;if(flat[m].s<=ms){f=m;lo=m+1}else hi=m-1}
