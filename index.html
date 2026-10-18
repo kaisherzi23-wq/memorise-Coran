@@ -329,7 +329,9 @@ textarea{width:100%;min-height:70px;border-radius:10px;border:1px solid var(--li
 .ls-top{position:sticky;top:0;z-index:3;background:var(--bg);display:flex;align-items:center;gap:12px;padding:calc(env(safe-area-inset-top,0px) + 10px) max(14px,env(safe-area-inset-right,0px)) 10px max(14px,env(safe-area-inset-left,0px))}
 .ls-home{width:68px;height:68px;border-radius:22px;border:0;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;flex:0 0 auto;box-shadow:0 5px 0 rgba(0,0,0,.18)}
 .ls-home svg{width:36px;height:36px;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
-.ls .pressing{animation:lspress 2s linear}
+.ls .pressing{animation:lspress 1.5s linear}
+.ls-tile *,.ls-home *,.ls-recbtn *{pointer-events:none}
+.ls-tile,.ls-home,.ls-recbtn{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;touch-action:manipulation}
 @keyframes lspress{to{box-shadow:0 0 0 5px var(--bg),0 0 0 12px var(--done)}}
 .ls-head{flex:1;min-width:0;display:flex;align-items:center;justify-content:center;gap:12px}
 .ls-head .arn{font-family:var(--f-orn);font-size:2.4rem;color:var(--gold);white-space:nowrap}
@@ -398,6 +400,14 @@ textarea{width:100%;min-height:70px;border-radius:10px;border:1px solid var(--li
 .ls-wave{display:flex;align-items:center;gap:5px;height:48px}
 .ls-wave i{width:7px;border-radius:4px;background:var(--gold)}
 .ls-wave i:nth-child(1),.ls-wave i:nth-child(5){height:16px}.ls-wave i:nth-child(2),.ls-wave i:nth-child(4){height:32px}.ls-wave i:nth-child(3){height:46px}
+.ls-pick{position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.45);display:flex;align-items:flex-end;justify-content:center}
+.ls-pick-in{position:relative;width:100%;max-width:720px;max-height:78vh;overflow:auto;background:var(--bg);border-radius:28px 28px 0 0;padding:64px 16px calc(env(safe-area-inset-bottom,0px) + 20px)}
+.ls-pick-x{position:absolute;top:12px;right:14px;width:48px;height:48px;border-radius:50%;border:0;background:var(--page);color:var(--ink);font-size:1.4rem;box-shadow:0 3px 0 rgba(0,0,0,.12)}
+.ls-pick-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.ls-pick-grid button{aspect-ratio:1;border-radius:50%;border:3px double var(--gold);background:var(--page);color:var(--ink);font-size:1.5rem;font-weight:700;font-variant-numeric:tabular-nums;padding:0}
+.ls-pick-grid button[data-st="l"]{background:#E2B04A;border-color:#E2B04A;color:#3B2A06}
+.ls-pick-grid button[data-st="m"]{background:#1F5E4E;border-color:#1F5E4E;color:#fff}
+.ls-pick-grid button.cur{box-shadow:0 0 0 4px var(--bg),0 0 0 8px var(--ink)}
 /* écran du choix */
 .ls-choice{display:grid;gap:18px;max-width:520px;margin:0 auto;padding:30px 0}
 .ls-big{border:0;border-radius:32px;padding:26px 16px;display:flex;flex-direction:column;align-items:center;gap:10px;box-shadow:0 7px 0 rgba(0,0,0,.16);color:#fff}
@@ -1852,14 +1862,18 @@ function lsUnlock(){
   if(audioUnlocked||!audio.src) return;
   try{audio.muted=true;const p=audio.play();if(p&&p.then)p.then(()=>{if(!run)audio.pause();audio.muted=false},()=>{audio.muted=false});else{audio.pause();audio.muted=false}}catch(e){audio.muted=false}
 }
+// appui long (1,5 s) : tolère les petits tremblements du doigt, s'annule seulement si on fait défiler
+const LP_MS=1500; let lpHold=false; // vrai entre la fin d'un appui long et le lâcher du doigt
 function longPress(el,fn){
-  let t=null;
-  const start=()=>{el.classList.add('pressing');t=setTimeout(()=>{t=null;el.classList.remove('pressing');el.dataset.lp=1;fn()},2000)};
+  let t=null,x=0,y=0;
   const stop=()=>{el.classList.remove('pressing');if(t){clearTimeout(t);t=null}};
-  el.addEventListener('pointerdown',start); ['pointerup','pointerleave','pointercancel'].forEach(e=>el.addEventListener(e,stop));
+  el.addEventListener('pointerdown',e=>{x=e.clientX;y=e.clientY;el.classList.add('pressing');
+    t=setTimeout(()=>{t=null;el.classList.remove('pressing');lpHold=true;document.addEventListener('pointerup',()=>setTimeout(()=>{lpHold=false},80),{once:true});fn()},LP_MS)});
+  el.addEventListener('pointermove',e=>{if(t&&Math.hypot(e.clientX-x,e.clientY-y)>16)stop()});
+  ['pointerup','pointercancel'].forEach(e=>el.addEventListener(e,stop));
   el.addEventListener('contextmenu',e=>e.preventDefault());
 }
-const wasLong=el=>{if(el.dataset.lp){delete el.dataset.lp;return true}return false};
+const wasLong=()=>lpHold;
 function lsOpen(){$('ls').hidden=false;document.body.style.overflow='hidden';closeSheets();if(!$('lesson').hidden)closeLesson()}
 function lsClose(){lsStop();$('ls').hidden=true;document.body.style.overflow='';lsView=null;updateBar()}
 function lsStop(){lsToken++;lsHalt();shush();smpStop()}
@@ -1894,7 +1908,7 @@ function lsBindTile(b){
   longPress(b,()=>{
     const on=lsStateOf(id)!=='m'; setSurahMastered(id,on);
     const n=document.createElement('div'); n.innerHTML=lsTileHTML(id); const nb=n.firstChild;
-    if(lsSel===id) nb.classList.add('speaking'); nb.dataset.lp=1; b.replaceWith(nb); lsBindTile(nb);
+    if(lsSel===id) nb.classList.add('speaking'); b.replaceWith(nb); lsBindTile(nb);
     say({fr:on?'Apprise':'Pas encore'});
     try{navigator.vibrate&&navigator.vibrate(60)}catch(e){}
   });
@@ -1925,12 +1939,14 @@ async function openListenSurah(id){
   if(!tajweed){try{tajweed=await loadTajweed(id);renderText();refreshProgress()}catch(e){}} // couleurs du tajwid
   if(tok!==lsToken) return;
   if(!verses.length||!timing){$('lsText').textContent='⚠️';return}
-  lsRenderDots(); lsShowVerse(1); lsPlay();
+  const at=LS.get('hk.lsAt',{})[id], first=verses[0].n;
+  lsCur=at&&verses.some(v=>v.n===at)?at:first; // on reprend au dernier verset écouté
+  lsRenderDots(); lsShowVerse(lsCur); lsPlay();
 }
 const lsVS=()=>coverage().vs;
 // une seule pastille : le numéro du verset en cours, et un anneau qui montre où on en est dans la sourate
 function lsRenderDots(){
-  const p=$('lsPos'); if(p) p.onclick=()=>{lsUnlock();lsHalt();lsWords=null;say({fr:'Verset '+lsCur},()=>{if(lsView==='surah')lsPlay()})};
+  const p=$('lsPos'); if(p) p.onclick=()=>{lsUnlock();lsPick()};
   // glisser le doigt sur le verset : verset suivant / précédent
   const card=document.querySelector('.ls-verse'); let x0=null,y0=0;
   if(card){
@@ -1939,6 +1955,21 @@ function lsRenderDots(){
       if(Math.abs(dx)<60||Math.abs(dx)<Math.abs(dy)*1.5)return; lsGo(dx>0?1:-1)},{passive:true});
   }
   lsPaintDots();
+}
+// choisir le verset : une grille de grands numéros, colorés selon l'avancement
+function lsPick(){
+  shush(); const vs=lsVS(); let box=$('lsPick'); if(box) box.remove();
+  box=document.createElement('div'); box.className='ls-pick'; box.id='lsPick';
+  let h='<div class="ls-pick-in"><button class="ls-pick-x" aria-label="Fermer">✕</button><div class="ls-pick-grid">';
+  verses.forEach(v=>{h+='<button data-v="'+v.n+'" data-st="'+(vs[v.n]||'')+'"'+(v.n===lsCur?' class="cur"':'')+'>'+v.n+'</button>'});
+  box.innerHTML=h+'</div></div>'; $('ls').appendChild(box);
+  const close=()=>box.remove();
+  box.onclick=e=>{if(e.target===box)close()}; box.querySelector('.ls-pick-x').onclick=close;
+  box.querySelectorAll('.ls-pick-grid button').forEach(b=>b.onclick=()=>{
+    const n=+b.dataset.v; close(); lsUnlock(); lsHalt(); lsWords=null; lsCur=n; lsShowVerse(n);
+    say({fr:'Verset '+n},()=>{if(lsView==='surah'&&lsCur===n)lsPlay()});
+  });
+  const cur=box.querySelector('.cur'); if(cur) cur.scrollIntoView({block:'center'});
 }
 function lsGo(d){
   if(!verses.length) return; const first=verses[0].n,last=verses[verses.length-1].n, n=Math.min(last,Math.max(first,lsCur+d));
@@ -1955,7 +1986,8 @@ function lsPaintDots(){
   if(b){b.dataset.st=s;b.innerHTML=markIcon(s)}
 }
 function lsShowVerse(n){
-  const t=$('lsText'); if(!t) return; t.innerHTML=''; extEl={};
+  const t=$('lsText'); if(!t) return;
+  if(lsView==='surah'&&lsSurahId){const m=LS.get('hk.lsAt',{});if(m[lsSurahId]!==n){m[lsSurahId]=n;LS.set('hk.lsAt',m)}} t.innerHTML=''; extEl={};
   const v=verses.find(x=>x.n===n); if(!v) return;
   const tj=tajweed&&tajweed[n]&&tajweed[n].length===v.w.length?tajweed[n]:null;
   t.classList.toggle('tajweed',!!tj);
