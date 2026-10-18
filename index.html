@@ -483,7 +483,8 @@ textarea{width:100%;min-height:70px;border-radius:10px;border:1px solid var(--li
     </div>
     <div class="group"><span class="lbl">Objectif du jour (séances)</span><div class="opts" id="optGoal"></div>
       <p class="note">Une séance = une répétition menée jusqu’au bout, un enchaînement, un test ou une lecture complète.</p></div>
-    <div class="group"><span class="lbl">Mode de l’app</span><button class="btn ghost" id="uiModeBtn" style="width:100%">Choisir : je lis / j’écoute</button></div>
+    <div class="group"><span class="lbl">Mode de l’app</span><button class="btn ghost" id="uiModeBtn" style="width:100%">Choisir : je lis / j’écoute</button>
+      <button class="link" id="voiceTest">Tester la voix arabe</button><p class="note" id="voiceInfo" hidden></p></div>
     <div class="group"><label for="reciter">Récitateur</label><select id="reciter"></select></div>
     <div class="group"><span class="lbl">Hors connexion</span>
       <p class="note" id="offMsg" style="margin:0 0 8px">Télécharge la récitation de cette sourate pour t’entraîner sans internet.</p>
@@ -1818,7 +1819,7 @@ const lsN=n=>String(n); // chiffres 1 2 3
 const hasBas=id=>id!==1&&id!==9;
 
 /* Voix */
-let VOICES=[];
+let VOICES=[]; const IS_ANDROID=/Android/i.test(navigator.userAgent);
 function loadVoices(){try{VOICES=speechSynthesis.getVoices()||[]}catch(e){VOICES=[]}}
 if('speechSynthesis' in window){loadVoices();try{speechSynthesis.onvoiceschanged=loadVoices}catch(e){}}
 function pickVoice(lang){
@@ -1832,7 +1833,8 @@ function say(txt,cb){
   if(!('speechSynthesis' in window)){setTimeout(end,300);return}
   if(!VOICES.length) loadVoices();
   // Android donne parfois une liste de voix vide : on tente quand même l'arabe, et on repasse en français si ça échoue
-  const ar=txt.ar&&pickVoice('ar'), tryAr=!!txt.ar&&(!!ar||!VOICES.length);
+  // sur Android, Chrome ne liste pas toujours la voix arabe même installée : on la demande quand même par la langue
+  const ar=txt.ar&&pickVoice('ar'), tryAr=!!txt.ar&&(!!ar||!VOICES.length||IS_ANDROID);
   const speak=(lang)=>{
     const isAr=lang==='ar', text=isAr?txt.ar:(txt.fr||txt.ar);
     const u=new SpeechSynthesisUtterance(text);
@@ -2091,6 +2093,10 @@ async function init(){
   if(!recs.some(r=>r.id==reciterId)) reciterId=recs[0].id;
   s.value=reciterId; s.onchange=()=>chooseReciter(+s.value);
   $('uiModeBtn').onclick=openChoice;
+  $('voiceTest').onclick=()=>{loadVoices();const a=VOICES.filter(v=>String(v.lang).toLowerCase().replace('_','-').startsWith('ar'));
+    $('voiceInfo').hidden=false;
+    $('voiceInfo').textContent=(a.length?'Voix arabe trouvée : '+a.map(v=>v.name).join(', '):'Aucune voix arabe dans la liste ('+VOICES.length+' voix au total)')+(IS_ANDROID?' · Android : l’arabe est demandé quand même.':'');
+    say({ar:'سورة الفاتحة',fr:'Pas de voix arabe'})};
   const um=LS.get('hk.uiMode',null);
   if(!um) openChoice(); else if(um==='listen') openListenHome();
   await loadSurah(surah);
