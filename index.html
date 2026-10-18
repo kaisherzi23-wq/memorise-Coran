@@ -1893,13 +1893,14 @@ function lsBindTile(b){
 /* Une sourate */
 async function openListenSurah(id){
   lsStop(); lsView='surah'; lsSurahId=id; lsCur=1; lsLoop=false; lsWords=null; const tok=lsToken, c=CHAPTERS[id-1];
-  $('ls').innerHTML='<div class="ls-top"><button class="ls-home" id="lsHome" aria-label="Accueil">'+LS_ICO.home+'</button><div class="ls-head"><span class="ls-medal">'+lsN(id)+'</span><span class="arn">'+esc(c.name_arabic)+'</span></div></div>'+
+  $('ls').innerHTML='<div class="ls-top"><button class="ls-home" id="lsHome" aria-label="Accueil">'+LS_ICO.home+'</button><div class="ls-head"><span class="ls-medal">'+lsN(id)+'</span><span class="arn">'+esc(c.name_arabic)+'</span></div><button class="ls-recbtn" id="lsRecBtn" aria-label="Récitateur">'+recAvatar(+reciterId)+'</button></div>'+
     '<div class="ls-body">'+(hasBas(id)?'<div class="ls-bas" id="lsBas">'+BASMALA+'</div>':'')+'<div class="ls-verse"><div class="t" id="lsText">⏳</div></div><div class="ls-dots" id="lsDots"></div>'+
     '<div class="ls-acts"><button class="ls-act lsplay" id="lsPlay" aria-label="Lecture"></button><button class="ls-act loop" id="lsLoopB" aria-label="En boucle">'+LS_ICO.loop+'</button><button class="ls-act speed" id="lsSpeedB" aria-label="Vitesse"></button></div>'+
     '<div class="ls-marks"><button class="ls-mark m" id="lsMarkM" aria-label="Appris">'+LS_ICO.done+'</button><button class="ls-mark l" id="lsMarkL" aria-label="En cours">'+LS_ICO.learn+'</button></div></div>';
   $('ls').scrollTop=0; lsPaint();
   $('lsHome').onclick=()=>{if(wasLong($('lsHome')))return;say({fr:'Accueil'});openListenHome()};
   longPress($('lsHome'),openChoice);
+  $('lsRecBtn').onclick=()=>{lsUnlock();openReciters()};
   $('lsPlay').onclick=lsTogglePlay; $('lsLoopB').onclick=lsToggleLoop; $('lsSpeedB').onclick=lsNextSpeed;
   $('lsMarkM').onclick=()=>lsMark('m'); $('lsMarkL').onclick=()=>lsMark('l');
   if(surah!==id||!timing||!verses.length){try{await loadSurah(id)}catch(e){}}
