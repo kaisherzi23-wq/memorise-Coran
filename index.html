@@ -375,6 +375,26 @@ textarea{width:100%;min-height:70px;border-radius:10px;border:1px solid var(--li
 .ls-mark[data-st="m"]{border-color:#1F5E4E;color:#1F5E4E}
 .ls-mark.pop svg{animation:lspop .45s ease}
 @keyframes lspop{40%{transform:scale(1.25)}}
+.ls-spacer{width:68px;flex:0 0 auto}
+.ls-recbtn{width:68px;height:68px;border-radius:50%;border:0;padding:0;background:none;flex:0 0 auto;box-shadow:0 0 0 3px var(--bg),0 0 0 6px var(--gold)}
+.ls-av{--c:#3D6584;position:relative;display:grid;place-items:center;width:100%;height:100%;border-radius:50%;overflow:hidden;background:var(--c);color:#fff}
+.ls-av b{font-family:var(--f-orn);font-size:2.2em;line-height:1}
+.ls-av img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.ls-recbtn .ls-av{font-size:16px}
+.ls-recs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.ls-rec{border:0;border-radius:26px;background:var(--page);box-shadow:0 6px 0 rgba(0,0,0,.12);padding:16px 8px 12px;display:flex;flex-direction:column;align-items:center;gap:10px;position:relative;color:var(--ink)}
+.ls-rec .ls-av{width:118px;height:118px;font-size:26px}
+.ls-rec .nm{font-family:var(--f-orn);font-size:1.3rem;line-height:1.35;text-align:center}
+.ls-rec .ok{display:none;position:absolute;top:10px;right:10px;width:34px;height:34px;border-radius:50%;background:#1F5E4E;color:#fff;place-items:center}
+.ls-rec .ok svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:3.2;stroke-linecap:round;stroke-linejoin:round}
+.ls-rec.chosen .ok{display:grid}
+.ls-rec.chosen{box-shadow:inset 0 0 0 3px #1F5E4E,0 6px 0 rgba(0,0,0,.12)}
+.ls-rec.speaking{box-shadow:0 0 0 5px var(--bg),0 0 0 11px var(--gold)}
+.ls-rec.playing .ls-av{animation:lsbeat 1s ease-in-out infinite}
+@keyframes lsbeat{50%{transform:scale(1.06)}}
+.ls-wave{display:flex;align-items:center;gap:5px;height:48px}
+.ls-wave i{width:7px;border-radius:4px;background:var(--gold)}
+.ls-wave i:nth-child(1),.ls-wave i:nth-child(5){height:16px}.ls-wave i:nth-child(2),.ls-wave i:nth-child(4){height:32px}.ls-wave i:nth-child(3){height:46px}
 /* écran du choix */
 .ls-choice{display:grid;gap:18px;max-width:520px;margin:0 auto;padding:30px 0}
 .ls-big{border:0;border-radius:32px;padding:26px 16px;display:flex;flex-direction:column;align-items:center;gap:10px;box-shadow:0 7px 0 rgba(0,0,0,.16);color:#fff}
