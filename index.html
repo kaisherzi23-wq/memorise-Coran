@@ -1967,13 +1967,13 @@ function lsPick(){
   box.onclick=e=>{if(e.target===box)close()}; box.querySelector('.ls-pick-x').onclick=close;
   box.querySelectorAll('.ls-pick-grid button').forEach(b=>b.onclick=()=>{
     const n=+b.dataset.v; close(); lsUnlock(); lsHalt(); lsWords=null; lsCur=n; lsShowVerse(n);
-    say({fr:'Verset '+n},()=>{if(lsView==='surah'&&lsCur===n)lsPlay()});
+    say({fr:'Verset '+n}); // on se place sur le verset ; la lecture part seulement avec ▶
   });
   const cur=box.querySelector('.cur'); if(cur) cur.scrollIntoView({block:'center'});
 }
 function lsGo(d){
   if(!verses.length) return; const first=verses[0].n,last=verses[verses.length-1].n, n=Math.min(last,Math.max(first,lsCur+d));
-  if(n===lsCur) return; lsUnlock(); lsHalt(); lsWords=null; lsCur=n; lsShowVerse(n); lsPlay();
+  if(n===lsCur) return; lsUnlock(); lsHalt(); lsWords=null; lsCur=n; lsShowVerse(n); say({fr:'Verset '+n});
 }
 function lsPaintDots(){
   const vs=lsVS(), p=$('lsPos');
