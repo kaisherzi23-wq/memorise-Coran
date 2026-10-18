@@ -366,8 +366,7 @@ textarea{width:100%;min-height:70px;border-radius:10px;border:1px solid var(--li
 .ls-act.lsplay{background:#1F5E4E}.ls-act.loop{background:#B9862A}.ls-act.speed{background:#8C3B2E}
 .ls-act.loop:not(.on){background:var(--page);color:#B9862A;box-shadow:inset 0 0 0 3px #B9862A,0 6px 0 rgba(0,0,0,.12)}
 .ls-act.on{box-shadow:0 0 0 5px var(--bg),0 0 0 10px var(--ink)}
-.ls-act .chev{display:flex;gap:2px}
-.ls-act .chev i{width:0;height:0;border-top:17px solid transparent;border-bottom:17px solid transparent;border-left:20px solid #fff}
+.ls-act .gauge{width:72%;aspect-ratio:21/17;stroke-width:1.9}.ls-act .gauge .needle{stroke-width:2.8}
 .ls-marks{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:16px}
 .ls-mark{height:84px;border-radius:24px;padding:0;display:grid;place-items:center;background:var(--page);box-shadow:0 5px 0 rgba(0,0,0,.12)}
 .ls-mark svg{width:48px;stroke-width:3}
@@ -1799,10 +1798,16 @@ const LS_ICO={
   done:'<svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>',
   learn:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path class="fill" d="M12 4a8 8 0 0 1 0 16z"/></svg>'
 };
-const LS_SPEEDS=[{r:.75,n:1,say:'Lent'},{r:1,n:2,say:'Normal'},{r:1.25,n:3,say:'Rapide'}];
+const LS_SPEEDS=[{r:.7,a:-58,say:'Lent'},{r:.85,a:0,say:'Normal'},{r:1,a:58,say:'Rapide'}];
+// compteur de vitesse : l'aiguille à gauche = lent, en haut = normal, à droite = rapide
+function speedIcon(a){
+  return '<svg viewBox="1.5 3.5 21 17" class="gauge"><path d="M3.5 17a8.5 8.5 0 0 1 17 0"/>'+
+    '<path d="M5.2 11.3l1.3.8M12 6.5V8M18.8 11.3l-1.3.8"/>'+
+    '<g transform="rotate('+a+' 12 17)"><path d="M12 17V10.6" class="needle"/></g><circle class="fill" cx="12" cy="17" r="1.9"/></svg>';
+}
 const BASMALA='بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ';
 let lsView=null, lsCur=1, lsSurahId=null, lsToken=0, lsSel=null, lsPlaying=false, lsLoop=false, lsWords=null,
-    lsSpeedI=Math.max(0,Math.min(2,LS.get('hk.lsSpeed',1))), extEl={}, extOnNow=null, extOnBlocked=null;
+    lsSpeedI=Math.max(0,Math.min(2,LS.get('hk.lsSpeed2',1))), extEl={}, extOnNow=null, extOnBlocked=null;
 const lsN=n=>String(n); // chiffres 1 2 3
 const hasBas=id=>id!==1&&id!==9;
 
@@ -1941,7 +1946,7 @@ function lsPaint(){
   const p=$('lsPlay'); if(!p) return;
   p.innerHTML=lsPlaying?LS_ICO.pause:LS_ICO.play; p.classList.toggle('on',lsPlaying);
   $('lsLoopB').classList.toggle('on',lsLoop);
-  $('lsSpeedB').innerHTML='<span class="chev">'+'<i></i>'.repeat(LS_SPEEDS[lsSpeedI].n)+'</span>';
+  $('lsSpeedB').innerHTML=speedIcon(LS_SPEEDS[lsSpeedI].a);
 }
 const vr=n=>{const ws=allWords.filter(w=>w.v===n);return {a:{v:n,p:ws[0].p},b:{v:n,p:ws[ws.length-1].p}}};
 const lsOpts=()=>({waitSeek:true,rate:LS_SPEEDS[lsSpeedI].r});
@@ -1987,7 +1992,7 @@ function lsToggleLoop(){
   say({fr:lsLoop?'En boucle':'Sans boucle'},()=>{if(was&&lsView==='surah')lsPlay()});
 }
 function lsNextSpeed(){
-  lsUnlock(); lsSpeedI=(lsSpeedI+1)%LS_SPEEDS.length; LS.set('hk.lsSpeed',lsSpeedI); lsPaint();
+  lsUnlock(); lsSpeedI=(lsSpeedI+1)%LS_SPEEDS.length; LS.set('hk.lsSpeed2',lsSpeedI); lsPaint();
   const was=lsPlaying, w=lsWords; if(was) lsHalt();
   say({fr:LS_SPEEDS[lsSpeedI].say},()=>{if(!was||lsView!=='surah')return; if(w){lsWords={v:w.v,a:w.b,b:w.b};lsTapWord(w.v,w.a)} else lsPlay()});
 }
