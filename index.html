@@ -367,38 +367,21 @@ textarea{width:100%;min-height:70px;border-radius:10px;border:1px solid var(--li
 .ls-act.loop:not(.on){background:var(--page);color:#B9862A;box-shadow:inset 0 0 0 3px #B9862A,0 6px 0 rgba(0,0,0,.12)}
 .ls-act.on{box-shadow:0 0 0 5px var(--bg),0 0 0 10px var(--ink)}
 .ls-act .gauge{width:72%;aspect-ratio:21/17;stroke-width:1.9}.ls-act .gauge .needle{stroke-width:2.8}
-.ls-marks{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:16px}
-.ls-mark{height:84px;border-radius:24px;padding:0;display:grid;place-items:center;background:var(--page);box-shadow:0 5px 0 rgba(0,0,0,.12)}
-.ls-mark svg{width:48px;stroke-width:3}
-.ls-mark.m{color:#1F5E4E;border:3px solid #1F5E4E}.ls-mark.l{color:#9A6B14;border:3px solid #E2B04A}
-.ls-mark.m.on{background:#1F5E4E;color:#fff}.ls-mark.l.on{background:#E2B04A;color:#3B2A06}
-.ls-spacer{width:68px;flex:0 0 auto}
-.ls-recbtn{width:68px;height:68px;border-radius:50%;border:0;padding:0;background:none;flex:0 0 auto;box-shadow:0 0 0 3px var(--bg),0 0 0 6px var(--gold)}
-.ls-av{--c:#3D6584;position:relative;display:grid;place-items:center;width:100%;height:100%;border-radius:50%;overflow:hidden;background:var(--c);color:#fff}
-.ls-av b{font-family:var(--f-orn);font-size:2.2em;line-height:1}
-.ls-av img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
-.ls-recbtn .ls-av{font-size:16px}
-.ls-recs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
-.ls-rec{border:0;border-radius:26px;background:var(--page);box-shadow:0 6px 0 rgba(0,0,0,.12);padding:16px 8px 12px;display:flex;flex-direction:column;align-items:center;gap:10px;position:relative;color:var(--ink)}
-.ls-rec .ls-av{width:118px;height:118px;font-size:26px}
-.ls-rec .nm{font-family:var(--f-orn);font-size:1.3rem;line-height:1.35;text-align:center}
-.ls-rec .ok{display:none;position:absolute;top:10px;right:10px;width:34px;height:34px;border-radius:50%;background:#1F5E4E;color:#fff;place-items:center}
-.ls-rec .ok svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:3.2;stroke-linecap:round;stroke-linejoin:round}
-.ls-rec.chosen .ok{display:grid}
-.ls-rec.chosen{box-shadow:inset 0 0 0 3px #1F5E4E,0 6px 0 rgba(0,0,0,.12)}
-.ls-rec.speaking{box-shadow:0 0 0 5px var(--bg),0 0 0 11px var(--gold)}
-.ls-rec.playing .ls-av{animation:lsbeat 1s ease-in-out infinite}
-@keyframes lsbeat{50%{transform:scale(1.06)}}
-.ls-wave{display:flex;align-items:center;gap:5px;height:48px}
-.ls-wave i{width:7px;border-radius:4px;background:var(--gold)}
-.ls-wave i:nth-child(1),.ls-wave i:nth-child(5){height:16px}.ls-wave i:nth-child(2),.ls-wave i:nth-child(4){height:32px}.ls-wave i:nth-child(3){height:46px}
+.ls-mark{display:grid;place-items:center;width:100%;height:96px;margin-top:16px;border-radius:26px;padding:0;background:var(--page);border:3px solid var(--gold-soft);color:var(--gold);box-shadow:0 5px 0 rgba(0,0,0,.10);transition:background .2s,border-color .2s}
+.ls-mark svg{width:64px;height:64px;fill:none;stroke:currentColor;stroke-width:2.4}
+.ls-mark svg .fill{fill:currentColor;stroke:none}
+.ls-mark svg .tick{stroke:#fff;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
+.ls-mark[data-st="l"]{border-color:#E2B04A;color:#C9952B}
+.ls-mark[data-st="m"]{border-color:#1F5E4E;color:#1F5E4E}
+.ls-mark.pop svg{animation:lspop .45s ease}
+@keyframes lspop{40%{transform:scale(1.25)}}
 /* écran du choix */
 .ls-choice{display:grid;gap:18px;max-width:520px;margin:0 auto;padding:30px 0}
 .ls-big{border:0;border-radius:32px;padding:26px 16px;display:flex;flex-direction:column;align-items:center;gap:10px;box-shadow:0 7px 0 rgba(0,0,0,.16);color:#fff}
 .ls-big .pic{font-size:5.5rem;line-height:1.05}
 .ls-big b{font-size:1.5rem}
 .ls-big.read{background:#8C3B2E}.ls-big.listen{background:#1F5E4E}
-@media (prefers-reduced-motion:reduce){.ls .pressing,.ls-rec.playing .ls-av{animation:none}}
+@media (prefers-reduced-motion:reduce){.ls .pressing,.ls-rec.playing .ls-av,.ls-mark.pop svg{animation:none}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important;scroll-behavior:auto!important}}
 </style>
 </head>
@@ -1901,13 +1884,13 @@ async function openListenSurah(id){
   $('ls').innerHTML='<div class="ls-top"><button class="ls-home" id="lsHome" aria-label="Accueil">'+LS_ICO.home+'</button><div class="ls-head"><span class="ls-medal">'+lsN(id)+'</span><span class="arn">'+esc(c.name_arabic)+'</span></div><button class="ls-recbtn" id="lsRecBtn" aria-label="Récitateur">'+recAvatar(+reciterId)+'</button></div>'+
     '<div class="ls-body">'+(hasBas(id)?'<div class="ls-bas" id="lsBas">'+BASMALA+'</div>':'')+'<div class="ls-verse"><div class="t" id="lsText">⏳</div></div><div class="ls-dots" id="lsDots"></div>'+
     '<div class="ls-acts"><button class="ls-act lsplay" id="lsPlay" aria-label="Lecture"></button><button class="ls-act loop" id="lsLoopB" aria-label="En boucle">'+LS_ICO.loop+'</button><button class="ls-act speed" id="lsSpeedB" aria-label="Vitesse"></button></div>'+
-    '<div class="ls-marks"><button class="ls-mark m" id="lsMarkM" aria-label="Appris">'+LS_ICO.done+'</button><button class="ls-mark l" id="lsMarkL" aria-label="En cours">'+LS_ICO.learn+'</button></div></div>';
+    '<button class="ls-mark" id="lsMark" aria-label="Où j’en suis"></button></div>';
   $('ls').scrollTop=0; lsPaint();
   $('lsHome').onclick=()=>{if(wasLong($('lsHome')))return;say({fr:'Accueil'});openListenHome()};
   longPress($('lsHome'),openChoice);
   $('lsRecBtn').onclick=()=>{lsUnlock();openReciters()};
   $('lsPlay').onclick=lsTogglePlay; $('lsLoopB').onclick=lsToggleLoop; $('lsSpeedB').onclick=lsNextSpeed;
-  $('lsMarkM').onclick=()=>lsMark('m'); $('lsMarkL').onclick=()=>lsMark('l');
+  $('lsMark').onclick=lsMark;
   if(surah!==id||!timing||!verses.length){try{await loadSurah(id)}catch(e){}}
   if(tok!==lsToken) return;
   if(!tajweed){try{tajweed=await loadTajweed(id);renderText();refreshProgress()}catch(e){}} // couleurs du tajwid
@@ -1925,8 +1908,8 @@ function lsRenderDots(){
 function lsPaintDots(){
   const vs=lsVS();
   document.querySelectorAll('.ls-dot').forEach(d=>{const v=+d.dataset.v;d.classList.toggle('cur',v===lsCur);if(vs[v])d.dataset.st=vs[v];else delete d.dataset.st});
-  const s=vs[lsCur]||''; const m=$('lsMarkM'),l=$('lsMarkL');
-  if(m){m.classList.toggle('on',s==='m');l.classList.toggle('on',s==='l')}
+  const s=vs[lsCur]||'', b=$('lsMark');
+  if(b){b.dataset.st=s;b.innerHTML=markIcon(s)}
 }
 function lsShowVerse(n){
   const t=$('lsText'); if(!t) return; t.innerHTML=''; extEl={};
@@ -1956,8 +1939,8 @@ function lsPlay(){
   lsWords=null; const tok=lsToken, first=verses[0].n, last=verses[verses.length-1].n;
   lsPlaying=true; lsPaint(); lsShowVerse(lsCur);
   if(lsLoop){
-    const r=vr(lsCur); extOnNow=null;
-    startRun([{a:r.a,b:r.b}],Infinity,'ls',null,'',Object.assign(lsOpts(),{gapFn:()=>700}));
+    const r=vr(lsCur), n=lsCur; let plays=0; extOnNow=null;
+    startRun([{a:r.a,b:r.b}],Infinity,'ls',null,'',Object.assign(lsOpts(),{gapFn:()=>700,onStep:()=>{plays++;if(plays===6&&lsView==='surah')lsAutoLearn(n)}}));
     return;
   }
   const a=vr(lsCur), b=vr(last); let rg={a:a.a,b:b.b};
@@ -1996,11 +1979,24 @@ function lsNextSpeed(){
   const was=lsPlaying, w=lsWords; if(was) lsHalt();
   say({fr:LS_SPEEDS[lsSpeedI].say},()=>{if(!was||lsView!=='surah')return; if(w){lsWords={v:w.v,a:w.b,b:w.b};lsTapWord(w.v,w.a)} else lsPlay()});
 }
-function lsMark(st){
+// un seul bouton qui se remplit : vide → à moitié (en cours) → plein (appris) → vide
+function markIcon(s){
+  if(s==='m') return '<svg viewBox="0 0 24 24"><circle class="fill" cx="12" cy="12" r="10"/><path class="tick" d="M7.2 12.4l3.2 3.2 6.4-6.6"/></svg>';
+  if(s==='l') return '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9.2"/><path class="fill" d="M12 2.8a9.2 9.2 0 0 1 0 18.4z"/></svg>';
+  return '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9.2"/></svg>';
+}
+function lsMark(){
   lsUnlock();
-  const cur=lsVS()[lsCur]||'', next=cur===st?'n':st;
+  const cur=lsVS()[lsCur]||'', next=cur===''?'l':cur==='l'?'m':'n';
   setVerseStates([lsCur],next); lsPaintDots();
+  const b=$('lsMark'); if(b){b.classList.remove('pop');void b.offsetWidth;b.classList.add('pop')}
   say({fr:next==='m'?'Appris':next==='l'?'En cours':'Effacé'});
+}
+// après 5 écoutes en boucle d'un verset pas encore commencé, il passe tout seul « en cours »
+function lsAutoLearn(n){
+  if((lsVS()[n]||'')!=='') return;
+  setVerseStates([n],'l'); lsPaintDots();
+  const b=$('lsMark'); if(b&&lsCur===n){b.classList.remove('pop');void b.offsetWidth;b.classList.add('pop')}
 }
 
 /* Récitateur préféré : photo + extrait de sa voix */
