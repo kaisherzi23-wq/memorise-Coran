@@ -197,6 +197,18 @@ textarea{width:100%;min-height:70px;border-radius:10px;border:1px solid var(--li
 .cell{aspect-ratio:1;max-width:100%;border-radius:6px;border:1px solid var(--line);background:var(--bg);font-size:.66rem;display:grid;place-items:center;padding:0;font-variant-numeric:tabular-nums;color:var(--muted)}
 .cell[data-st="l"]{background:var(--learn);border-color:var(--learn);color:var(--now-ink)}
 .cell[data-st="m"]{background:var(--done);border-color:var(--done);color:var(--page);font-weight:700}
+.cal{display:grid;grid-auto-flow:column;grid-template-rows:repeat(7,1fr);gap:3px;direction:ltr}
+.cal i,.cal-leg i{aspect-ratio:1;border-radius:3px;background:var(--line);border:0}
+.cal i.fut{background:transparent}
+.cal i[data-l="1"],.cal-leg i[data-l="1"]{background:color-mix(in srgb,var(--done) 30%,var(--bg))}
+.cal i[data-l="2"],.cal-leg i[data-l="2"]{background:color-mix(in srgb,var(--done) 55%,var(--bg))}
+.cal i[data-l="3"],.cal-leg i[data-l="3"]{background:color-mix(in srgb,var(--done) 78%,var(--bg))}
+.cal i[data-l="4"],.cal-leg i[data-l="4"]{background:var(--done)}
+.cal i.tod{outline:2px solid var(--gold);outline-offset:1px}
+.cal-leg{align-items:center;gap:4px}.cal-leg i{width:12px;height:12px;margin:0}
+.diff{display:grid;gap:8px}
+.diff button{display:grid;grid-template-columns:1fr auto;align-items:center;text-align:left;background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:10px 12px;color:var(--ink)}
+.diff b{font-size:.95rem}.diff small{grid-column:1;color:var(--muted);font-size:.8rem}.diff span{grid-column:2;grid-row:1/3;font-size:1.4rem;color:var(--muted)}
 .legend{display:flex;gap:14px;font-size:.78rem;color:var(--muted);margin-top:8px;flex-wrap:wrap}
 .legend i{display:inline-block;width:12px;height:12px;border-radius:3px;vertical-align:-2px;margin-right:4px;border:1px solid var(--line)}
 .part{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)}
@@ -408,6 +420,19 @@ textarea{width:100%;min-height:70px;border-radius:10px;border:1px solid var(--li
 .ls-pick-grid button[data-st="l"]{background:#E2B04A;border-color:#E2B04A;color:#3B2A06}
 .ls-pick-grid button[data-st="m"]{background:#1F5E4E;border-color:#1F5E4E;color:#fff}
 .ls-pick-grid button.cur{box-shadow:0 0 0 4px var(--bg),0 0 0 8px var(--ink)}
+.ls-garden{display:flex;align-items:flex-end;justify-content:center;gap:16px;background:var(--page);border:2px solid var(--gold-soft);border-radius:24px;padding:8px 14px 12px;margin-bottom:14px}
+.ls-garden .tree{width:150px;height:auto;flex:0 0 auto}
+.tree .soil{fill:var(--gold-soft)}
+.tree .trunk{fill:none;stroke:#7A5A3A;stroke-linecap:round}
+.tree .lf.a{fill:#2F7D5B}.tree .lf.b{fill:#4E9A6E}
+.tree .fr{fill:#C9452E;stroke:#fff;stroke-width:.8}
+.ls-week{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;flex:1;max-width:200px;padding-bottom:6px}
+.ls-week i{aspect-ratio:1;border-radius:50%;border:2.5px solid var(--gold);background:transparent}
+.ls-week i.on{background:#1F5E4E;border-color:#1F5E4E}
+.ls-week i.tod{box-shadow:0 0 0 2px var(--bg),0 0 0 4px var(--ink)}
+.ls-ht{font-size:1.6rem;color:var(--gold)}
+.ls-help h3{margin:18px 0 8px;font-size:1rem}
+.ls-help .stats{margin:8px 0}.ls-help .stat{background:var(--page)}
 /* écran du choix */
 .ls-choice{display:grid;gap:18px;max-width:520px;margin:0 auto;padding:30px 0}
 .ls-big{border:0;border-radius:32px;padding:26px 16px;display:flex;flex-direction:column;align-items:center;gap:10px;box-shadow:0 7px 0 rgba(0,0,0,.16);color:#fff}
@@ -513,7 +538,8 @@ textarea{width:100%;min-height:70px;border-radius:10px;border:1px solid var(--li
       <svg class="ring" viewBox="0 0 36 36" aria-hidden="true"><circle cx="18" cy="18" r="15" fill="none" stroke="var(--line)" stroke-width="4"/><circle id="ringArc" cx="18" cy="18" r="15" fill="none" stroke="var(--done)" stroke-width="4" stroke-linecap="round" stroke-dasharray="0 100" transform="rotate(-90 18 18)"/><text id="ringTxt" x="18" y="22" text-anchor="middle" font-size="10" font-weight="700" fill="var(--ink)">0/3</text></svg>
       <div><b id="todayTxt">Aujourd’hui : 0 séance sur 3</b><br><small id="streakTxt">Série : 0 jour</small></div>
     </div>
-    <div class="opts tabs" id="progTabs"><button data-tab="surah" aria-pressed="true" id="tabSurahBtn">Cette sourate</button><button data-tab="all" aria-pressed="false">Tout le Coran</button></div>
+    <div class="opts tabs" id="progTabs"><button data-tab="surah" aria-pressed="true" id="tabSurahBtn">Cette sourate</button><button data-tab="all" aria-pressed="false">Tout le Coran</button><button data-tab="stats" aria-pressed="false">Stats</button></div>
+    <div id="tabStats" hidden></div>
     <div id="tabAll" hidden>
       <div class="stats">
         <div class="stat"><b id="gVerses">0</b><small>versets maîtrisés sur 6236</small></div>
@@ -873,8 +899,49 @@ function logSession(){
   if(before<settings.goal&&d[k]>=settings.goal) setInfo(null,'Objectif du jour atteint, bravo !');
   paintToday();
 }
+/* ---------- Statistiques ---------- */
+// temps d'écoute réel : on compte seulement quand la récitation joue
+let statTick=Date.now();
+setInterval(()=>{const now=Date.now(),dt=Math.min(10,(now-statTick)/1000);statTick=now;if(audio.paused)return;
+  const t=LS.get('hk.time',{}),k=dayStr(now);t[k]=Math.round(((t[k]||0)+dt)*10)/10;LS.set('hk.time',t)},5000);
+// versets travaillés en boucle (répétitions) et ratés au test
+function statBump(a,b,idx){
+  if(!a||!b||b.v-a.v>2) return; const d=LS.get('hk.diff',{});
+  for(let v=a.v;v<=b.v;v++){const k=surah+':'+v;d[k]=d[k]||[0,0];d[k][idx]++}
+  LS.set('hk.diff',d);
+}
+function activeDays(){const d=LS.get('hk.days',{}),t=LS.get('hk.time',{}),o={};for(const k in d)if(d[k])o[k]=1;for(const k in t)if(t[k]>=60)o[k]=1;return o}
+const secsOn=k=>(LS.get('hk.time',{})[k]||0);
+function fmtDur(sec){const m=Math.round(sec/60);if(m<60)return m+' min';const h=Math.floor(m/60);return h+' h '+String(m%60).padStart(2,'0')}
+function timeStats(){
+  const t=LS.get('hk.time',{}); let total=0,week=0; const now=today();
+  for(const k in t){total+=t[k]}
+  for(let i=0;i<7;i++) week+=t[dayStr(now-i*DAY)]||0;
+  return {today:t[dayStr(now)]||0,week,total};
+}
+function globalCounts(){
+  const sums=LS.get('hk.sum',{}); let tv=0,ms=0,ls=0;
+  for(const c of CHAPTERS){const inf=surahInfo(c.id,sums);tv+=inf.mv;if(inf.st==='m')ms++;else if(inf.st==='l')ls++}
+  return {verses:tv,surahs:ms,learning:ls};
+}
+// calendrier « mur » : une colonne par semaine, une case par jour, plus foncée quand on a plus travaillé
+function calHTML(weeks){
+  const t=LS.get('hk.time',{}), act=activeDays(), end=today(), dow=(new Date(end).getDay()+6)%7;
+  const start=end-((weeks-1)*7+dow)*DAY; let h='<div class="cal" style="grid-template-columns:repeat('+weeks+',1fr)">';
+  for(let i=0;i<weeks*7;i++){
+    const d=start+i*DAY; if(d>end){h+='<i class="fut"></i>';continue}
+    const k=dayStr(d), m=(t[k]||0)/60; let l=m>=30?4:m>=15?3:m>=5?2:(m>0||act[k])?1:0;
+    h+='<i data-l="'+l+'"'+(d===end?' class="tod"':'')+' title="'+k+'"></i>';
+  }
+  return h+'</div>';
+}
+function diffList(){
+  const d=LS.get('hk.diff',{});
+  return Object.entries(d).map(([k,[r,f]])=>{const [s,v]=k.split(':').map(Number);return {s,v,r,f,score:r+f*5}})
+    .filter(x=>x.score>=5).sort((a,b)=>b.score-a.score).slice(0,6);
+}
 function streak(){
-  const d=LS.get('hk.days',{}); let n=0, t=today();
+  const d=activeDays(); let n=0, t=today();
   if(!d[dayStr(t)]) t-=DAY;
   while(d[dayStr(t)]){n++;t-=DAY}
   return n;
@@ -903,7 +970,7 @@ function setStatus(p,st){
 function verdict(r,ok){
   const p=addPart(r);
   if(ok){p.level=Math.min((p.level||0)+1,INTERVALS.length);p.status='mastered';p.due=today()+INTERVALS[p.level-1]*DAY}
-  else {p.level=0;p.status='learning';p.due=today()}
+  else {p.level=0;p.status='learning';p.due=today();statBump(r.a,r.b,1)}
   saveParts(); logSession(); return p;
 }
 const isDue=p=>p.status==='mastered'&&p.due<=today();
@@ -996,11 +1063,28 @@ function renderAll(){
   const pct=Math.round(tv*1000/TOTAL_VERSES)/10;
   $('gVerses').textContent=tv; $('gSurahs').textContent=ms; $('gPct').textContent=String(pct).replace('.',',')+' %'; $('gMeter').style.width=pct+'%';
 }
+function renderStats(){
+  const ts=timeStats(), g=globalCounts(), st=streak(), dl=diffList();
+  let h='<div class="stats"><div class="stat"><b>'+fmtDur(ts.today)+'</b><small>aujourd’hui</small></div><div class="stat"><b>'+fmtDur(ts.week)+'</b><small>ces 7 jours</small></div><div class="stat"><b>'+fmtDur(ts.total)+'</b><small>au total</small></div></div>'+
+    '<div class="stats"><div class="stat"><b>🔥 '+st+'</b><small>jour'+(st>1?'s':'')+' d’affilée</small></div><div class="stat"><b>'+g.verses+'</b><small>versets maîtrisés</small></div><div class="stat"><b>'+g.surahs+'</b><small>sourates maîtrisées</small></div></div>'+
+    '<div class="group"><span class="lbl">Mes 16 dernières semaines</span>'+calHTML(16)+
+    '<div class="legend cal-leg"><span>moins</span><i data-l="0"></i><i data-l="1"></i><i data-l="2"></i><i data-l="3"></i><i data-l="4"></i><span>plus</span></div>'+
+    '<p class="note">Seul le temps où la récitation joue est compté.</p></div>'+
+    '<div class="group"><span class="lbl">Versets à retravailler</span>';
+  if(!dl.length) h+='<p class="note">Rien pour l’instant. Les versets que tu répètes beaucoup en boucle ou que tu rates au test apparaîtront ici.</p>';
+  else{h+='<div class="diff">';dl.forEach(x=>{const c=CHAPTERS[x.s-1];h+='<button data-s="'+x.s+'" data-v="'+x.v+'"><b>'+esc(c.name_simple)+' · verset '+x.v+'</b><small>'+x.r+' répétition'+(x.r>1?'s':'')+(x.f?' · raté '+x.f+' fois':'')+'</small><span>›</span></button>'});h+='</div>'}
+  h+='</div>';
+  $('tabStats').innerHTML=h;
+  $('tabStats').querySelectorAll('.diff button').forEach(b=>b.onclick=async()=>{
+    const s=+b.dataset.s,v=+b.dataset.v; closeSheets(); if(s!==surah) await loadSurah(s);
+    const el=$('a'+v); if(el) setTimeout(()=>el.scrollIntoView({block:'center',behavior:'smooth'}),80);
+  });
+}
 function showTab(t){
   progTab=t; LS.set('hk.progTab',t);
   document.querySelectorAll('#progTabs button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.tab===t));
-  $('tabAll').hidden=t!=='all'; $('tabSurah').hidden=t!=='surah';
-  if(t==='all') renderAll();
+  $('tabAll').hidden=t!=='all'; $('tabSurah').hidden=t!=='surah'; $('tabStats').hidden=t!=='stats';
+  if(t==='all') renderAll(); if(t==='stats') renderStats();
 }
 document.querySelectorAll('#progTabs button').forEach(b=>b.onclick=()=>showTab(b.dataset.tab));
 $('markAllBtn').onclick=()=>{
@@ -1312,7 +1396,7 @@ function runInfo(){
 var endTimer=null;
 function stopRun(silent){clearTimeout(endTimer);clearTimeout(gapTimer);gapTimer=null;audio.pause();const wasRead=run&&run.kind==='read';run=null;setPlayIcon(false);releaseWake();clearNow();if(wasRead)paintBookmark();if(!silent)updateBar()}
 function stepEnded(){
-  audio.pause(); clearTimeout(endTimer); clearNow(); const fin=run.steps[run.i], lastDur=fin.e-fin.s; run.count++;
+  audio.pause(); clearTimeout(endTimer); clearNow(); const fin=run.steps[run.i], lastDur=fin.e-fin.s; {const rg=run.ranges[run.i];if(rg&&run.kind!=='read')statBump(rg.a,rg.b,0)} run.count++;
   if(!(run.reps===Infinity||run.count<run.reps)){run.count=0;run.i++}
   if(run.i>=run.steps.length){
     const cb=run.onDone,kind=run.kind,rs=run.ranges; stopRun(true); updateBar();
@@ -1888,6 +1972,45 @@ function openChoice(){
 }
 
 /* Accueil : 1 toucher = le nom ; 2e toucher = la sourate s'ouvre ; appui long = apprise */
+// un arbre qui pousse : une feuille par verset appris, un fruit par sourate apprise
+function treeSVG(leaves,fruits){
+  let seed=7; const rnd=()=>(seed=(seed*16807)%2147483647)/2147483647;
+  const L=Math.min(leaves,140), F=Math.min(fruits,24), R=leaves?Math.min(44,16+Math.sqrt(leaves)*4.2):0;
+  const cx=70, cy=78-R*0.75, base=112;
+  let h='<svg viewBox="0 0 140 120" class="tree" aria-hidden="true"><ellipse cx="70" cy="114" rx="46" ry="5" class="soil"/>';
+  if(!leaves){ // une petite pousse
+    return h+'<path d="M70 113V96" class="trunk" stroke-width="3"/><ellipse cx="62" cy="95" rx="8" ry="4" transform="rotate(-25 62 95)" class="lf a"/><ellipse cx="78" cy="92" rx="8" ry="4" transform="rotate(25 78 92)" class="lf b"/></svg>';
+  }
+  const tw=Math.max(3,R/5);
+  h+='<path d="M70 '+base+'C70 '+(base-20)+' 69 '+(cy+R*0.5)+' 70 '+(cy+4)+'" class="trunk" stroke-width="'+tw.toFixed(1)+'"/>';
+  h+='<path d="M70 '+(cy+R*0.45)+'L'+(cx-R*0.55)+' '+(cy)+'M70 '+(cy+R*0.35)+'L'+(cx+R*0.5)+' '+(cy-R*0.15)+'" class="trunk" stroke-width="'+(tw*0.55).toFixed(1)+'"/>';
+  for(let i=0;i<L;i++){const a=rnd()*Math.PI*2, r=Math.sqrt(rnd())*R, x=cx+Math.cos(a)*r*1.1, y=cy+Math.sin(a)*r*0.85;
+    h+='<ellipse cx="'+x.toFixed(1)+'" cy="'+y.toFixed(1)+'" rx="4.2" ry="2.6" transform="rotate('+Math.round(rnd()*180)+' '+x.toFixed(1)+' '+y.toFixed(1)+')" class="lf '+(i%3?'a':'b')+'"/>'}
+  for(let i=0;i<F;i++){const a=rnd()*Math.PI*2, r=Math.sqrt(rnd())*R*0.85, x=cx+Math.cos(a)*r*1.1, y=cy+Math.sin(a)*r*0.85;
+    h+='<circle cx="'+x.toFixed(1)+'" cy="'+y.toFixed(1)+'" r="3.6" class="fr"/>'}
+  return h+'</svg>';
+}
+function weekDotsHTML(){
+  const act=activeDays(), end=today(); let h='<div class="ls-week">';
+  for(let i=6;i>=0;i--){const k=dayStr(end-i*DAY);h+='<i class="'+(act[k]?'on':'')+(i===0?' tod':'')+'"></i>'}
+  return h+'</div>';
+}
+function gardenHTML(){const g=globalCounts();return '<div class="ls-garden">'+treeSVG(g.verses,g.surahs)+weekDotsHTML()+'</div>'}
+// écran de suivi pour l'accompagnant (appui long sur le logo ou la maison)
+function openHelper(){
+  lsOpen(); lsStop(); lsView='helper';
+  const ts=timeStats(), g=globalCounts(), st=streak();
+  $('ls').innerHTML='<div class="ls-top"><button class="ls-home" id="lsHome" aria-label="Accueil">'+LS_ICO.home+'</button><div class="ls-head"><b class="ls-ht">Suivi</b></div><span class="ls-spacer"></span></div>'+
+    '<div class="ls-body ls-help"><p class="note">Écran réservé à l’accompagnant.</p>'+
+    '<div class="stats"><div class="stat"><b>'+fmtDur(ts.today)+'</b><small>aujourd’hui</small></div><div class="stat"><b>'+fmtDur(ts.week)+'</b><small>ces 7 jours</small></div><div class="stat"><b>'+fmtDur(ts.total)+'</b><small>au total</small></div></div>'+
+    '<div class="stats"><div class="stat"><b>🔥 '+st+'</b><small>jour'+(st>1?'s':'')+' d’affilée</small></div><div class="stat"><b>'+g.verses+'</b><small>versets appris</small></div><div class="stat"><b>'+g.surahs+'</b><small>sourates apprises</small></div></div>'+
+    '<div class="stats" style="grid-template-columns:1fr"><div class="stat"><b>'+g.learning+'</b><small>sourates en cours</small></div></div>'+
+    '<h3>Ses 16 dernières semaines</h3>'+calHTML(16)+
+    '<div class="legend cal-leg"><span>moins</span><i data-l="0"></i><i data-l="1"></i><i data-l="2"></i><i data-l="3"></i><i data-l="4"></i><span>plus</span></div>'+
+    '<button class="btn primary" id="hlMode" style="width:100%;margin-top:22px">Changer de mode : je lis / j’écoute</button></div>';
+  $('lsHome').onclick=()=>openListenHome();
+  $('hlMode').onclick=openChoice;
+}
 const lsStateOf=id=>surahInfo(id,LS.get('hk.sum',{})).st; // '' | 'l' | 'm'
 function lsTileHTML(id){
   const c=CHAPTERS[id-1], st=lsStateOf(id);
@@ -1895,11 +2018,11 @@ function lsTileHTML(id){
 }
 function openListenHome(){
   lsOpen(); lsStop(); lsView='home'; lsSel=null;
-  let h='<div class="ls-top"><span class="ls-spacer"></span><div class="ls-head"><img class="ls-logo" id="lsLogo" src="icon-180.png" alt="Mémorise le Coran"></div><button class="ls-recbtn" id="lsRecBtn" aria-label="Récitateur">'+recAvatar(+reciterId)+'</button></div><div class="ls-body"><div class="ls-grid">';
+  let h='<div class="ls-top"><span class="ls-spacer"></span><div class="ls-head"><img class="ls-logo" id="lsLogo" src="icon-180.png" alt="Mémorise le Coran"></div><button class="ls-recbtn" id="lsRecBtn" aria-label="Récitateur">'+recAvatar(+reciterId)+'</button></div><div class="ls-body">'+gardenHTML()+'<div class="ls-grid">';
   LS_LIST.forEach(id=>h+=lsTileHTML(id));
   h+='</div></div>';
   $('ls').innerHTML=h; $('ls').scrollTop=0;
-  longPress($('lsLogo'),openChoice);
+  longPress($('lsLogo'),openHelper);
   $('lsRecBtn').onclick=()=>{lsUnlock();openReciters()};
   document.querySelectorAll('.ls-tile').forEach(lsBindTile);
 }
@@ -1930,7 +2053,7 @@ async function openListenSurah(id){
     '<button class="ls-mark" id="lsMark" aria-label="Où j’en suis"></button></div>';
   $('ls').scrollTop=0; lsPaint();
   $('lsHome').onclick=()=>{if(wasLong($('lsHome')))return;say({fr:'Accueil'});openListenHome()};
-  longPress($('lsHome'),openChoice);
+  longPress($('lsHome'),openHelper);
   $('lsRecBtn').onclick=()=>{lsUnlock();openReciters()};
   $('lsPlay').onclick=lsTogglePlay; $('lsLoopB').onclick=lsToggleLoop; $('lsSpeedB').onclick=lsNextSpeed;
   $('lsMark').onclick=lsMark;
@@ -2097,7 +2220,7 @@ function openReciters(){
   h+='</div></div>';
   $('ls').innerHTML=h; $('ls').scrollTop=0;
   $('lsHome').onclick=()=>{if(wasLong($('lsHome')))return;say({fr:'Accueil'});openListenHome()};
-  longPress($('lsHome'),openChoice);
+  longPress($('lsHome'),openHelper);
   // on prépare l'extrait (début d'Al-Fâtiha) de chaque récitateur
   LS_RECS.forEach(r=>{if(recUrls[r.id])return;loadTiming(r.id,1).then(t=>{const v=t.v[1]||{};recUrls[r.id]={url:t.url,end:Math.min(9,Math.max(4,((v.to||7000)/1000)+.3))}}).catch(()=>{})});
   document.querySelectorAll('.ls-rec').forEach(b=>b.onclick=()=>{
