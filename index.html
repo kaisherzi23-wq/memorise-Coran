@@ -354,11 +354,14 @@ textarea{width:100%;min-height:70px;border-radius:10px;border:1px solid var(--li
 .ls-verse .w{border-radius:10px;padding:0 .08em;transition:background .15s;cursor:pointer}
 .ls-verse .w.sel{box-shadow:inset 0 -4px 0 var(--gold);background:var(--sel)}
 .ls-verse .w.now{background:var(--now);color:var(--now-ink)}
-.ls-dots{display:flex;flex-wrap:wrap;justify-content:center;gap:10px;margin:16px 0 18px;direction:rtl}
-.ls-dot{width:36px;height:36px;border-radius:50%;border:2px solid var(--gold);background:var(--page);padding:0}
-.ls-dot[data-st="l"]{background:#E2B04A;border-color:#E2B04A}
-.ls-dot[data-st="m"]{background:#1F5E4E;border-color:#1F5E4E}
-.ls-dot.cur{box-shadow:0 0 0 4px var(--bg),0 0 0 7px var(--ink);transform:scale(1.1)}
+.ls-posrow{display:flex;justify-content:center;margin:14px 0 16px}
+.ls-pos{position:relative;width:76px;height:76px;border-radius:50%;padding:0;border:0;background:var(--page);color:var(--gold);display:grid;place-items:center;box-shadow:0 4px 0 rgba(0,0,0,.10)}
+.ls-pos svg{position:absolute;inset:0;width:100%;height:100%}
+.ls-pos .trk{fill:none;stroke:var(--gold-soft);stroke-width:7}
+.ls-pos .arc{fill:none;stroke:var(--gold);stroke-width:7;stroke-linecap:round;transition:stroke-dasharray .3s}
+.ls-pos b{position:relative;font-size:1.7rem;font-weight:700;font-variant-numeric:tabular-nums}
+.ls-pos[data-st="l"]{background:#E2B04A;color:#3B2A06}.ls-pos[data-st="l"] .arc{stroke:#7A5512}.ls-pos[data-st="l"] .trk{stroke:rgba(255,255,255,.45)}
+.ls-pos[data-st="m"]{background:#1F5E4E;color:#fff}.ls-pos[data-st="m"] .arc{stroke:#E9D9A6}.ls-pos[data-st="m"] .trk{stroke:rgba(255,255,255,.25)}
 .ls-acts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
 .ls-act{border:0;border-radius:26px;aspect-ratio:1;width:100%;max-width:100%;padding:0;display:grid;place-items:center;color:#fff;box-shadow:0 6px 0 rgba(0,0,0,.18)}
 .ls-act svg,.ls-mark svg{width:58%;height:auto;aspect-ratio:1;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
@@ -1827,15 +1830,19 @@ function pickVoice(lang){
 function say(txt,cb){
   let done=false; const end=()=>{if(done)return;done=true;if(cb)cb()};
   if(!('speechSynthesis' in window)){setTimeout(end,300);return}
-  try{
-    speechSynthesis.cancel();
-    const ar=txt.ar&&pickVoice('ar'), useAr=!!ar, text=useAr?txt.ar:(txt.fr||txt.ar);
+  if(!VOICES.length) loadVoices();
+  // Android donne parfois une liste de voix vide : on tente quand même l'arabe, et on repasse en français si ça échoue
+  const ar=txt.ar&&pickVoice('ar'), tryAr=!!txt.ar&&(!!ar||!VOICES.length);
+  const speak=(lang)=>{
+    const isAr=lang==='ar', text=isAr?txt.ar:(txt.fr||txt.ar);
     const u=new SpeechSynthesisUtterance(text);
-    if(useAr){u.voice=ar;u.lang=ar.lang}else{const fr=pickVoice('fr');if(fr)u.voice=fr;u.lang=fr?fr.lang:'fr-FR'}
-    u.rate=useAr?.85:.95; u.onend=end; u.onerror=end;
+    if(isAr){if(ar)u.voice=ar;u.lang=ar?ar.lang:'ar-SA'}else{const fr=pickVoice('fr');if(fr)u.voice=fr;u.lang=fr?fr.lang:'fr-FR'}
+    u.rate=isAr?.85:.95; u.onend=end;
+    u.onerror=()=>{if(isAr&&txt.fr&&!done){try{speechSynthesis.cancel()}catch(e){}speak('fr')}else end()};
     speechSynthesis.speak(u);
-    setTimeout(end,1200+text.length*140);
-  }catch(e){setTimeout(end,300)}
+    setTimeout(end,1500+text.length*150);
+  };
+  try{speechSynthesis.cancel();speak(tryAr?'ar':'fr')}catch(e){setTimeout(end,300)}
 }
 const shush=()=>{try{speechSynthesis.cancel()}catch(e){}};
 // autorise le son dès le toucher (iPhone)
@@ -1902,7 +1909,7 @@ function lsBindTile(b){
 async function openListenSurah(id){
   lsStop(); lsView='surah'; lsSurahId=id; lsCur=1; lsLoop=false; lsWords=null; const tok=lsToken, c=CHAPTERS[id-1];
   $('ls').innerHTML='<div class="ls-top"><button class="ls-home" id="lsHome" aria-label="Accueil">'+LS_ICO.home+'</button><div class="ls-head"><span class="ls-medal">'+lsN(id)+'</span><span class="arn">'+esc(c.name_arabic)+'</span></div><button class="ls-recbtn" id="lsRecBtn" aria-label="Récitateur">'+recAvatar(+reciterId)+'</button></div>'+
-    '<div class="ls-body">'+(hasBas(id)?'<div class="ls-bas" id="lsBas">'+BASMALA+'</div>':'')+'<div class="ls-verse"><div class="t" id="lsText">⏳</div></div><div class="ls-dots" id="lsDots"></div>'+
+    '<div class="ls-body">'+(hasBas(id)?'<div class="ls-bas" id="lsBas">'+BASMALA+'</div>':'')+'<div class="ls-verse"><div class="t" id="lsText">⏳</div></div><div class="ls-posrow"><button class="ls-pos" id="lsPos" aria-label="Verset"></button></div>'+
     '<div class="ls-acts"><button class="ls-act lsplay" id="lsPlay" aria-label="Lecture"></button><button class="ls-act loop" id="lsLoopB" aria-label="En boucle">'+LS_ICO.loop+'</button><button class="ls-act speed" id="lsSpeedB" aria-label="Vitesse"></button></div>'+
     '<button class="ls-mark" id="lsMark" aria-label="Où j’en suis"></button></div>';
   $('ls').scrollTop=0; lsPaint();
@@ -1919,15 +1926,29 @@ async function openListenSurah(id){
   lsRenderDots(); lsShowVerse(1); lsPlay();
 }
 const lsVS=()=>coverage().vs;
+// une seule pastille : le numéro du verset en cours, et un anneau qui montre où on en est dans la sourate
 function lsRenderDots(){
-  const box=$('lsDots'); if(!box) return; box.innerHTML='';
-  verses.forEach(v=>{const d=document.createElement('button');d.className='ls-dot';d.dataset.v=v.n;d.setAttribute('aria-label','Verset '+v.n);
-    d.onclick=()=>{lsUnlock();lsHalt();lsWords=null;lsCur=v.n;lsShowVerse(v.n);lsPlay()};box.appendChild(d)});
+  const p=$('lsPos'); if(p) p.onclick=()=>{lsUnlock();lsHalt();lsWords=null;say({fr:'Verset '+lsCur},()=>{if(lsView==='surah')lsPlay()})};
+  // glisser le doigt sur le verset : verset suivant / précédent
+  const card=document.querySelector('.ls-verse'); let x0=null,y0=0;
+  if(card){
+    card.addEventListener('touchstart',e=>{x0=e.touches[0].clientX;y0=e.touches[0].clientY},{passive:true});
+    card.addEventListener('touchend',e=>{if(x0==null)return;const dx=e.changedTouches[0].clientX-x0,dy=e.changedTouches[0].clientY-y0;x0=null;
+      if(Math.abs(dx)<60||Math.abs(dx)<Math.abs(dy)*1.5)return; lsGo(dx>0?1:-1)},{passive:true});
+  }
   lsPaintDots();
 }
+function lsGo(d){
+  if(!verses.length) return; const first=verses[0].n,last=verses[verses.length-1].n, n=Math.min(last,Math.max(first,lsCur+d));
+  if(n===lsCur) return; lsUnlock(); lsHalt(); lsWords=null; lsCur=n; lsShowVerse(n); lsPlay();
+}
 function lsPaintDots(){
-  const vs=lsVS();
-  document.querySelectorAll('.ls-dot').forEach(d=>{const v=+d.dataset.v;d.classList.toggle('cur',v===lsCur);if(vs[v])d.dataset.st=vs[v];else delete d.dataset.st});
+  const vs=lsVS(), p=$('lsPos');
+  if(p&&verses.length){
+    const tot=verses.length, idx=verses.findIndex(v=>v.n===lsCur)+1, C=2*Math.PI*44, f=tot>1?idx/tot:1;
+    p.dataset.st=vs[lsCur]||'';
+    p.innerHTML='<svg viewBox="0 0 100 100"><circle class="trk" cx="50" cy="50" r="44"/><circle class="arc" cx="50" cy="50" r="44" stroke-dasharray="'+(C*f).toFixed(1)+' '+C.toFixed(1)+'" transform="rotate(-90 50 50)"/></svg><b>'+lsCur+'</b>';
+  }
   const s=vs[lsCur]||'', b=$('lsMark');
   if(b){b.dataset.st=s;b.innerHTML=markIcon(s)}
 }
