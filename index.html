@@ -206,6 +206,19 @@ textarea{width:100%;min-height:70px;border-radius:10px;border:1px solid var(--li
 .cal i[data-l="4"],.cal-leg i[data-l="4"]{background:var(--done)}
 .cal i.tod{outline:2px solid var(--gold);outline-offset:1px}
 .cal-leg{align-items:center;gap:4px}.cal-leg i{width:12px;height:12px;margin:0}
+.juz{display:grid;grid-template-columns:repeat(6,1fr);gap:5px;direction:ltr;margin:6px 0}
+.jz{position:relative;border-radius:8px;border:1px solid var(--line);background:linear-gradient(to top,color-mix(in srgb,var(--done) 70%,var(--bg)) var(--p),var(--bg) var(--p));padding:5px 2px;text-align:center;overflow:hidden}
+.jz.full{background:var(--done);color:var(--page);border-color:var(--done)}
+.jz b{display:block;font-size:.95rem;font-variant-numeric:tabular-nums}.jz small{font-size:.66rem;color:inherit;opacity:.75}
+.proj{background:var(--bg);border:1px solid var(--gold-soft);border-radius:14px;padding:12px 14px;margin:12px 0}
+.proj>b{font-size:1.15rem;display:block;margin:2px 0 8px}.proj p{margin:8px 0 0;font-size:.92rem}.proj .muted,.journey .muted{color:var(--muted);font-size:.86rem}
+.bar{height:8px;border-radius:5px;background:var(--line);overflow:hidden}.bar i{display:block;height:100%;background:var(--done);border-radius:5px}
+.retro{font-size:.92rem;margin:10px 0 14px}
+.journey .lbl{display:block;margin-top:14px}
+.steps{display:grid;gap:8px;margin-top:6px}
+.stp{display:grid;grid-template-columns:24px 1fr auto;align-items:center;column-gap:8px;row-gap:4px}
+.stp .ic{grid-row:1/3;font-size:1.05rem;color:var(--gold);text-align:center}.stp b{font-size:.9rem}.stp small{color:var(--muted);font-size:.78rem}
+.stp .bar{grid-column:2/4;height:6px}.stp.done .ic{color:var(--done)}.stp.done b{color:var(--done)}
 .diff{display:grid;gap:8px}
 .diff button{display:grid;grid-template-columns:1fr auto;align-items:center;text-align:left;background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:10px 12px;color:var(--ink)}
 .diff b{font-size:.95rem}.diff small{grid-column:1;color:var(--muted);font-size:.8rem}.diff span{grid-column:2;grid-row:1/3;font-size:1.4rem;color:var(--muted)}
@@ -432,7 +445,7 @@ textarea{width:100%;min-height:70px;border-radius:10px;border:1px solid var(--li
 .ls-week i.tod{box-shadow:0 0 0 2px var(--bg),0 0 0 4px var(--ink)}
 .ls-ht{font-size:1.6rem;color:var(--gold)}
 .ls-help h3{margin:18px 0 8px;font-size:1rem}
-.ls-help .stats{margin:8px 0}.ls-help .stat{background:var(--page)}
+.ls-help .stats{margin:8px 0}.ls-help .proj{background:var(--page)}.ls-help .jz:not(.full){background:linear-gradient(to top,color-mix(in srgb,var(--done) 70%,var(--page)) var(--p),var(--page) var(--p))}.ls-help .stat{background:var(--page)}
 /* écran du choix */
 .ls-choice{display:grid;gap:18px;max-width:520px;margin:0 auto;padding:30px 0}
 .ls-big{border:0;border-radius:32px;padding:26px 16px;display:flex;flex-direction:column;align-items:center;gap:10px;box-shadow:0 7px 0 rgba(0,0,0,.16);color:#fff}
@@ -921,7 +934,8 @@ function logSession(){
 // temps d'écoute réel : on compte seulement quand la récitation joue
 let statTick=Date.now();
 setInterval(()=>{const now=Date.now(),dt=Math.min(10,(now-statTick)/1000);statTick=now;if(audio.paused)return;
-  const t=LS.get('hk.time',{}),k=dayStr(now);t[k]=Math.round(((t[k]||0)+dt)*10)/10;LS.set('hk.time',t)},5000);
+  const t=LS.get('hk.time',{}),k=dayStr(now);t[k]=Math.round(((t[k]||0)+dt)*10)/10;LS.set('hk.time',t);
+  const hr=LS.get('hk.hours',{}),h=new Date(now).getHours();hr[h]=Math.round((hr[h]||0)+dt);LS.set('hk.hours',hr)},5000);
 // versets travaillés en boucle (répétitions) et ratés au test
 function statBump(a,b,idx){
   if(!a||!b||b.v-a.v>2) return; const d=LS.get('hk.diff',{});
@@ -957,6 +971,101 @@ function diffList(){
   const d=LS.get('hk.diff',{});
   return Object.entries(d).map(([k,[r,f]])=>{const [s,v]=k.split(':').map(Number);return {s,v,r,f,score:r+f*5}})
     .filter(x=>x.score>=5).sort((a,b)=>b.score-a.score).slice(0,6);
+}
+/* ---------- Parcours : juz', étapes, rythme, projections ---------- */
+const JUZ=[[1,1],[2,142],[2,253],[3,93],[4,24],[4,148],[5,82],[6,111],[7,88],[8,41],[9,93],[11,6],[12,53],[15,1],[17,1],[18,75],[21,1],[23,1],[25,21],[27,56],[29,46],[33,31],[36,28],[39,32],[41,47],[46,1],[51,31],[58,1],[67,1],[78,1]];
+// état de chaque verset d'une sourate : 'm' appris, 'l' en cours, '' rien
+function surahVS(s,sums){
+  const N=CHAPTERS[s-1].verses_count; if(smanual[s]==='m') return Array(N).fill('m');
+  const x=sums[s]||{}; let b;
+  if(x.st&&x.st.length===N) b=x.st.split('').map(c=>c==='m'?'m':c==='l'?'l':'');
+  else {const mv=Math.min(N,x.mv||0); b=Array.from({length:N},(_,i)=>i<mv?'m':'')}
+  const man=LS.get('hk.manual.'+s,null); if(man) for(const k in man){const i=+k-1;if(i>=0&&i<N)b[i]=man[k]==='n'?'':man[k]}
+  return b;
+}
+function allVS(){const sums=LS.get('hk.sum',{}),o={};for(let s=1;s<=114;s++)o[s]=surahVS(s,sums);return o}
+// étendue d'un juz' : liste [sourate, du verset, au verset]
+function juzRanges(j){
+  const [s0,v0]=JUZ[j-1], nx=JUZ[j], out=[];
+  for(let s=s0;s<=114;s++){
+    const N=CHAPTERS[s-1].verses_count, a=s===s0?v0:1;
+    if(nx&&(s>nx[0]||(s===nx[0]&&nx[1]===1))) break;
+    const b=nx&&s===nx[0]?nx[1]-1:N; out.push([s,a,b]); if(nx&&s===nx[0]) break;
+  }
+  return out;
+}
+function countRanges(rs,vs){let tot=0,m=0;for(const [s,a,b] of rs){for(let v=a;v<=b;v++){tot++;if(vs[s][v-1]==='m')m++}}return {tot,m}}
+const SR=(a,b)=>{const o=[];for(let s=a;s<=b;s++)o.push([s,1,CHAPTERS[s-1].verses_count]);return o};
+const MILESTONES=[
+  {t:'Al-Fâtiha',r:()=>SR(1,1)},{t:'Les 10 dernières sourates',r:()=>SR(105,114)},{t:'Juz’ ‘Amma',r:()=>juzRanges(30)},
+  {t:'Al-Mulk',r:()=>SR(67,67)},{t:'Juz’ Tabârak',r:()=>juzRanges(29)},{t:'Yâ-Sîn',r:()=>SR(36,36)},{t:'Al-Kahf',r:()=>SR(18,18)},
+  {t:'Juz’ Qad Sami‘a',r:()=>juzRanges(28)},{t:'Al-Baqara',r:()=>SR(2,2)},
+  {t:'Un quart du Coran',f:.25},{t:'La moitié du Coran',f:.5},{t:'Tout le Coran',f:1}];
+function milestones(vs){
+  const total=Object.values(vs).reduce((n,a)=>n+a.filter(x=>x==='m').length,0);
+  return MILESTONES.map((x,i)=>{
+    if(x.f){const tot=Math.round(TOTAL_VERSES*x.f);return {i,t:x.t,tot,m:Math.min(total,tot)}}
+    const c=countRanges(x.r(),vs); return {i,t:x.t,tot:c.tot,m:c.m,rs:x.r()};
+  });
+}
+// photo quotidienne du nombre de versets appris (sert à mesurer le rythme)
+function progSnap(){try{const g=globalCounts(),p=LS.get('hk.prog',{}),k=dayStr(Date.now());if(p[k]!==g.verses){p[k]=g.verses;LS.set('hk.prog',p)}}catch(e){}}
+function firstDay(){
+  const ks=[...Object.keys(LS.get('hk.prog',{})),...Object.keys(LS.get('hk.time',{})),...Object.keys(LS.get('hk.days',{}))].sort();
+  return ks.length?new Date(ks[0]+'T12:00').getTime():today();
+}
+function rhythm(){
+  const start=firstDay(), span=Math.round((today()-new Date(new Date(start).setHours(0,0,0,0)))/DAY)+1;
+  if(span<7) return {ready:false,wait:7-span,span};
+  const W=Math.min(28,span), from=today()-(W-1)*DAY, p=LS.get('hk.prog',{}), keys=Object.keys(p).sort();
+  let prev=null,gain=0; for(const k of keys){const t=new Date(k+'T12:00').getTime();if(t<from){prev=p[k];continue} if(prev!=null)gain+=Math.max(0,Math.min(60,p[k]-prev)); prev=p[k]}
+  const tm=LS.get('hk.time',{}), act=activeDays(); let sec=0,ad=0;
+  for(let i=0;i<W;i++){const k=dayStr(today()-i*DAY);sec+=tm[k]||0;if(act[k])ad++}
+  const hr=LS.get('hk.hours',{}), slots=[['le matin',5,12],['l’après-midi',12,18],['le soir',18,24],['la nuit',0,5]];
+  let best=null,bv=0; for(const [n,a,b] of slots){let v=0;for(let h=a;h<b;h++)v+=hr[h]||0;if(v>bv){bv=v;best=n}}
+  return {ready:true,W,gain,perDay:gain/W,perWeek:gain/W*7,minPerDay:sec/60/W,minPerVerse:gain?sec/60/gain:null,daysPerWeek:ad/W*7,moment:best,span};
+}
+const fmtDate=t=>{const d=new Date(t),y=d.getFullYear()!==new Date().getFullYear();const r=d.toLocaleDateString('fr-FR',y?{day:'numeric',month:'long',year:'numeric'}:{day:'numeric',month:'long'});return d.getDate()===1?r.replace(/^1 /,'1er '):r};
+const FAMOUS=[1,112,103,108,97,87,78,67,36,55,56,18,19,2];
+function equivalent(n){let best=null;for(const s of FAMOUS){const c=CHAPTERS[s-1].verses_count;if(c<=n&&(!best||c>CHAPTERS[best-1].verses_count))best=s}return best}
+// tout le bloc « parcours » (juz', prochaine étape, projections, rythme, étapes)
+function journeyHTML(who){
+  const vs=allVS(), ms=milestones(vs), rh=rhythm(), g=globalCounts(), tu=who==='elle'?'elle':'tu', ton=who==='elle'?'son':'ton', tes=who==='elle'?'ses':'tes';
+  let h='<div class="juz">';
+  for(let j=1;j<=30;j++){const c=countRanges(juzRanges(j),vs),p=Math.round(c.m*100/c.tot);h+='<div class="jz'+(p>=100?' full':'')+'" style="--p:'+p+'%"><b>'+j+'</b><small>'+p+' %</small></div>'}
+  h+='</div><p class="note">Chaque case est un juz’ (un trentième du Coran), remplie selon les versets appris.</p>';
+  // prochaine étape : celle en cours la plus avancée
+  const open=ms.filter(x=>x.m<x.tot), next=open.slice().sort((a,b)=>(b.m/b.tot)-(a.m/a.tot)||a.i-b.i)[0];
+  if(next){
+    const left=next.tot-next.m, ns=next.rs?next.rs.filter(([s,a,b])=>vs[s].slice(a-1,b).some(x=>x!=='m')).length:0;
+    h+='<div class="proj"><span class="lbl">Prochaine étape</span><b>'+esc(next.t)+'</b><div class="bar"><i style="width:'+Math.round(next.m*100/next.tot)+'%"></i></div>'+
+      '<p>Il reste <b>'+left+' verset'+(left>1?'s':'')+'</b>'+(ns>1?' dans '+ns+' sourates':'')+'.</p>';
+    if(!rh.ready) h+='<p class="muted">🔮 Encore '+rh.wait+' jour'+(rh.wait>1?'s':'')+' d’utilisation et l’app pourra estimer quand '+(tu==='elle'?'elle':'tu')+' y arrivera'+(tu==='elle'?'':'s')+'.</p>';
+    else if(rh.perDay<.05) h+='<p class="muted">🔮 Pas assez de nouveaux versets ces dernières semaines pour faire une estimation. Quelques séances suffiront.</p>';
+    else{
+      const d1=today()+Math.ceil(left/rh.perDay)*DAY;
+      h+='<p>🔮 À '+ton+' rythme actuel, '+(tu==='elle'?'elle y arrivera':'tu y arriveras')+' vers le <b>'+fmtDate(d1)+'</b>.</p>';
+      if(rh.minPerVerse){const r2=(rh.minPerDay+10)/rh.minPerVerse, d2=today()+Math.ceil(left/r2)*DAY;
+        if(d1-d2>=3*DAY) h+='<p class="muted">Avec 10 minutes de plus par jour, ce serait vers le '+fmtDate(d2)+'.</p>'}
+    }
+    h+='</div>';
+  }
+  // chemin parcouru
+  if(g.verses){const eq=equivalent(g.verses);
+    h+='<p class="retro">Depuis '+(rh.span>1?'le '+fmtDate(firstDay()):'aujourd’hui')+', '+tu+' '+(tu==='elle'?'a':'as')+' appris <b>'+g.verses+' versets</b>'+(eq?', c’est '+(CHAPTERS[eq-1].verses_count===g.verses?'':'plus que ')+'toute la sourate '+esc(CHAPTERS[eq-1].name_simple)+' ('+CHAPTERS[eq-1].verses_count+' versets)':'')+'. 👏</p>'}
+  // rythme
+  if(rh.ready){
+    h+='<span class="lbl">'+(tu==='elle'?'Son':'Mon')+' rythme (4 dernières semaines)</span><div class="stats">'+
+      '<div class="stat"><b>'+(Math.round(rh.perWeek*10)/10).toString().replace('.',',')+'</b><small>versets par semaine</small></div>'+
+      '<div class="stat"><b>'+(rh.minPerVerse?Math.round(rh.minPerVerse)+' min':'–')+'</b><small>par verset appris</small></div>'+
+      '<div class="stat"><b>'+Math.round(rh.daysPerWeek)+' / 7</b><small>jours actifs par semaine</small></div></div>'+
+      (rh.moment?'<p class="note">'+(tu==='elle'?'Elle travaille':'Tu travailles')+' surtout '+rh.moment+'.</p>':'');
+  }
+  // étapes
+  h+='<span class="lbl">Les étapes</span><div class="steps">';
+  ms.forEach(x=>{const done=x.m>=x.tot,p=Math.round(x.m*100/x.tot);
+    h+='<div class="stp'+(done?' done':'')+'"><span class="ic">'+(done?'✓':p?'◐':'○')+'</span><b>'+esc(x.t)+'</b><small>'+(done?'terminé':x.m+' / '+x.tot+' versets')+'</small><div class="bar"><i style="width:'+p+'%"></i></div></div>'});
+  return h+'</div>';
 }
 function streak(){
   const d=activeDays(); let n=0, t=today();
@@ -1015,8 +1124,8 @@ function setVerseStates(list,st){
 function setSurahMastered(id,on){
   const sums=LS.get('hk.sum',{});
   if(on){smanual[id]='m'; LS.set('hk.manual.'+id,{});}
-  else{delete smanual[id]; LS.set('hk.manual.'+id,{}); if(sums[id]){sums[id].mv=0;sums[id].any=0;LS.set('hk.sum',sums)}}
-  LS.set('hk.smanual',smanual);
+  else{delete smanual[id]; LS.set('hk.manual.'+id,{}); if(sums[id]){sums[id].mv=0;sums[id].any=0;delete sums[id].st;LS.set('hk.sum',sums)}}
+  LS.set('hk.smanual',smanual); progSnap();
   if(id===surah){manual={}; refreshProgress()}
 }
 function closeVerseMenu(){$('vpop').hidden=true}
@@ -1050,7 +1159,7 @@ function refreshProgress(){
   const c=coverage(), due=parts.filter(isDue).length;
   for(const v of verses){const s=c.vs[v.n];if(s)numEl[v.n].dataset.st=s;else delete numEl[v.n].dataset.st}
   $('dueBadge').hidden=!due; $('dueBadge').textContent=due;
-  const sums=LS.get('hk.sum',{}); sums[surah]={pct:c.pct,mv:Object.values(c.vs).filter(x=>x==='m').length,any:Object.values(c.vs).filter(Boolean).length,due}; LS.set('hk.sum',sums);
+  const sums=LS.get('hk.sum',{}); sums[surah]={pct:c.pct,mv:Object.values(c.vs).filter(x=>x==='m').length,any:Object.values(c.vs).filter(Boolean).length,due,st:verses.map(v=>c.vs[v.n]==='m'?'m':c.vs[v.n]==='l'?'l':'-').join('')}; LS.set('hk.sum',sums); progSnap();
   if(!$('progSheet').hidden) renderProgress(c);
 }
 function dueText(p){if(p.status!=='mastered')return '';const d=Math.round((p.due-today())/DAY);return d<=0?'À réviser aujourd’hui':(d===1?'Révision demain':'Révision dans '+d+' jours')}
@@ -1085,6 +1194,7 @@ function renderStats(){
   const ts=timeStats(), g=globalCounts(), st=streak(), dl=diffList();
   let h='<div class="stats"><div class="stat"><b>'+fmtDur(ts.today)+'</b><small>aujourd’hui</small></div><div class="stat"><b>'+fmtDur(ts.week)+'</b><small>ces 7 jours</small></div><div class="stat"><b>'+fmtDur(ts.total)+'</b><small>au total</small></div></div>'+
     '<div class="stats"><div class="stat"><b>🔥 '+st+'</b><small>jour'+(st>1?'s':'')+' d’affilée</small></div><div class="stat"><b>'+g.verses+'</b><small>versets maîtrisés</small></div><div class="stat"><b>'+g.surahs+'</b><small>sourates maîtrisées</small></div></div>'+
+    '<div class="group journey"><span class="lbl">Mon parcours</span>'+journeyHTML('tu')+'</div>'+
     '<div class="group"><span class="lbl">Mes 16 dernières semaines</span>'+calHTML(16)+
     '<div class="legend cal-leg"><span>moins</span><i data-l="0"></i><i data-l="1"></i><i data-l="2"></i><i data-l="3"></i><i data-l="4"></i><span>plus</span></div>'+
     '<p class="note">Seul le temps où la récitation joue est compté.</p></div>'+
@@ -2029,6 +2139,7 @@ function openHelper(){
     '<div class="stats"><div class="stat"><b>'+fmtDur(ts.today)+'</b><small>aujourd’hui</small></div><div class="stat"><b>'+fmtDur(ts.week)+'</b><small>ces 7 jours</small></div><div class="stat"><b>'+fmtDur(ts.total)+'</b><small>au total</small></div></div>'+
     '<div class="stats"><div class="stat"><b>🔥 '+st+'</b><small>jour'+(st>1?'s':'')+' d’affilée</small></div><div class="stat"><b>'+g.verses+'</b><small>versets appris</small></div><div class="stat"><b>'+g.surahs+'</b><small>sourates apprises</small></div></div>'+
     '<div class="stats" style="grid-template-columns:1fr"><div class="stat"><b>'+g.learning+'</b><small>sourates en cours</small></div></div>'+
+    '<h3>Son parcours</h3><div class="journey">'+journeyHTML('elle')+'</div>'+
     '<h3>Ses 16 dernières semaines</h3>'+calHTML(16)+
     '<div class="legend cal-leg"><span>moins</span><i data-l="0"></i><i data-l="1"></i><i data-l="2"></i><i data-l="3"></i><i data-l="4"></i><span>plus</span></div>'+
     '<button class="btn primary" id="hlMode" style="width:100%;margin-top:22px">Changer de mode : je lis / j’écoute</button></div>';
