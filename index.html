@@ -784,7 +784,7 @@ async function loadReciters(){
   return FALLBACK_RECITERS;
 }
 async function loadTiming(id,s){
-  const ck='hk.timing2.'+s+'.'+id; const c=LS.get(ck); if(c&&c.url) return c;
+  const ck='hk.timing3.'+s+'.'+id; const c=LS.get(ck); if(c&&c.url) return c;
   const q=`audio/reciters/${id}/audio_files?chapter=${s}&segments=true`;
   const d=await getJSON([QDC+q,QDC2+q]);
   const f=(d.audio_files||[])[0]; if(!f||!f.audio_url) throw new Error('no audio');
@@ -795,8 +795,16 @@ async function loadTiming(id,s){
       if(!Array.isArray(sg)||sg.length<3) continue;
       let p=+sg[0],a=+sg[sg.length-2],b=+sg[sg.length-1];
       if(a<from-1500){a+=from;b+=from}
-      if(p>0&&b>a){if(!w[p])w[p]=[a,b];sq.push([p,a,b])} // on garde chaque passage (le récitateur répète parfois un mot)
+      if(p>0&&b>a) sq.push([p,a,b]);
     }
+    // réparation des données : un numéro de mot en double suivi plus loin d'un numéro manquant
+    // (ex. Al-Kahf 22 : …11, 11, 12, 13, 14, 16…) = numéros décalés ; on les remet dans l'ordre
+    for(let i=1;i<sq.length;i++){
+      if(sq[i][0]!==sq[i-1][0]) continue;
+      let j=i+1; while(j<sq.length&&sq[j][0]===sq[j-1][0]+1) j++;
+      if(j<sq.length&&sq[j][0]===sq[j-1][0]+2) for(let k=i;k<j;k++) sq[k][0]++;
+    }
+    for(const [p,a,b] of sq) if(!w[p]) w[p]=[a,b]; // on garde chaque passage (le récitateur répète parfois un mot)
     t.v[n]={from,to,w,sq};
   }
   if(!Object.keys(t.v).length) throw new Error('no timing');
@@ -811,7 +819,9 @@ function wordTime(v,p){
   const i=verse.w.findIndex(w=>w.p===p), N=verse.w.length||1;
   let pi=i-1,ni=i+1; while(pi>=0&&!vt.w[verse.w[pi].p])pi--; while(ni<N&&!vt.w[verse.w[ni].p])ni++;
   const lo=pi>=0?vt.w[verse.w[pi].p][1]:vt.from, hi=ni<N?vt.w[verse.w[ni].p][0]:vt.to, gap=Math.max(1,ni-pi-1), j=i-pi-1;
-  if(hi>lo) return {s:lo+(hi-lo)*j/gap,e:lo+(hi-lo)*(j+1)/gap};
+  if(hi>lo&&(hi-lo)/gap>=250) return {s:lo+(hi-lo)*j/gap,e:lo+(hi-lo)*(j+1)/gap};
+  // trop peu de place entre les voisins : on partage avec eux
+  if(pi>=0&&ni<N){const L=vt.w[verse.w[pi].p][0],H=vt.w[verse.w[ni].p][1],g2=gap+2;return {s:L+(H-L)*(j+1)/g2,e:L+(H-L)*(j+2)/g2}}
   const span=vt.to-vt.from; return {s:vt.from+span*i/N,e:vt.from+span*(i+1)/N};
 }
 function rangeTime(a,b){
@@ -836,7 +846,7 @@ function buildFlat(){
   for(let i=0;i<flat.length-1;i++) if(flat[i].e>flat[i+1].s) flat[i].e=Math.max(flat[i].s+40,flat[i+1].s);
 }
 // nettoyage des anciens minutages (remplacés par hk.timing2)
-try{Object.keys(localStorage).filter(k=>k.startsWith('hk.timing.')).forEach(k=>localStorage.removeItem(k))}catch(e){}
+try{Object.keys(localStorage).filter(k=>k.startsWith('hk.timing.')||k.startsWith('hk.timing2.')).forEach(k=>localStorage.removeItem(k))}catch(e){}
 
 /* ---------- Texte ---------- */
 function firstLetter(t){const m=t.match(/^[ء-يٱ-ۓۺ-ۼ][ً-ٰٟۖ-ۭ]*/);return m?m[0]:t.slice(0,1)}
