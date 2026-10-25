@@ -2051,7 +2051,7 @@ window.addEventListener('scroll',()=>{const t=$('wtip');if(t)t.hidden=true},{pas
 
 // ----- mots clés : les mots les plus répétés dans un ensemble de sourates
 const W_SCOPES={amma:{t:'Juz’ ‘Amma + Al-Fâtiha',list:()=>[1].concat(Array.from({length:37},(_,i)=>78+i))},
-  cur:{t:'Sourate ouverte',list:()=>[surah]},
+  cur:{get t(){const c=CHAPTERS[surah-1];return c?'Sourate '+c.name_simple:'Sourate ouverte'},list:()=>[surah]},
   mine:{t:'Mes sourates',list:()=>{const v=allVS(),o=[];for(let i=1;i<=114;i++)if(v[i].some(x=>x))o.push(i);return o.length?o:[surah]}}};
 let wScope=LS.get('hk.wScope','amma'), wDeck=null, wBusy=false;
 async function buildDeck(scope,onProg){
