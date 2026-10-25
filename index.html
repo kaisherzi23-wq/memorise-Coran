@@ -2724,7 +2724,10 @@ const LS_RECS=[
   {id:7,ar:'مشاري راشد العفاسي',c:'#2F7D6B'},{id:6,ar:'محمود خليل الحصري',c:'#3D6584'},
   {id:2,ar:'عبد الباسط عبد الصمد',c:'#8A4F7D'},{id:9,ar:'محمد صديق المنشاوي',c:'#B0662E'},
   {id:3,ar:'عبد الرحمن السديس',c:'#5C6E2E'},{id:10,ar:'سعود الشريم',c:'#9A3B3B'},
-  {id:4,ar:'أبو بكر الشاطري',c:'#4E5D8C'},{id:5,ar:'هاني الرفاعي',c:'#7A6A2E'}];
+  {id:4,ar:'أبو بكر الشاطري',c:'#4E5D8C'},{id:5,ar:'هاني الرفاعي',c:'#7A6A2E'},
+  {id:159,ar:'ماهر المعيقلي',c:'#2E6F8E',fr:'Maher Al-Muaiqly',check:1}];
+// récitateurs « à vérifier » (encore en bêta chez quran.com) : affichés seulement si leur minutage se charge
+const recOk={}; function recCheck(id){return recOk[id]||(recOk[id]=loadTiming(id,1).then(()=>true,()=>false))}
 const recOf=id=>LS_RECS.find(r=>r.id===id)||{id,ar:'',c:'#3D6584'};
 // photo « recitateur-<id>.jpg » à côté de index.html ; sinon un rond de couleur avec l'initiale
 function recAvatar(id){
@@ -2738,11 +2741,12 @@ function smpStop(){try{smp.pause()}catch(e){}smpStopAt=0;document.querySelectorA
 function openReciters(){
   lsStop(); lsView='rec'; recSel=null;
   let h='<div class="ls-top"><button class="ls-home" id="lsHome" aria-label="Accueil">'+LS_ICO.home+'</button><div class="ls-head"><span class="ls-wave"><i></i><i></i><i></i><i></i><i></i></span></div><span class="ls-spacer"></span></div><div class="ls-body"><div class="ls-recs">';
-  LS_RECS.forEach(r=>{h+='<button class="ls-rec'+(r.id==reciterId?' chosen':'')+'" data-id="'+r.id+'" aria-label="'+esc(r.ar)+'">'+recAvatar(r.id)+'<span class="ok">'+LS_ICO.done+'</span><span class="nm">'+esc(r.ar)+'</span></button>'});
+  LS_RECS.forEach(r=>{h+='<button class="ls-rec'+(r.id==reciterId?' chosen':'')+'" data-id="'+r.id+'"'+(r.check&&r.id!=reciterId?' hidden':'')+' aria-label="'+esc(r.ar)+'">'+recAvatar(r.id)+'<span class="ok">'+LS_ICO.done+'</span><span class="nm">'+esc(r.ar)+'</span></button>'});
   h+='</div></div>';
   $('ls').innerHTML=h; $('ls').scrollTop=0;
   $('lsHome').onclick=()=>{if(wasLong($('lsHome')))return;say({fr:'Accueil'});openListenHome()};
   longPress($('lsHome'),openHelper);
+  LS_RECS.filter(r=>r.check).forEach(r=>recCheck(r.id).then(ok=>{const b=document.querySelector('.ls-rec[data-id="'+r.id+'"]');if(b&&ok)b.hidden=false}));
   // on prépare l'extrait (début d'Al-Fâtiha) de chaque récitateur
   LS_RECS.forEach(r=>{if(recUrls[r.id])return;loadTiming(r.id,1).then(t=>{const v=t.v[1]||{};recUrls[r.id]={url:t.url,end:Math.min(9,Math.max(4,((v.to||7000)/1000)+.3))}}).catch(()=>{})});
   document.querySelectorAll('.ls-rec').forEach(b=>b.onclick=()=>{
@@ -2767,6 +2771,10 @@ async function init(){
   const recs=await loadReciters();
   const s=$('reciter'); s.innerHTML='';
   for(const r of recs){const o=document.createElement('option');o.value=r.id;o.textContent=r.label;s.appendChild(o)}
+  for(const r of LS_RECS.filter(r=>r.check&&!recs.some(x=>x.id===r.id))){
+    if(r.id==reciterId){recs.push({id:r.id,label:r.fr});const o=document.createElement('option');o.value=r.id;o.textContent=r.fr;s.appendChild(o)}
+    else recCheck(r.id).then(ok=>{if(ok&&!s.querySelector('option[value="'+r.id+'"]')){const o=document.createElement('option');o.value=r.id;o.textContent=r.fr;s.appendChild(o)}});
+  }
   if(!recs.some(r=>r.id==reciterId)) reciterId=recs[0].id;
   s.value=reciterId; s.onchange=()=>chooseReciter(+s.value);
   $('uiModeBtn').onclick=openChoice;
