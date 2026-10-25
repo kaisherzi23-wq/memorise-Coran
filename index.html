@@ -219,6 +219,24 @@ textarea{width:100%;min-height:70px;border-radius:10px;border:1px solid var(--li
 .stp{display:grid;grid-template-columns:24px 1fr auto;align-items:center;column-gap:8px;row-gap:4px}
 .stp .ic{grid-row:1/3;font-size:1.05rem;color:var(--gold);text-align:center}.stp b{font-size:.9rem}.stp small{color:var(--muted);font-size:.78rem}
 .stp .pbar{grid-column:2/4;height:6px}.stp.done .ic{color:var(--done)}.stp.done b{color:var(--done)}
+.st-enc{background:linear-gradient(135deg,color-mix(in srgb,var(--done) 14%,var(--bg)),var(--bg));border:1px solid var(--gold-soft);border-radius:14px;padding:12px 14px;margin:6px 0 10px}
+.st-enc p{margin:0 0 6px;font-size:.95rem;display:flex;gap:8px}.st-enc p span{flex:0 0 auto}
+.st-enc blockquote{margin:8px 0 0;padding:8px 0 0;border-top:1px dashed var(--gold-soft);font-size:.86rem;font-style:italic;color:var(--muted)}
+.st-enc cite{display:block;font-style:normal;font-size:.75rem;margin-top:3px}
+.st-grp .lbl{display:block;margin-top:14px}.st-grp .lbl:first-child{margin-top:0}
+.st-chart{width:100%;height:auto;display:block;margin:4px 0}
+.st-chart text{font-size:9px;fill:var(--muted);font-family:var(--f-ui)}
+.st-chart .g{stroke:var(--line);stroke-width:1}
+.st-chart .ln{fill:none;stroke:var(--done);stroke-width:2.5;stroke-linejoin:round;stroke-linecap:round}
+.st-chart .area{fill:color-mix(in srgb,var(--done) 16%,transparent)}
+.st-chart .pj{fill:none;stroke:var(--gold);stroke-width:2;stroke-dasharray:5 4}
+.st-chart .dot{fill:var(--done);stroke:var(--page);stroke-width:2}
+.st-chart .b{fill:color-mix(in srgb,var(--done) 55%,var(--bg))}.st-chart .b.hl{fill:var(--done)}
+.st-chart .avg{fill:none;stroke:var(--gold);stroke-width:2;stroke-linejoin:round}
+.st-two{display:grid;grid-template-columns:1fr 1fr;gap:10px}.st-two small{color:var(--muted);font-size:.75rem}
+.diff em{font-style:normal;font-size:.7rem;font-weight:600;padding:1px 6px;border-radius:8px;margin-left:4px;vertical-align:1px}
+.diff em.st-m{background:var(--done);color:var(--page)}.diff em.st-l{background:var(--learn);color:var(--now-ink)}.diff em.st-n{background:var(--line);color:var(--ink)}
+.diff small.why{color:var(--gold);grid-column:1}
 .diff{display:grid;gap:8px}
 .diff button{display:grid;grid-template-columns:1fr auto;align-items:center;text-align:left;background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:10px 12px;color:var(--ink)}
 .diff b{font-size:.95rem}.diff small{grid-column:1;color:var(--muted);font-size:.8rem}.diff span{grid-column:2;grid-row:1/3;font-size:1.4rem;color:var(--muted)}
@@ -445,7 +463,7 @@ textarea{width:100%;min-height:70px;border-radius:10px;border:1px solid var(--li
 .ls-week i.tod{box-shadow:0 0 0 2px var(--bg),0 0 0 4px var(--ink)}
 .ls-ht{font-size:1.6rem;color:var(--gold)}
 .ls-help h3{margin:18px 0 8px;font-size:1rem}
-.ls-help .stats{margin:8px 0}.ls-help .proj{background:var(--page)}.ls-help .jz:not(.full){background:linear-gradient(to top,color-mix(in srgb,var(--done) 70%,var(--page)) var(--p),var(--page) var(--p))}.ls-help .stat{background:var(--page)}
+.ls-help .stats{margin:8px 0}.ls-help .st-enc{background:var(--page)}.ls-help .diff button{background:var(--page)}.ls-help .proj{background:var(--page)}.ls-help .jz:not(.full){background:linear-gradient(to top,color-mix(in srgb,var(--done) 70%,var(--page)) var(--p),var(--page) var(--p))}.ls-help .stat{background:var(--page)}
 /* écran du choix */
 .ls-choice{display:grid;gap:18px;max-width:520px;margin:0 auto;padding:30px 0}
 .ls-big{border:0;border-radius:32px;padding:26px 16px;display:flex;flex-direction:column;align-items:center;gap:10px;box-shadow:0 7px 0 rgba(0,0,0,.16);color:#fff}
@@ -946,18 +964,25 @@ function logSession(){
 let statTick=Date.now();
 setInterval(()=>{const now=Date.now(),dt=Math.min(10,(now-statTick)/1000);statTick=now;if(audio.paused)return;
   const t=LS.get('hk.time',{}),k=dayStr(now);t[k]=Math.round(((t[k]||0)+dt)*10)/10;LS.set('hk.time',t);
-  const hr=LS.get('hk.hours',{}),h=new Date(now).getHours();hr[h]=Math.round((hr[h]||0)+dt);LS.set('hk.hours',hr)},5000);
+  const hr=LS.get('hk.hours',{}),h=new Date(now).getHours();hr[h]=Math.round((hr[h]||0)+dt);LS.set('hk.hours',hr);
+  if(!LS.get('hk.prog',{})[k]) progSnap();},5000);
 // versets travaillés en boucle (répétitions) et ratés au test
 function statBump(a,b,idx){
-  if(!a||!b||b.v-a.v>2) return; const d=LS.get('hk.diff',{});
-  for(let v=a.v;v<=b.v;v++){const k=surah+':'+v;d[k]=d[k]||[0,0];d[k][idx]++}
+  if(!a||!b) return; touchSurah(surah);
+  if(b.v-a.v>2) return; const d=LS.get('hk.diff',{}), day=dayStr(Date.now());
+  for(let v=a.v;v<=b.v;v++){const k=surah+':'+v,x=d[k]=d[k]||[0,0,0,''];while(x.length<4)x.push(x.length===3?'':0);x[idx]++;x[3]=day}
   LS.set('hk.diff',d);
 }
+// dernier jour où une sourate a été travaillée (écoute, boucle, test)
+function touchSurah(s){const l=LS.get('hk.slast',{}),k=dayStr(Date.now());if(l[s]!==k){l[s]=k;LS.set('hk.slast',l)}}
+const daysSince=k=>k?Math.round((noonT()-new Date(k+'T12:00').getTime())/DAY):null;
 function activeDays(){const d=LS.get('hk.days',{}),t=LS.get('hk.time',{}),o={};for(const k in d)if(d[k])o[k]=1;for(const k in t)if(t[k]>=60)o[k]=1;return o}
 const secsOn=k=>(LS.get('hk.time',{})[k]||0);
 function fmtDur(sec){const m=Math.round(sec/60);if(m<60)return m+' min';const h=Math.floor(m/60);return h+' h '+String(m%60).padStart(2,'0')}
+const noonT=()=>{const d=new Date();d.setHours(12,0,0,0);return d.getTime()};
+const dKey=i=>dayStr(noonT()-i*DAY); // jour il y a i jours
 function timeStats(){
-  const t=LS.get('hk.time',{}); let total=0,week=0; const now=today();
+  const t=LS.get('hk.time',{}); let total=0,week=0; const now=noonT();
   for(const k in t){total+=t[k]}
   for(let i=0;i<7;i++) week+=t[dayStr(now-i*DAY)]||0;
   return {today:t[dayStr(now)]||0,week,total};
@@ -969,7 +994,7 @@ function globalCounts(){
 }
 // calendrier « mur » : une colonne par semaine, une case par jour, plus foncée quand on a plus travaillé
 function calHTML(weeks){
-  const t=LS.get('hk.time',{}), act=activeDays(), end=today(), dow=(new Date(end).getDay()+6)%7;
+  const t=LS.get('hk.time',{}), act=activeDays(), end=noonT(), dow=(new Date(end).getDay()+6)%7;
   const start=end-((weeks-1)*7+dow)*DAY; let h='<div class="cal" style="grid-template-columns:repeat('+weeks+',1fr)">';
   for(let i=0;i<weeks*7;i++){
     const d=start+i*DAY; if(d>end){h+='<i class="fut"></i>';continue}
@@ -978,11 +1003,119 @@ function calHTML(weeks){
   }
   return h+'</div>';
 }
-function diffList(){
+function diffList(n){
   const d=LS.get('hk.diff',{});
-  return Object.entries(d).map(([k,[r,f]])=>{const [s,v]=k.split(':').map(Number);return {s,v,r,f,score:r+f*5}})
-    .filter(x=>x.score>=5).sort((a,b)=>b.score-a.score).slice(0,6);
+  return Object.entries(d).map(([k,x])=>{const [s,v]=k.split(':').map(Number),r=x[0]||0,f=x[1]||0,ok=x[2]||0;
+      // score : les ratés pèsent lourd, les réussites allègent
+      return {s,v,r,f,ok,last:x[3]||'',score:r+f*5-ok*4}})
+    .filter(x=>x.score>=5).sort((a,b)=>b.score-a.score).slice(0,n||6);
 }
+// sourates (apprises ou commencées) pas révisées depuis longtemps
+function reviewList(vs){
+  const l=LS.get('hk.slast',{}), out=[];
+  for(let s=1;s<=114;s++){const m=vs[s].filter(x=>x==='m').length;if(!m)continue;
+    const d=daysSince(l[s]); if(d==null||d>=10) out.push({s,m,d})}
+  return out.sort((a,b)=>(b.d==null?9999:b.d)-(a.d==null?9999:a.d)).slice(0,8);
+}
+/* ---------- Courbes (SVG maison) ---------- */
+const shortDate=t=>new Date(t).toLocaleDateString('fr-FR',{day:'numeric',month:'short'});
+function seriesProg(days){
+  const p=LS.get('hk.prog',{}), keys=Object.keys(p).sort(); if(!keys.length) return [];
+  const first=new Date(keys[0]+'T12:00').getTime(), n=Math.min(days,Math.round((noonT()-first)/DAY)+1);
+  let last=0; for(const k of keys) if(new Date(k+'T12:00').getTime()<noonT()-(n-1)*DAY) last=p[k];
+  const out=[]; for(let i=n-1;i>=0;i--){const k=dKey(i);if(p[k]!=null)last=p[k];out.push({t:noonT()-i*DAY,y:last})}
+  return out;
+}
+function lineChart(pts,o){
+  o=o||{}; const W=320,H=o.h||140,L=30,R=8,T=10,B=20, proj=o.proj||[];
+  const all=pts.concat(proj), ymax=Math.max(5,...all.map(p=>p.y)), nice=Math.ceil(ymax/5)*5, t0=all[0].t, t1=all[all.length-1].t||t0+1;
+  const X=t=>L+(W-L-R)*(t1===t0?1:(t-t0)/(t1-t0)), Y=y=>T+(H-T-B)*(1-y/nice);
+  const d=pts.map((p,i)=>(i?'L':'M')+X(p.t).toFixed(1)+' '+Y(p.y).toFixed(1)).join('');
+  let h='<svg viewBox="0 0 '+W+' '+H+'" class="st-chart" role="img">';
+  [0,.5,1].forEach(f=>{const y=Y(nice*f);h+='<line x1="'+L+'" x2="'+(W-R)+'" y1="'+y+'" y2="'+y+'" class="g"/><text x="'+(L-5)+'" y="'+(y+3.5)+'" text-anchor="end">'+Math.round(nice*f)+'</text>'});
+  if(pts.length>1) h+='<path d="'+d+'L'+X(pts[pts.length-1].t)+' '+Y(0)+'L'+X(pts[0].t)+' '+Y(0)+'Z" class="area"/>';
+  h+='<path d="'+d+'" class="ln"/>';
+  if(proj.length>1) h+='<path d="'+proj.map((p,i)=>(i?'L':'M')+X(p.t).toFixed(1)+' '+Y(p.y).toFixed(1)).join('')+'" class="pj"/>';
+  const lp=pts[pts.length-1]; h+='<circle cx="'+X(lp.t)+'" cy="'+Y(lp.y)+'" r="3.5" class="dot"/>';
+  h+='<text x="'+L+'" y="'+(H-5)+'">'+shortDate(t0)+'</text><text x="'+(W-R)+'" y="'+(H-5)+'" text-anchor="end">'+shortDate(t1)+'</text>';
+  return h+'</svg>';
+}
+function barChart(vals,o){
+  o=o||{}; const W=o.W||320,H=o.h||120,L=o.L!=null?o.L:30,R=6,T=10,B=18,n=vals.length,max=Math.max(o.min||1,...vals),bw=(W-L-R)/n;
+  const Y=v=>T+(H-T-B)*(1-v/max);
+  let h='<svg viewBox="0 0 '+W+' '+H+'" class="st-chart" role="img">';
+  if(L) [0,1].forEach(f=>{const y=Y(max*f);h+='<line x1="'+L+'" x2="'+(W-R)+'" y1="'+y+'" y2="'+y+'" class="g"/><text x="'+(L-5)+'" y="'+(y+3.5)+'" text-anchor="end">'+(o.fmt?o.fmt(max*f):Math.round(max*f))+'</text>'});
+  vals.forEach((v,i)=>{const x=L+i*bw+bw*.15,y=Y(v);h+='<rect x="'+x.toFixed(1)+'" y="'+y.toFixed(1)+'" width="'+(bw*.7).toFixed(1)+'" height="'+Math.max(0,Y(0)-y).toFixed(1)+'" rx="'+Math.min(3,bw*.3).toFixed(1)+'" class="'+(i===o.hl?'b hl':'b')+'"/>'});
+  if(o.avg){const d=o.avg.map((v,i)=>(i?'L':'M')+(L+i*bw+bw/2).toFixed(1)+' '+Y(v).toFixed(1)).join('');h+='<path d="'+d+'" class="avg"/>'}
+  (o.labels||[]).forEach((t,i)=>{if(t)h+='<text x="'+(L+i*bw+bw/2).toFixed(1)+'" y="'+(H-5)+'" text-anchor="middle">'+t+'</text>'});
+  return h+'</svg>';
+}
+/* ---------- Encouragements ---------- */
+const HADITHS=[
+  ['Le meilleur d’entre vous est celui qui apprend le Coran et l’enseigne.','Al-Bukhârî'],
+  ['Celui qui récite le Coran avec aisance sera avec les nobles anges scribes, et celui qui le récite en butant, avec difficulté, aura une double récompense.','Muslim'],
+  ['Récitez le Coran, car il viendra le Jour de la Résurrection intercéder en faveur de ceux qui l’ont accompagné.','Muslim']];
+function encourage(who){
+  const el=who==='elle', act=activeDays(), st=streak(), tm=LS.get('hk.time',{}), sp=seriesProg(15);
+  let w1=0,w0=0; for(let i=0;i<7;i++){w1+=tm[dKey(i)]||0;w0+=tm[dKey(i+7)]||0}
+  const g7=sp.length>7?sp[sp.length-1].y-sp[sp.length-8].y:(sp.length?sp[sp.length-1].y-sp[0].y:0);
+  let gapDays=0; for(let i=1;i<30;i++){if(act[dKey(i)])break;gapDays++}
+  const msg=[];
+  if(act[dKey(0)]&&gapDays>=3) msg.push(['🌱',el?'Elle a repris après '+gapDays+' jours de pause. C’est ça le plus important : revenir.':'Content de te revoir après '+gapDays+' jours ! Le plus important, c’est de revenir.']);
+  if(st>=3) msg.push(['🔥',(el?'Elle travaille':'Tu travailles')+' depuis '+st+' jours d’affilée. '+(st>=7?'Une vraie régularité, bravo !':'Continue comme ça !')]);
+  if(g7>0) msg.push(['📈',g7+' nouveau'+(g7>1?'x':'')+' verset'+(g7>1?'s':'')+' appris ces 7 derniers jours.']);
+  if(w1>w0+300&&w0>0) msg.push(['⏱️','+'+fmtDur(w1-w0)+' de travail par rapport à la semaine d’avant.']);
+  if(!msg.length&&!act[dKey(0)]) msg.push(['🤲',el?'Une petite séance aujourd’hui ? Même 5 minutes comptent.':'Une petite séance aujourd’hui ? Même 5 minutes comptent.']);
+  if(!msg.length) msg.push(['✨',el?'Chaque écoute la rapproche du but.':'Chaque écoute te rapproche du but.']);
+  const hd=HADITHS[Math.floor(noonT()/DAY)%HADITHS.length];
+  return '<div class="st-enc">'+msg.slice(0,2).map(m=>'<p><span>'+m[0]+'</span>'+esc(m[1])+'</p>').join('')+'<blockquote>« '+esc(hd[0])+' »<cite>Hadith rapporté par '+hd[1]+'</cite></blockquote></div>';
+}
+/* ---------- Bloc complet : courbes, habitudes, points faibles ---------- */
+function chartsHTML(who){
+  const el=who==='elle', sp=seriesProg(90), tm=LS.get('hk.time',{}), rh=rhythm();
+  let h='';
+  // 1. versets appris dans le temps (+ tendance)
+  h+='<span class="lbl">Versets appris</span>';
+  if(sp.length<3) h+='<p class="note">La courbe apparaîtra après quelques jours d’utilisation.</p>';
+  else{
+    let proj=[]; if(rh.ready&&rh.perDay>0){const lp=sp[sp.length-1];proj=[lp,{t:lp.t+30*DAY,y:Math.round(lp.y+rh.perDay*30)}]}
+    h+=lineChart(sp,{proj})+'<p class="note">'+(proj.length?'En pointillé : où '+(el?'elle sera':'tu seras')+' dans 30 jours à ce rythme (≈ '+proj[1].y+' versets).':'')+'</p>';
+  }
+  // 2. temps par jour sur 30 jours + moyenne sur 7 jours
+  const v30=[],lab=[]; for(let i=29;i>=0;i--){v30.push(Math.round((tm[dKey(i)]||0)/60));const d=new Date(noonT()-i*DAY);lab.push(i%7===0?String(d.getDate()):'')}
+  const avg=v30.map((_,i)=>{const a=v30.slice(Math.max(0,i-6),i+1);return a.reduce((x,y)=>x+y,0)/a.length});
+  h+='<span class="lbl">Minutes par jour (30 jours)</span>'+barChart(v30,{labels:lab,avg,hl:29,min:10})+'<p class="note">Le trait montre la moyenne sur 7 jours.</p>';
+  // 3. habitudes : jours de la semaine et heures
+  const wd=[0,0,0,0,0,0,0]; for(const k in tm){const d=new Date(k+'T12:00');wd[(d.getDay()+6)%7]+=tm[k]/60}
+  const hr=LS.get('hk.hours',{}), hv=[]; for(let i=0;i<24;i++) hv.push(Math.round((hr[i]||0)/60));
+  if(wd.some(x=>x>0)){
+    h+='<span class="lbl">'+(el?'Ses':'Mes')+' habitudes</span><div class="st-two"><div><small>Jours de la semaine</small>'+barChart(wd.map(Math.round),{labels:['L','M','M','J','V','S','D'],L:0,W:160,h:90})+'</div>'+
+      '<div><small>Heures de la journée</small>'+barChart(hv,{labels:hv.map((_,i)=>i&&i%6===0?i+'h':''),L:0,W:160,h:90})+'</div></div>';
+  }
+  return h;
+}
+function gapsHTML(who){
+  const el=who==='elle', vs=allVS(), rv=reviewList(vs), dl=diffList(8);
+  let h='<span class="lbl">À réviser pour ne pas oublier</span>';
+  if(!rv.length) h+='<p class="note">Tout ce qui est appris a été révisé récemment. 👍</p>';
+  else{h+='<div class="diff">';rv.forEach(x=>{const c=CHAPTERS[x.s-1];
+    h+='<button data-s="'+x.s+'" data-v="1"><b>'+esc(c.name_simple)+'</b><small>'+x.m+' verset'+(x.m>1?'s':'')+' appris · '+(x.d==null?'jamais révisée dans l’app':'pas révisée depuis '+x.d+' jours')+'</small><span>›</span></button>'});h+='</div>'}
+  h+='<span class="lbl">Points faibles</span>';
+  if(!dl.length) h+='<p class="note">Rien pour l’instant. Les versets beaucoup répétés en boucle ou ratés au test apparaîtront ici, avec le détail.</p>';
+  else{h+='<div class="diff">';dl.forEach(x=>{const c=CHAPTERS[x.s-1], st=vs[x.s][x.v-1], tot=x.f+x.ok, d=daysSince(x.last);
+    const bits=[x.r+' répétition'+(x.r>1?'s':'')];
+    if(tot) bits.push('test : '+x.ok+' réussi'+(x.ok>1?'s':'')+' / '+x.f+' raté'+(x.f>1?'s':''));
+    if(d!=null) bits.push(d===0?'travaillé aujourd’hui':d===1?'hier':'il y a '+d+' jours');
+    const why=x.f>x.ok?'souvent raté au test':(st!=='m'&&x.r>=15?'beaucoup répété mais pas encore acquis':(st==='m'?'appris, mais demandé beaucoup d’efforts':'demande encore du travail'));
+    h+='<button data-s="'+x.s+'" data-v="'+x.v+'"><b>'+esc(c.name_simple)+' · verset '+x.v+' <em class="st-'+(st||'n')+'">'+(st==='m'?'appris':st==='l'?'en cours':'pas commencé')+'</em></b><small>'+bits.join(' · ')+'</small><small class="why">→ '+why+'</small><span>›</span></button>'});
+    h+='</div>'}
+  return h;
+}
+function bindJump(box){box.querySelectorAll('.diff button').forEach(b=>b.onclick=async()=>{
+  const s=+b.dataset.s,v=+b.dataset.v; if(!$('ls').hidden){LS.set('hk.uiMode','listen');openListenSurah(s);return}
+  closeSheets(); if(s!==surah) await loadSurah(s);
+  const el=$('a'+v); if(el) setTimeout(()=>el.scrollIntoView({block:'center',behavior:'smooth'}),80);
+})}
 /* ---------- Parcours : juz', étapes, rythme, projections ---------- */
 const JUZ=[[1,1],[2,142],[2,253],[3,93],[4,24],[4,148],[5,82],[6,111],[7,88],[8,41],[9,93],[11,6],[12,53],[15,1],[17,1],[18,75],[21,1],[23,1],[25,21],[27,56],[29,46],[33,31],[36,28],[39,32],[41,47],[46,1],[51,31],[58,1],[67,1],[78,1]];
 // état de chaque verset d'une sourate : 'm' appris, 'l' en cours, '' rien
@@ -1031,7 +1164,7 @@ function rhythm(){
   const W=Math.min(28,span), from=today()-(W-1)*DAY, p=LS.get('hk.prog',{}), keys=Object.keys(p).sort();
   let prev=null,gain=0; for(const k of keys){const t=new Date(k+'T12:00').getTime();if(t<from){prev=p[k];continue} if(prev!=null)gain+=Math.max(0,Math.min(60,p[k]-prev)); prev=p[k]}
   const tm=LS.get('hk.time',{}), act=activeDays(); let sec=0,ad=0;
-  for(let i=0;i<W;i++){const k=dayStr(today()-i*DAY);sec+=tm[k]||0;if(act[k])ad++}
+  for(let i=0;i<W;i++){const k=dKey(i);sec+=tm[k]||0;if(act[k])ad++}
   const hr=LS.get('hk.hours',{}), slots=[['le matin',5,12],['l’après-midi',12,18],['le soir',18,24],['la nuit',0,5]];
   let best=null,bv=0; for(const [n,a,b] of slots){let v=0;for(let h=a;h<b;h++)v+=hr[h]||0;if(v>bv){bv=v;best=n}}
   return {ready:true,W,gain,perDay:gain/W,perWeek:gain/W*7,minPerDay:sec/60/W,minPerVerse:gain?sec/60/gain:null,daysPerWeek:ad/W*7,moment:best,span};
@@ -1075,11 +1208,11 @@ function journeyHTML(who){
   // étapes
   h+='<span class="lbl">Les étapes</span><div class="steps">';
   ms.forEach(x=>{const done=x.m>=x.tot,p=Math.round(x.m*100/x.tot);
-    h+='<div class="stp'+(done?' done':'')+'"><span class="ic">'+(done?'✓':p?'◐':'○')+'</span><b>'+esc(x.t)+'</b><small>'+(done?'terminé':x.m+' / '+x.tot+' versets')+'</small><div class="pbar"><i style="width:'+p+'%"></i></div></div>'});
+    h+='<div class="stp'+(done?' done':'')+'"><span class="ic">'+(done?'✓':x.m?'◐':'○')+'</span><b>'+esc(x.t)+'</b><small>'+(done?'terminé':x.m+' / '+x.tot+' versets')+'</small><div class="pbar"><i style="width:'+p+'%"></i></div></div>'});
   return h+'</div>';
 }
 function streak(){
-  const d=activeDays(); let n=0, t=today();
+  const d=activeDays(); let n=0, t=noonT();
   if(!d[dayStr(t)]) t-=DAY;
   while(d[dayStr(t)]){n++;t-=DAY}
   return n;
@@ -1109,6 +1242,7 @@ function verdict(r,ok){
   const p=addPart(r);
   if(ok){p.level=Math.min((p.level||0)+1,INTERVALS.length);p.status='mastered';p.due=today()+INTERVALS[p.level-1]*DAY}
   else {p.level=0;p.status='learning';p.due=today();statBump(r.a,r.b,1)}
+  if(ok) statBump(r.a,r.b,2);
   saveParts(); logSession(); return p;
 }
 const isDue=p=>p.status==='mastered'&&p.due<=today();
@@ -1202,22 +1336,17 @@ function renderAll(){
   $('gVerses').textContent=tv; $('gSurahs').textContent=ms; $('gPct').textContent=String(pct).replace('.',',')+' %'; $('gMeter').style.width=pct+'%';
 }
 function renderStats(){
-  const ts=timeStats(), g=globalCounts(), st=streak(), dl=diffList();
-  let h='<div class="stats"><div class="stat"><b>'+fmtDur(ts.today)+'</b><small>aujourd’hui</small></div><div class="stat"><b>'+fmtDur(ts.week)+'</b><small>ces 7 jours</small></div><div class="stat"><b>'+fmtDur(ts.total)+'</b><small>au total</small></div></div>'+
+  const ts=timeStats(), g=globalCounts(), st=streak();
+  let h=encourage('tu')+
+    '<div class="stats"><div class="stat"><b>'+fmtDur(ts.today)+'</b><small>aujourd’hui</small></div><div class="stat"><b>'+fmtDur(ts.week)+'</b><small>ces 7 jours</small></div><div class="stat"><b>'+fmtDur(ts.total)+'</b><small>au total</small></div></div>'+
     '<div class="stats"><div class="stat"><b>🔥 '+st+'</b><small>jour'+(st>1?'s':'')+' d’affilée</small></div><div class="stat"><b>'+g.verses+'</b><small>versets maîtrisés</small></div><div class="stat"><b>'+g.surahs+'</b><small>sourates maîtrisées</small></div></div>'+
+    '<div class="group st-grp">'+chartsHTML('tu')+'</div>'+
     '<div class="group journey"><span class="lbl">Mon parcours</span>'+journeyHTML('tu')+'</div>'+
+    '<div class="group st-grp">'+gapsHTML('tu')+'</div>'+
     '<div class="group"><span class="lbl">Mes 16 dernières semaines</span>'+calHTML(16)+
     '<div class="legend cal-leg"><span>moins</span><i data-l="0"></i><i data-l="1"></i><i data-l="2"></i><i data-l="3"></i><i data-l="4"></i><span>plus</span></div>'+
-    '<p class="note">Seul le temps où la récitation joue est compté.</p></div>'+
-    '<div class="group"><span class="lbl">Versets à retravailler</span>';
-  if(!dl.length) h+='<p class="note">Rien pour l’instant. Les versets que tu répètes beaucoup en boucle ou que tu rates au test apparaîtront ici.</p>';
-  else{h+='<div class="diff">';dl.forEach(x=>{const c=CHAPTERS[x.s-1];h+='<button data-s="'+x.s+'" data-v="'+x.v+'"><b>'+esc(c.name_simple)+' · verset '+x.v+'</b><small>'+x.r+' répétition'+(x.r>1?'s':'')+(x.f?' · raté '+x.f+' fois':'')+'</small><span>›</span></button>'});h+='</div>'}
-  h+='</div>';
-  $('tabStats').innerHTML=h;
-  $('tabStats').querySelectorAll('.diff button').forEach(b=>b.onclick=async()=>{
-    const s=+b.dataset.s,v=+b.dataset.v; closeSheets(); if(s!==surah) await loadSurah(s);
-    const el=$('a'+v); if(el) setTimeout(()=>el.scrollIntoView({block:'center',behavior:'smooth'}),80);
-  });
+    '<p class="note">Seul le temps où la récitation joue est compté.</p></div>';
+  $('tabStats').innerHTML=h; bindJump($('tabStats'));
 }
 function showTab(t){
   progTab=t; LS.set('hk.progTab',t);
@@ -1562,7 +1691,7 @@ function stepEnded(){
     const cb=run.onDone,kind=run.kind,rs=run.ranges; stopRun(true); updateBar();
     if(kind==='repeat'){const p=findPart(rs[0]);if(p&&p.status==='new'){setStatus(p,'learning');updateBar()}logSession();setInfo(null,'Séance terminée · '+summary())}
     if(kind==='chain'){logSession();setInfo(null,'Enchaînement terminé, bravo !')}
-    if(kind==='read'){bookmark=1;LS.set('hk.bm.'+surah,1);paintBookmark();logSession();setInfo('Sourate terminée, bravo !','Le marque-page revient au début')}
+    if(kind==='read'){touchSurah(surah);bookmark=1;LS.set('hk.bm.'+surah,1);paintBookmark();logSession();setInfo('Sourate terminée, bravo !','Le marque-page revient au début')}
     if(cb) cb(); return;
   }
   runInfo();
@@ -2167,7 +2296,7 @@ function treeSVG(leaves,fruits){
   return h+'</svg>';
 }
 function weekDotsHTML(){
-  const act=activeDays(), end=today(); let h='<div class="ls-week">';
+  const act=activeDays(), end=noonT(); let h='<div class="ls-week">';
   for(let i=6;i>=0;i--){const k=dayStr(end-i*DAY);h+='<i class="'+(act[k]?'on':'')+(i===0?' tod':'')+'"></i>'}
   return h+'</div>';
 }
@@ -2177,16 +2306,18 @@ function openHelper(){
   lsOpen(); lsStop(); lsView='helper';
   const ts=timeStats(), g=globalCounts(), st=streak();
   $('ls').innerHTML='<div class="ls-top"><button class="ls-home" id="lsHome" aria-label="Accueil">'+LS_ICO.home+'</button><div class="ls-head"><b class="ls-ht">Suivi</b></div><span class="ls-spacer"></span></div>'+
-    '<div class="ls-body ls-help"><p class="note">Écran réservé à l’accompagnant.</p>'+
+    '<div class="ls-body ls-help"><p class="note">Écran réservé à l’accompagnant.</p>'+encourage('elle')+
     '<div class="stats"><div class="stat"><b>'+fmtDur(ts.today)+'</b><small>aujourd’hui</small></div><div class="stat"><b>'+fmtDur(ts.week)+'</b><small>ces 7 jours</small></div><div class="stat"><b>'+fmtDur(ts.total)+'</b><small>au total</small></div></div>'+
     '<div class="stats"><div class="stat"><b>🔥 '+st+'</b><small>jour'+(st>1?'s':'')+' d’affilée</small></div><div class="stat"><b>'+g.verses+'</b><small>versets appris</small></div><div class="stat"><b>'+g.surahs+'</b><small>sourates apprises</small></div></div>'+
     '<div class="stats" style="grid-template-columns:1fr"><div class="stat"><b>'+g.learning+'</b><small>sourates en cours</small></div></div>'+
+    '<h3>Sa progression</h3><div class="st-grp">'+chartsHTML('elle')+'</div>'+
     '<h3>Son parcours</h3><div class="journey">'+journeyHTML('elle')+'</div>'+
+    '<h3>Ce qui lui manque</h3><div class="st-grp">'+gapsHTML('elle')+'</div>'+
     '<h3>Ses 16 dernières semaines</h3>'+calHTML(16)+
     '<div class="legend cal-leg"><span>moins</span><i data-l="0"></i><i data-l="1"></i><i data-l="2"></i><i data-l="3"></i><i data-l="4"></i><span>plus</span></div>'+
     '<button class="btn primary" id="hlMode" style="width:100%;margin-top:22px">Changer de mode : je lis / j’écoute</button></div>';
   $('lsHome').onclick=()=>openListenHome();
-  $('hlMode').onclick=openChoice;
+  $('hlMode').onclick=openChoice; bindJump($('ls'));
 }
 const lsStateOf=id=>surahInfo(id,LS.get('hk.sum',{})).st; // '' | 'l' | 'm'
 function lsTileHTML(id){
