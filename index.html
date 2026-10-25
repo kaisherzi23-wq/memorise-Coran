@@ -488,6 +488,10 @@ textarea{width:100%;min-height:70px;border-radius:10px;border:1px solid var(--li
 .ls-week i.tod{box-shadow:0 0 0 2px var(--bg),0 0 0 4px var(--ink)}
 .ls-ht{font-size:1.6rem;color:var(--gold)}
 .ls-help h3{margin:18px 0 8px;font-size:1rem}
+.sync input{width:100%;padding:11px 12px;border-radius:10px;border:1px solid var(--line);background:var(--bg);margin:0 0 8px;box-sizing:border-box}
+.sync .btns{display:flex;gap:8px;flex-wrap:wrap}.sync .btns .btn{flex:1}
+.sync .msg{font-size:.88rem;margin:8px 0 0;line-height:1.4}.sync .msg.err{color:#B3261E}
+.sync .who{font-weight:700;word-break:break-all}
 .ls-help .stats{margin:8px 0}.ls-help .st-enc{background:var(--page)}.ls-help .diff button{background:var(--page)}.ls-help .proj{background:var(--page)}.ls-help .jz:not(.full){background:linear-gradient(to top,color-mix(in srgb,var(--done) 70%,var(--page)) var(--p),var(--page) var(--p))}.ls-help .stat{background:var(--page)}
 /* écran du choix */
 .ls-choice{display:grid;gap:18px;max-width:520px;margin:0 auto;padding:30px 0}
@@ -579,6 +583,7 @@ textarea{width:100%;min-height:70px;border-radius:10px;border:1px solid var(--li
       <p class="note">Une séance = une répétition menée jusqu’au bout, un enchaînement, un test ou une lecture complète.</p></div>
     <div class="group"><span class="lbl">Mode de l’app</span><button class="btn ghost" id="uiModeBtn" style="width:100%">Choisir : je lis / j’écoute</button>
       <button class="link" id="voiceTest">Tester la voix arabe</button><p class="note" id="voiceInfo" hidden></p></div>
+    <div class="group"><span class="lbl">Sauvegarde en ligne</span><div id="syncBox"></div></div>
     <div class="group"><label for="reciter">Récitateur</label><select id="reciter"></select></div>
     <div class="group"><span class="lbl">Hors connexion</span>
       <p class="note" id="offMsg" style="margin:0 0 8px">Télécharge la récitation de cette sourate pour t’entraîner sans internet.</p>
@@ -706,7 +711,8 @@ textarea{width:100%;min-height:70px;border-radius:10px;border:1px solid var(--li
 const DAY=86400000, INTERVALS=[1,3,7,15,30,60];
 const $=id=>document.getElementById(id);
 const audio=$('audio'), myAudio=new Audio();
-const LS={get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+var SYNC_RE=/^hk\.(settings|surah|parts\.\d+|manual\.\d+|smanual|bm\.\d+|sum|days|les\.\d+|reciter|uiMode|progTab|lsAt|lsSpeed2|time|hours|prog|diff|slast|words|wsum|wScope)$/;
+const LS={get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},set(k,v){try{const j=JSON.stringify(v);if(localStorage.getItem(k)===j)return;localStorage.setItem(k,j);if(SYNC_RE.test(k))syncMark(k)}catch(e){}}};
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const FALLBACK_RECITERS=[
   {id:7,label:"Mishary Rashid Alafasy"},{id:6,label:"Mahmoud Khalil Al-Husary"},
@@ -1489,7 +1495,7 @@ $('doRestore').onclick=()=>{
 };
 
 /* ---------- Panneaux ---------- */
-function openSheet(id){closeSheets();if(id==='setSheet')renderFonts();if(id==='progSheet'){showTab(progTab);renderProgress()}if(id==='surahSheet')renderSurahs();if(id==='lesSheet')renderSections();$(id).hidden=false}
+function openSheet(id){closeSheets();if(id==='setSheet'){renderFonts();renderSync($('syncBox'))}if(id==='progSheet'){showTab(progTab);renderProgress()}if(id==='surahSheet')renderSurahs();if(id==='lesSheet')renderSections();$(id).hidden=false}
 function closeSheets(){document.querySelectorAll('.sheet').forEach(s=>{s.hidden=true;s.querySelector('.sheet-in').style.transform=''})}
 $('setBtn').onclick=()=>openSheet('setSheet');
 $('progBtn').onclick=()=>openSheet('progSheet');
@@ -2505,7 +2511,9 @@ function openHelper(){
     '<h3>Ce qui lui manque</h3><div class="st-grp">'+gapsHTML('elle')+'</div>'+
     '<h3>Ses 16 dernières semaines</h3>'+calHTML(16)+
     '<div class="legend cal-leg"><span>moins</span><i data-l="0"></i><i data-l="1"></i><i data-l="2"></i><i data-l="3"></i><i data-l="4"></i><span>plus</span></div>'+
+    '<h3>Sauvegarde en ligne</h3><div id="hlSync"></div>'+
     '<button class="btn primary" id="hlMode" style="width:100%;margin-top:22px">Changer de mode : je lis / j’écoute</button></div>';
+  renderSync($('hlSync'));
   $('lsHome').onclick=()=>openListenHome();
   $('hlMode').onclick=openChoice; bindJump($('ls'));
 }
@@ -2754,6 +2762,147 @@ async function init(){
   if(!um) openChoice(); else if(um==='listen') openListenHome();
   await loadSurah(surah);
 }
+// ===== Sauvegarde en ligne (Supabase) =====
+// Clé publique : elle ne donne accès à rien sans connexion ; chaque compte ne voit que ses propres lignes (RLS).
+const SB_URL='https://losjrjijmnvjllhhkpbf.supabase.co', SB_KEY='sb_publishable_-j5JdzS8jmIorX7x00-EnQ__lUisvtx', SB_SITE='https://kaisherzi23-wq.github.io/memorise-Coran/';
+function lsRaw(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}}
+function lsPut(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
+let syncTimer=null, syncBusy=false, syncMsg='', syncErr=false;
+function syncMark(k){const m=lsRaw('hk.syncMeta',{});m[k]=Date.now();lsPut('hk.syncMeta',m);const d=lsRaw('hk.syncDirty',{});d[k]=1;lsPut('hk.syncDirty',d);
+  if(!syncTimer&&lsRaw('hk.auth',null))syncTimer=setTimeout(()=>{syncTimer=null;syncNow({reload:false})},20000)}
+async function sbAuth(path,body){
+  const r=await fetch(SB_URL+'/auth/v1/'+path,{method:'POST',headers:{apikey:SB_KEY,'Content-Type':'application/json'},body:JSON.stringify(body)});
+  const j=await r.json().catch(()=>({})); if(!r.ok) throw new Error(j.error_code||j.msg||j.error_description||j.error||('http '+r.status)); return j;
+}
+function saveSession(j){const a={at:j.access_token,rt:j.refresh_token,exp:Date.now()+(j.expires_in||3600)*1000,uid:j.user&&j.user.id,email:j.user&&j.user.email};lsPut('hk.auth',a);return a}
+async function sbToken(force){
+  let a=lsRaw('hk.auth',null); if(!a) return null;
+  if(force||Date.now()>a.exp-60000){
+    try{a=saveSession(await sbAuth('token?grant_type=refresh_token',{refresh_token:a.rt}))}
+    catch(e){if(/refresh_token|invalid|not_found|expired/i.test(e.message)){localStorage.removeItem('hk.auth');return null}throw e}
+  }
+  return a;
+}
+async function sbRest(method,q,body,retry){
+  const a=await sbToken(retry); if(!a) throw new Error('signed_out');
+  const h={apikey:SB_KEY,Authorization:'Bearer '+a.at,'Content-Type':'application/json'};
+  if(method==='POST') h.Prefer='resolution=merge-duplicates,return=minimal';
+  const r=await fetch(SB_URL+'/rest/v1/user_kv'+q,{method,headers:h,body:body?JSON.stringify(body):undefined});
+  if(r.status===401&&!retry) return sbRest(method,q,body,true);
+  if(!r.ok) throw new Error('http '+r.status);
+  return method==='GET'?r.json():null;
+}
+const isObj=o=>o&&typeof o==='object'&&!Array.isArray(o);
+// fusion quand les deux appareils ont modifié la même donnée sans se synchroniser : on ne perd jamais de progrès
+function syncMerge(k,loc,rem,locNewer){
+  if(!isObj(loc)||!isObj(rem)) return locNewer?loc:rem;
+  const o=Object.assign({},locNewer?rem:loc,locNewer?loc:rem);
+  if(/^hk\.(days|time|hours|prog)$/.test(k)){for(const x in rem)if(typeof rem[x]==='number'&&typeof loc[x]==='number')o[x]=Math.max(rem[x],loc[x])}
+  else if(k==='hk.slast'){for(const x in rem)if(loc[x])o[x]=loc[x]>rem[x]?loc[x]:rem[x]}
+  else if(k==='hk.diff'){for(const x in rem)if(Array.isArray(loc[x])&&Array.isArray(rem[x]))o[x]=(loc[x][0]||0)>=(rem[x][0]||0)?loc[x]:rem[x]}
+  else if(k==='hk.words'){for(const x in rem)if(loc[x]&&rem[x])o[x]=((loc[x].ok||0)+(loc[x].ko||0))>=((rem[x].ok||0)+(rem[x].ko||0))?loc[x]:rem[x]}
+  else if(k==='hk.sum'||/^hk\.(manual|parts|bm)\.\d+$/.test(k)||k==='hk.smanual'){/* union, la version la plus récente gagne en cas de conflit */}
+  else return locNewer?loc:rem;
+  return o;
+}
+async function syncNow(opts){
+  opts=opts||{}; if(syncBusy||!navigator.onLine&&!opts.force) return false; const a=lsRaw('hk.auth',null); if(!a) return false;
+  syncBusy=true; let changed=false;
+  try{
+    const rows=await sbRest('GET','?select=key,value,updated_at');
+    const meta=lsRaw('hk.syncMeta',{}), dirty=lsRaw('hk.syncDirty',{});
+    for(const r of rows){
+      if(!SYNC_RE.test(r.key)) continue;
+      const rt=Date.parse(r.updated_at)||0, lt=meta[r.key]||0, has=localStorage.getItem(r.key)!==null;
+      let v;
+      if(!has||(!dirty[r.key]&&rt>lt)) v=r.value;
+      else if(dirty[r.key]) v=syncMerge(r.key,lsRaw(r.key,null),r.value,lt>=rt);
+      else continue;
+      const j=JSON.stringify(v);
+      if(localStorage.getItem(r.key)!==j){localStorage.setItem(r.key,j);changed=true}
+      if(j!==JSON.stringify(r.value)){dirty[r.key]=1;meta[r.key]=Math.max(Date.now(),rt+1)}else{delete dirty[r.key];meta[r.key]=rt}
+    }
+    lsPut('hk.syncMeta',meta); lsPut('hk.syncDirty',dirty);
+    const keys=Object.keys(dirty).filter(k=>SYNC_RE.test(k)&&localStorage.getItem(k)!==null);
+    if(keys.length){
+      const me=lsRaw('hk.auth',{}).uid, sent={};
+      const body=keys.map(k=>{sent[k]=localStorage.getItem(k);return {user_id:me,key:k,value:JSON.parse(sent[k]),updated_at:new Date(meta[k]||Date.now()).toISOString()}});
+      for(let i=0;i<body.length;i+=200) await sbRest('POST','?on_conflict=user_id,key',body.slice(i,i+200));
+      const d2=lsRaw('hk.syncDirty',{}); keys.forEach(k=>{if(localStorage.getItem(k)===sent[k])delete d2[k]}); lsPut('hk.syncDirty',d2);
+    }
+    lsPut('hk.syncLast',Date.now()); syncMsg=''; syncErr=false;
+  }catch(e){ if(e.message==='signed_out'){syncMsg='Session expirée : reconnecte-toi.';syncErr=true} else {syncMsg='Synchronisation impossible pour le moment (connexion ?). Rien n’est perdu sur ce téléphone.';syncErr=true} }
+  syncBusy=false; refreshSyncBoxes();
+  if(changed&&!run&&opts.reload!==false) location.reload();
+  return changed;
+}
+function syncErrFr(m){
+  if(/invalid_credentials|Invalid login/i.test(m)) return 'E-mail ou mot de passe incorrect.';
+  if(/email_not_confirmed|not confirmed/i.test(m)) return 'Adresse pas encore confirmée : ouvre l’e-mail reçu et clique sur le lien, puis reviens te connecter.';
+  if(/user_already_exists|already registered/i.test(m)) return 'Ce compte existe déjà : utilise « Se connecter ».';
+  if(/weak_password|at least/i.test(m)) return 'Mot de passe trop court (8 caractères minimum).';
+  if(/email_address_invalid|invalid.*email|validate email/i.test(m)) return 'Adresse e-mail invalide.';
+  if(/rate|too many/i.test(m)) return 'Trop d’essais : attends quelques minutes.';
+  if(/Failed to fetch|NetworkError|Load failed/i.test(m)) return 'Pas de connexion internet.';
+  return 'Erreur : '+m;
+}
+// à la connexion : tout ce qui est sur ce téléphone est à fusionner ; en cas de doute sur un réglage, la version en ligne l'emporte
+function syncAdopt(){const d={},m={};Object.keys(localStorage).filter(k=>SYNC_RE.test(k)).forEach(k=>{d[k]=1;m[k]=0});lsPut('hk.syncDirty',d);lsPut('hk.syncMeta',m)}
+const syncBoxes=new Set();
+function refreshSyncBoxes(){syncBoxes.forEach(el=>{if(document.body.contains(el))renderSync(el);else syncBoxes.delete(el)})}
+function renderSync(el){
+  if(!el) return; syncBoxes.add(el); const a=lsRaw('hk.auth',null);
+  const msg=syncMsg?'<p class="msg'+(syncErr?' err':'')+'">'+esc(syncMsg)+'</p>':'';
+  if(a){
+    const last=lsRaw('hk.syncLast',0), n=Object.keys(lsRaw('hk.syncDirty',{})).length;
+    el.innerHTML='<div class="sync"><p class="note" style="margin:0 0 8px">Connecté : <span class="who">'+esc(a.email||'')+'</span><br>'+
+      (syncBusy?'Synchronisation…':last?'Dernière sauvegarde : '+new Date(last).toLocaleString('fr-FR',{dateStyle:'short',timeStyle:'short'})+(n?' · '+n+' changement'+(n>1?'s':'')+' en attente':''):'Pas encore synchronisé')+'</p>'+
+      '<div class="btns"><button class="btn primary" data-s="now">Synchroniser</button><button class="btn ghost" data-s="out">Se déconnecter</button></div>'+msg+
+      '<button class="link" data-s="del" style="font-size:.85rem">Effacer mes données en ligne</button></div>';
+  } else {
+    el.innerHTML='<div class="sync"><p class="note" style="margin:0 0 8px">Crée un compte pour retrouver ta progression si tu changes de téléphone. Facultatif : sans compte, tout reste sur ce téléphone.</p>'+
+      '<input type="email" autocomplete="username" inputmode="email" placeholder="Adresse e-mail" data-s="em" autocapitalize="off" spellcheck="false">'+
+      '<input type="password" autocomplete="current-password" placeholder="Mot de passe (8 caractères min.)" data-s="pw">'+
+      '<div class="btns"><button class="btn primary" data-s="in">Se connecter</button><button class="btn ghost" data-s="up">Créer un compte</button></div>'+msg+
+      '<button class="link" data-s="fg" style="font-size:.85rem">Mot de passe oublié ?</button></div>';
+  }
+  const q=s=>el.querySelector('[data-s='+s+']'), say=(m,err)=>{syncMsg=m;syncErr=!!err;refreshSyncBoxes()};
+  const creds=()=>({email:(q('em').value||'').trim().toLowerCase(),password:q('pw').value||''});
+  if(q('in')) q('in').onclick=async()=>{const c=creds();if(!c.email||!c.password)return say('Entre ton e-mail et ton mot de passe.',1);
+    say('Connexion…');try{saveSession(await sbAuth('token?grant_type=password',c));syncAdopt();say('Connecté ✓ Récupération de ta progression…');await syncNow({reload:true,force:true});if(!syncErr)say('Connecté ✓ Ta progression est sauvegardée.')}catch(e){say(syncErrFr(e.message),1)}};
+  if(q('up')) q('up').onclick=async()=>{const c=creds();if(!c.email||c.password.length<8)return say('Entre un e-mail et un mot de passe d’au moins 8 caractères.',1);
+    say('Création du compte…');try{const r=await fetch(SB_URL+'/auth/v1/signup?redirect_to='+encodeURIComponent(SB_SITE),{method:'POST',headers:{apikey:SB_KEY,'Content-Type':'application/json'},body:JSON.stringify(c)});const j=await r.json().catch(()=>({}));if(!r.ok)throw new Error(j.error_code||j.msg||'http '+r.status);
+      if(j.access_token){saveSession(j);syncAdopt();await syncNow({reload:false,force:true});say('Compte créé ✓ Ta progression est sauvegardée.')}
+      else say('Compte créé ✓ Ouvre l’e-mail de confirmation, clique sur le lien, puis reviens ici et appuie sur « Se connecter ».')}catch(e){say(syncErrFr(e.message),1)}};
+  if(q('fg')) q('fg').onclick=async()=>{const c=creds();if(!c.email)return say('Entre d’abord ton adresse e-mail.',1);
+    try{await sbAuth('recover?redirect_to='+encodeURIComponent(SB_SITE),{email:c.email});say('Si ce compte existe, un e-mail pour changer le mot de passe vient d’être envoyé.')}catch(e){say(syncErrFr(e.message),1)}};
+  if(q('now')) q('now').onclick=()=>{syncMsg='';syncNow({force:true})};
+  if(q('out')) q('out').onclick=async()=>{await syncNow({reload:false});const a2=lsRaw('hk.auth',null);if(a2)fetch(SB_URL+'/auth/v1/logout',{method:'POST',headers:{apikey:SB_KEY,Authorization:'Bearer '+a2.at}}).catch(()=>{});
+    localStorage.removeItem('hk.auth');localStorage.removeItem('hk.syncLast');say('Déconnecté. Ta progression reste sur ce téléphone.')};
+  if(q('del')) q('del').onclick=async()=>{if(!el.dataset.confirm){el.dataset.confirm=1;q('del').textContent='Appuie encore pour confirmer : tout effacer en ligne';return}
+    try{const me=lsRaw('hk.auth',{}).uid;await sbRest('DELETE','?user_id=eq.'+me);localStorage.removeItem('hk.auth');localStorage.removeItem('hk.syncLast');say('Données en ligne effacées. Ta progression reste sur ce téléphone.')}catch(e){say('Effacement impossible : '+e.message,1)}};
+}
+// retour depuis le lien de confirmation / mot de passe oublié : la session arrive dans l'adresse (#access_token=…)
+async function syncFromHash(){
+  const h=new URLSearchParams(location.hash.slice(1)); if(!h.get('access_token')) { if(h.get('error_description')){syncMsg=h.get('error_description');syncErr=true;history.replaceState(null,'',location.pathname+location.search)} return }
+  const at=h.get('access_token'), rt=h.get('refresh_token'), type=h.get('type');
+  history.replaceState(null,'',location.pathname+location.search);
+  try{
+    const u=await (await fetch(SB_URL+'/auth/v1/user',{headers:{apikey:SB_KEY,Authorization:'Bearer '+at}})).json();
+    saveSession({access_token:at,refresh_token:rt,expires_in:+h.get('expires_in')||3600,user:u});
+    if(type==='recovery'){
+      const pw=prompt('Nouveau mot de passe (8 caractères minimum) :');
+      if(pw&&pw.length>=8){const r=await fetch(SB_URL+'/auth/v1/user',{method:'PUT',headers:{apikey:SB_KEY,Authorization:'Bearer '+at,'Content-Type':'application/json'},body:JSON.stringify({password:pw})});syncMsg=r.ok?'Mot de passe changé ✓':'Changement de mot de passe impossible.';syncErr=!r.ok}
+    } else { syncMsg='Adresse confirmée ✓ Tu es connecté.'; syncErr=false }
+    syncAdopt();
+    await syncNow({reload:false,force:true}); location.reload();
+  }catch(e){}
+}
+syncFromHash();
+if(lsRaw('hk.auth',null)) setTimeout(()=>syncNow(),1500);
+document.addEventListener('visibilitychange',()=>{if(!lsRaw('hk.auth',null))return;if(document.visibilityState==='hidden'){clearTimeout(syncTimer);syncTimer=null;syncNow({reload:false})}else syncNow()});
+window.addEventListener('online',()=>{if(lsRaw('hk.auth',null))syncNow()});
+
 init();
 })();
 </script>
