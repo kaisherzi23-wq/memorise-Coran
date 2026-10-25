@@ -2767,7 +2767,7 @@ async function init(){
 const SB_URL='https://losjrjijmnvjllhhkpbf.supabase.co', SB_KEY='sb_publishable_-j5JdzS8jmIorX7x00-EnQ__lUisvtx', SB_SITE='https://kaisherzi23-wq.github.io/memorise-Coran/';
 function lsRaw(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}}
 function lsPut(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
-let syncTimer=null, syncBusy=false, syncMsg='', syncErr=false;
+let syncTimer=null, syncBusy=false, syncMsg='', syncErr=false, syncMode=null;
 function syncMark(k){const m=lsRaw('hk.syncMeta',{});m[k]=Date.now();lsPut('hk.syncMeta',m);const d=lsRaw('hk.syncDirty',{});d[k]=1;lsPut('hk.syncDirty',d);
   if(!syncTimer&&lsRaw('hk.auth',null))syncTimer=setTimeout(()=>{syncTimer=null;syncNow({reload:false})},20000)}
 async function sbAuth(path,body){
@@ -2849,7 +2849,7 @@ function syncErrFr(m){
 // à la connexion : tout ce qui est sur ce téléphone est à fusionner ; en cas de doute sur un réglage, la version en ligne l'emporte
 function syncAdopt(){const d={},m={};Object.keys(localStorage).filter(k=>SYNC_RE.test(k)).forEach(k=>{d[k]=1;m[k]=0});lsPut('hk.syncDirty',d);lsPut('hk.syncMeta',m)}
 const syncBoxes=new Set();
-function refreshSyncBoxes(){syncBoxes.forEach(el=>{if(document.body.contains(el))renderSync(el);else syncBoxes.delete(el)})}
+function refreshSyncBoxes(){syncBoxes.forEach(el=>{if(!document.body.contains(el))return syncBoxes.delete(el);const em=el.querySelector('[data-s=em]'),pw=el.querySelector('[data-s=pw]'),sv=[em&&em.value,pw&&pw.value,pw&&pw.type];renderSync(el);const e2=el.querySelector('[data-s=em]'),p2=el.querySelector('[data-s=pw]');if(e2&&sv[0])e2.value=sv[0];if(p2&&sv[1]){p2.value=sv[1];p2.type=sv[2];const c=el.querySelector('[data-s=show]');if(c)c.checked=sv[2]==='text'}})}
 function renderSync(el){
   if(!el) return; syncBoxes.add(el); const a=lsRaw('hk.auth',null);
   const msg=syncMsg?'<p class="msg'+(syncErr?' err':'')+'">'+esc(syncMsg)+'</p>':'';
@@ -2860,12 +2860,21 @@ function renderSync(el){
       '<div class="btns"><button class="btn primary" data-s="now">Synchroniser</button><button class="btn ghost" data-s="out">Se déconnecter</button></div>'+msg+
       '<button class="link" data-s="del" style="font-size:.85rem">Effacer mes données en ligne</button></div>';
   } else {
-    el.innerHTML='<div class="sync"><p class="note" style="margin:0 0 8px">Crée un compte pour retrouver ta progression si tu changes de téléphone. Facultatif : sans compte, tout reste sur ce téléphone.</p>'+
-      '<input type="email" autocomplete="username" inputmode="email" placeholder="Adresse e-mail" data-s="em" autocapitalize="off" spellcheck="false">'+
-      '<input type="password" autocomplete="current-password" placeholder="Mot de passe (8 caractères min.)" data-s="pw">'+
-      '<div class="btns"><button class="btn primary" data-s="in">Se connecter</button><button class="btn ghost" data-s="up">Créer un compte</button></div>'+msg+
-      '<button class="link" data-s="fg" style="font-size:.85rem">Mot de passe oublié ?</button></div>';
+    const intro='<p class="note" style="margin:0 0 8px">Un compte permet de retrouver ta progression si tu changes de téléphone. Facultatif : sans compte, tout reste sur ce téléphone.</p>';
+    const fields=(ac,ph)=>'<input type="email" autocomplete="username" inputmode="email" placeholder="Ton adresse e-mail" data-s="em" autocapitalize="off" spellcheck="false">'+
+      '<input type="password" autocomplete="'+ac+'" placeholder="'+ph+'" data-s="pw">'+
+      '<label class="note" style="display:flex;gap:8px;align-items:center;margin:0 0 10px"><input type="checkbox" data-s="show" style="width:auto;margin:0"> Afficher le mot de passe</label>';
+    if(syncMode==='up') el.innerHTML='<div class="sync"><p style="margin:0 0 8px;font-weight:700">Je crée mon compte</p>'+fields('new-password','Choisis un mot de passe (8 caractères min.)')+
+      '<p class="note" style="margin:0 0 10px">Tape un mot de passe que tu retiendras. Si l’iPhone en propose un tout seul, il le garde pour toi dans l’app « Mots de passe ».</p>'+
+      '<div class="btns"><button class="btn primary" data-s="up">Créer mon compte</button></div>'+msg+'<button class="link" data-s="back" style="font-size:.85rem">← Retour</button></div>';
+    else if(syncMode==='in') el.innerHTML='<div class="sync"><p style="margin:0 0 8px;font-weight:700">J’ai déjà un compte</p>'+fields('current-password','Ton mot de passe')+
+      '<div class="btns"><button class="btn primary" data-s="in">Se connecter</button></div>'+msg+
+      '<button class="link" data-s="fg" style="font-size:.85rem">Mot de passe oublié ?</button> · <button class="link" data-s="back" style="font-size:.85rem">← Retour</button></div>';
+    else el.innerHTML='<div class="sync">'+intro+'<div class="btns"><button class="btn primary" data-s="mUp">Je suis nouveau</button><button class="btn ghost" data-s="mIn">J’ai déjà un compte</button></div>'+msg+'</div>';
   }
+  if(el.querySelector('[data-s=mUp]')){el.querySelector('[data-s=mUp]').onclick=()=>{syncMode='up';syncMsg='';refreshSyncBoxes()};el.querySelector('[data-s=mIn]').onclick=()=>{syncMode='in';syncMsg='';refreshSyncBoxes()}}
+  if(el.querySelector('[data-s=back]')) el.querySelector('[data-s=back]').onclick=()=>{syncMode=null;syncMsg='';refreshSyncBoxes()};
+  if(el.querySelector('[data-s=show]')) el.querySelector('[data-s=show]').onchange=e=>{el.querySelector('[data-s=pw]').type=e.target.checked?'text':'password'};
   const q=s=>el.querySelector('[data-s='+s+']'), say=(m,err)=>{syncMsg=m;syncErr=!!err;refreshSyncBoxes()};
   const creds=()=>({email:(q('em').value||'').trim().toLowerCase(),password:q('pw').value||''});
   if(q('in')) q('in').onclick=async()=>{const c=creds();if(!c.email||!c.password)return say('Entre ton e-mail et ton mot de passe.',1);
@@ -2878,7 +2887,7 @@ function renderSync(el){
     try{await sbAuth('recover?redirect_to='+encodeURIComponent(SB_SITE),{email:c.email});say('Si ce compte existe, un e-mail pour changer le mot de passe vient d’être envoyé.')}catch(e){say(syncErrFr(e.message),1)}};
   if(q('now')) q('now').onclick=()=>{syncMsg='';syncNow({force:true})};
   if(q('out')) q('out').onclick=async()=>{await syncNow({reload:false});const a2=lsRaw('hk.auth',null);if(a2)fetch(SB_URL+'/auth/v1/logout',{method:'POST',headers:{apikey:SB_KEY,Authorization:'Bearer '+a2.at}}).catch(()=>{});
-    localStorage.removeItem('hk.auth');localStorage.removeItem('hk.syncLast');say('Déconnecté. Ta progression reste sur ce téléphone.')};
+    syncMode=null;localStorage.removeItem('hk.auth');localStorage.removeItem('hk.syncLast');say('Déconnecté. Ta progression reste sur ce téléphone.')};
   if(q('del')) q('del').onclick=async()=>{if(!el.dataset.confirm){el.dataset.confirm=1;q('del').textContent='Appuie encore pour confirmer : tout effacer en ligne';return}
     try{const me=lsRaw('hk.auth',{}).uid;await sbRest('DELETE','?user_id=eq.'+me);localStorage.removeItem('hk.auth');localStorage.removeItem('hk.syncLast');say('Données en ligne effacées. Ta progression reste sur ce téléphone.')}catch(e){say('Effacement impossible : '+e.message,1)}};
 }
