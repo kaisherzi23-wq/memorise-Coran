@@ -882,6 +882,7 @@ $('text').addEventListener('click',e=>{
 });
 function setSel(a,b){
   if(a&&b&&key(b.v,b.p)<key(a.v,a.p)) [a,b]=[b,a];
+  if(run&&run.paused) stopRun(true);
   sel={a,b}; paintSel(); resetStep(); updateBar();
 }
 function curRange(){return sel.a?{a:sel.a,b:sel.b||sel.a}:null}
@@ -918,7 +919,7 @@ function updateBar(){
   $('stepBtn').hidden=settings.display!=='step';
   if(run) return;
   if(settings.mode==='read'&&!r) $('infoMain').textContent=bookmark>1?'Reprendre au verset '+bookmark:'Lire depuis le début';
-  else if(!r) $('infoMain').textContent=settings.mode==='chain'?'Enchaîner les morceaux cochés':'Touche le premier mot du passage';
+  else if(!r) $('infoMain').textContent=settings.mode==='chain'?'Enchaîner les morceaux cochés':(settings.mode==='repeat'?'▶ toute la sourate, ou touche un mot':'Touche le premier mot du passage');
   else if(!sel.b) $('infoMain').textContent='Touche maintenant le dernier mot';
   else {const p=findPart(r);$('infoMain').textContent=rangeLabel(r)+(p?' · '+ST_LABEL[p.status]:'')}
   $('infoSub').textContent=summary();
@@ -1506,12 +1507,32 @@ function playStep(){
     run.playAt=Date.now();
     if(run.waitSeek||audioUnlocked){
       // on attend que le son soit positionné avant de lancer (évite de couper le début)
-      let started=false; const launch=()=>{if(started||!run)return;started=true;run.playAt=Date.now();const p2=audio.play();if(p2&&p2.catch)p2.catch(()=>soundBlocked())};
+      let started=false; const launch=()=>{if(started||!run||run.paused)return;started=true;run.playAt=Date.now();run.playFrom=st.s;audio.muted=false;const p2=audio.play();if(p2&&p2.catch)p2.catch(()=>soundBlocked());armEnd()};
       audio.addEventListener('seeked',launch,{once:true}); setTimeout(launch,700); return;
     }
+    run.playFrom=st.s; audio.muted=false;
     const pr=audio.play(); if(pr&&pr.catch) pr.catch(()=>soundBlocked());
   };
   if(audio.readyState>=1) go(); else audio.addEventListener('loadedmetadata',go,{once:true});
+}
+// minuteur de fin de passage (utile quand l'écran est verrouillé et que les vérifications ralentissent)
+function armEnd(){
+  clearTimeout(endTimer); if(!run) return;
+  const st=run.steps[run.i], from=run.playFrom!=null?run.playFrom:st.s, left=(st.e-from)/(run.rate||audio.playbackRate||1), step=run.i, count=run.count;
+  if(left>0&&left<120000) endTimer=setTimeout(()=>{if(run&&!run.paused&&run.i===step&&run.count===count&&!gapTimer&&!audio.paused)stepEnded()},left+40);
+}
+// pause / reprise : on garde le passage et la position
+function pauseRun(){
+  if(!run) return; clearTimeout(endTimer); const inGap=!!gapTimer; clearTimeout(gapTimer); gapTimer=null;
+  audio.pause(); audio.muted=false; clearNow(); run.paused=true; run.resumeGap=inGap;
+  setPlayIcon(false); releaseWake(); setInfo(null,'En pause · touche ▶ pour reprendre');
+}
+function resumeRun(){
+  if(!run) return; run.paused=false; setPlayIcon(true); requestWake(); runInfo();
+  const st=run.steps[run.i], ms=audio.currentTime*1000;
+  if(run.resumeGap||ms<st.s-500||ms>=st.e-60){playStep();return}
+  setSession('playback'); audio.muted=false; run.playAt=Date.now(); run.playFrom=ms;
+  const p=audio.play(); if(p&&p.catch)p.catch(()=>soundBlocked()); armEnd();
 }
 function soundBlocked(){
   if(!run) return; run.blocked=true; setPlayIcon(false); if(extOnBlocked) extOnBlocked();
@@ -1532,11 +1553,12 @@ function runInfo(){
   setInfo(main,sub);
 }
 var endTimer=null;
-function stopRun(silent){clearTimeout(endTimer);clearTimeout(gapTimer);gapTimer=null;audio.pause();const wasRead=run&&run.kind==='read';run=null;setPlayIcon(false);releaseWake();clearNow();if(wasRead)paintBookmark();if(!silent)updateBar()}
+function stopRun(silent){clearTimeout(endTimer);clearTimeout(gapTimer);gapTimer=null;audio.pause();audio.muted=false;const wasRead=run&&run.kind==='read';run=null;setPlayIcon(false);releaseWake();clearNow();if(wasRead)paintBookmark();if(!silent)updateBar()}
 function stepEnded(){
-  audio.pause(); clearTimeout(endTimer); clearNow(); const fin=run.steps[run.i], lastDur=fin.e-fin.s; {const rg=run.ranges[run.i];if(rg&&run.kind!=='read')statBump(rg.a,rg.b,0)} run.count++;
+  clearTimeout(endTimer); clearNow(); const fin=run.steps[run.i], lastDur=fin.e-fin.s; {const rg=run.ranges[run.i];if(rg&&run.kind!=='read')statBump(rg.a,rg.b,0)} run.count++;
   if(!(run.reps===Infinity||run.count<run.reps)){run.count=0;run.i++}
   if(run.i>=run.steps.length){
+    audio.pause();
     const cb=run.onDone,kind=run.kind,rs=run.ranges; stopRun(true); updateBar();
     if(kind==='repeat'){const p=findPart(rs[0]);if(p&&p.status==='new'){setStatus(p,'learning');updateBar()}logSession();setInfo(null,'Séance terminée · '+summary())}
     if(kind==='chain'){logSession();setInfo(null,'Enchaînement terminé, bravo !')}
@@ -1547,16 +1569,25 @@ function stepEnded(){
   let g=settings.gap*1000;
   if(run.gapFn){g=run.gapFn(lastDur);if(run.onGap)run.onGap(g)}
   else if(g>0&&run.kind!=='test') setInfo(null,'À toi de réciter… '+settings.gap+' s');
+  // le son continue en muet pendant la pause : sur iPhone verrouillé, une vraie pause endormirait l'app et la boucle s'arrêterait
+  audio.muted=true; if(audio.paused){const p=audio.play();if(p&&p.catch)p.catch(()=>{})}
+  run.gapUntil=Date.now()+Math.max(g,120);
   gapTimer=setTimeout(()=>{gapTimer=null;playStep()},Math.max(g,120));
 }
+// relais quand l'écran est verrouillé : l'audio continue d'envoyer « timeupdate » même si les minuteurs ralentissent
+audio.addEventListener('timeupdate',()=>{
+  if(!run||run.paused) return;
+  if(gapTimer){if(run.gapUntil&&Date.now()>=run.gapUntil){clearTimeout(gapTimer);gapTimer=null;playStep()}return}
+  checkEnd();
+});
 function checkEnd(){
-  if(!run||audio.paused||gapTimer) return;
+  if(!run||run.paused||audio.paused||gapTimer) return;
   const ms=audio.currentTime*1000, s0=run.steps[run.i];
   // juste après un saut, l'iPhone peut encore donner l'ancienne position : on l'ignore un court instant
   const el=Date.now()-(run.playAt||0);
   if(el<350&&(ms<s0.s-400||ms>s0.e)) return;
   // tant que la position n'a pas rejoint le début du passage, on ne surligne pas (évite un mot « fantôme » après un saut)
-  const stale=el<1200&&Math.abs(ms-(s0.s+el*(audio.playbackRate||1)))>450&&Math.abs(ms-s0.s)>300;
+  const p0=run.playFrom!=null?run.playFrom:s0.s, stale=el<1200&&Math.abs(ms-(p0+el*(audio.playbackRate||1)))>450&&Math.abs(ms-p0)>300;
   const rg=run.ranges&&run.ranges[run.i];
   if(!stale){if(rg&&rg.a&&rg.b)paintNow(ms+30,key(rg.a.v,rg.a.p),key(rg.b.v,rg.b.p));else paintNow(ms+30)}
   if(ms>=s0.e-(audio.playbackRate>1?60:30)) stepEnded();
@@ -1564,7 +1595,7 @@ function checkEnd(){
 setInterval(checkEnd,25);
 // minuteur précis en plus : coupe à l'heure prévue même si l'iPhone met à jour la position trop lentement
 audio.addEventListener('playing',()=>{
-  clearTimeout(endTimer); if(!run) return; run.playAt=Date.now();
+  if(!run||run.paused||gapTimer) return; clearTimeout(endTimer); run.playAt=Date.now();
   const st=run.steps[run.i], left=(st.e-audio.currentTime*1000)/(audio.playbackRate||1);
   if(left>0&&left<120000){const step=run.i,count=run.count;endTimer=setTimeout(()=>{if(run&&run.i===step&&run.count===count&&!audio.paused&&!gapTimer)stepEnded()},left)}
 });
@@ -1593,8 +1624,8 @@ function startChain(){
   if(ps.length<2){setInfo('Coche au moins 2 morceaux','Ouvre « Ma progression » → Mes morceaux');openSheet('progSheet');return}
   startRun(ps.map((p,i)=>({a:ps[0].a,b:ps[i].b})),settings.reps,'chain');
 }
-function startRead(){
-  const r=curRange(), startV=r?r.a.v:bookmark;
+function startRead(whole){
+  const r=whole?null:curRange(), startV=whole?verses[0].n:(r?r.a.v:bookmark);
   const v0=verses.find(x=>x.n===startV)||verses[0], vl=verses[verses.length-1];
   const a=r?r.a:{v:v0.n,p:v0.w[0].p};
   startRun([{a,b:{v:vl.n,p:vl.w[vl.w.length-1].p}}],1,'read');
@@ -1657,16 +1688,17 @@ function bindEnd(r){$('tAgain').onclick=()=>testStart();$('tEnd').onclick=()=>en
 
 $('playBtn').onclick=()=>{
   if(run&&run.blocked){setPlayIcon(true);playStep();return}
-  if(run){stopRun();return}
+  if(run&&run.paused){resumeRun();return}
+  if(run){pauseRun();return}
   if(!timing){setInfo('La récitation charge encore…');return}
   if(settings.mode==='chain') return startChain();
   if(settings.mode==='test') return testStart();
   if(settings.mode==='read') return startRead();
-  const r=curRange(); if(!r){setInfo('Touche le premier puis le dernier mot');return}
+  const r=curRange(); if(!r) return startRead(true); // rien de sélectionné : toute la sourate
   startRun([r],settings.reps,'repeat');
 };
 if('mediaSession' in navigator){try{
-  navigator.mediaSession.setActionHandler('pause',()=>stopRun());
+  navigator.mediaSession.setActionHandler('pause',()=>{if(run&&!run.paused)pauseRun()});
   navigator.mediaSession.setActionHandler('play',()=>$('playBtn').click());
   navigator.mediaSession.setActionHandler('nexttrack',()=>{if(run){clearTimeout(gapTimer);gapTimer=null;run.count=0;run.i=Math.min(run.i+1,run.steps.length-1);playStep()}});
   navigator.mediaSession.setActionHandler('previoustrack',()=>{if(run){clearTimeout(gapTimer);gapTimer=null;playStep()}});
