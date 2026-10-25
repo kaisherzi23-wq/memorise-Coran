@@ -237,8 +237,6 @@ textarea{width:100%;min-height:70px;border-radius:10px;border:1px solid var(--li
 .diff em{font-style:normal;font-size:.7rem;font-weight:600;padding:1px 6px;border-radius:8px;margin-left:4px;vertical-align:1px}
 .diff em.st-m{background:var(--done);color:var(--page)}.diff em.st-l{background:var(--learn);color:var(--now-ink)}.diff em.st-n{background:var(--line);color:var(--ink)}
 .diff small.why{color:var(--gold);grid-column:1}
-.wbw .w{display:inline-flex;flex-direction:column;align-items:center;vertical-align:top;line-height:1.5}
-.w .gl{font-family:var(--f-ui);font-size:max(11px,calc(var(--ar-size)*.3));line-height:1.2;color:var(--muted);direction:ltr;text-align:center;max-width:7.5em;white-space:normal;margin-top:-.15em;padding-bottom:.35em}
 .w.known .f{text-decoration:underline dotted color-mix(in srgb,var(--done) 70%,transparent);text-decoration-thickness:2px;text-underline-offset:.35em}
 .wtip{position:fixed;z-index:70;background:var(--page);border:1px solid var(--gold);border-radius:14px;box-shadow:0 10px 30px rgba(0,0,0,.25);padding:10px 12px;text-align:center}
 .wtip .ar{display:block;font-family:var(--f-ar);font-size:1.7rem;line-height:1.6;direction:rtl}
@@ -250,12 +248,12 @@ textarea{width:100%;min-height:70px;border-radius:10px;border:1px solid var(--li
 .wlist{display:grid;gap:6px;margin-top:6px}
 .wlist button{display:grid;grid-template-columns:auto 1fr auto auto;align-items:center;gap:10px;background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:6px 12px;color:var(--ink);text-align:left}
 .wlist .ar{font-family:var(--f-ar);font-size:1.45rem;direction:rtl;min-width:3.2em;text-align:right}
-.wlist .gl2{font-size:.88rem}.wlist .n{font-size:.75rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.wlist .gl2{font-size:.88rem}.wlist .gl2 small{display:block;color:var(--muted);font-size:.74rem}.wlist .n{font-size:.75rem;color:var(--muted);font-variant-numeric:tabular-nums}
 .wlist .lv{width:10px;height:10px;border-radius:50%;border:2px solid var(--gold)}.wlist .lv[data-l=k]{background:var(--done);border-color:var(--done)}.wlist .lv[data-l=s]{background:var(--learn);border-color:var(--learn)}
 .wprog{text-align:center;color:var(--muted);font-size:.85rem;margin:4px 0}
 .wcard{display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center;background:var(--bg);border:1px solid var(--gold-soft);border-radius:18px;padding:18px 14px}
 .wcard .ar.big{font-family:var(--f-ar);font-size:3rem;line-height:1.7;direction:rtl;background:none;border:0;color:var(--ink);padding:0 10px}
-.wcard .big{font-size:3rem}.wcard small{color:var(--muted);font-size:.8rem}.wcard .mean{font-size:1.35rem;display:block;margin-bottom:4px}
+#wBackSide small{display:block;margin-top:2px}.wcard .big{font-size:3rem}.wcard small{color:var(--muted);font-size:.8rem}.wcard .mean{font-size:1.35rem;display:block;margin-bottom:4px}
 .wopts{display:grid;gap:8px;width:100%}
 .wopts button{border:1px solid var(--line);background:var(--page);border-radius:12px;padding:12px;font-size:1rem;color:var(--ink)}
 .wopts button.right{background:var(--done);color:var(--page);border-color:var(--done)}.wopts button.wrong{background:var(--danger);color:#fff;border-color:var(--danger)}
@@ -564,8 +562,7 @@ textarea{width:100%;min-height:70px;border-radius:10px;border:1px solid var(--li
       <select id="trSelect" style="margin-top:8px" aria-label="Choix de la traduction"></select>
     </div>
     <div class="group"><span class="lbl">Sens des mots</span>
-      <button class="toggle" id="wbwToggle" aria-pressed="false"><span>Afficher le sens sous chaque mot</span><i></i></button>
-      <p class="note">Astuce : appuie longtemps sur un mot pour voir son sens et l’entendre.</p>
+      <p class="note" style="margin:0">Appuie longtemps sur un mot pour voir son sens (mots du lexique) et l’entendre. Les mots déjà connus sont soulignés en pointillé.</p>
     </div>
     <div class="group"><span class="lbl">Apparence</span><div class="opts" id="optTheme"></div></div>
     <div class="group"><span class="lbl">Numéros des sourates et des versets</span><div class="opts wide" id="optDigits"></div></div>
@@ -898,7 +895,7 @@ function buildFlat(){
   for(let i=0;i<flat.length-1;i++) if(flat[i].e>flat[i+1].s) flat[i].e=Math.max(flat[i].s+40,flat[i+1].s);
 }
 // nettoyage des anciens minutages (remplacés par hk.timing2)
-try{Object.keys(localStorage).filter(k=>k.startsWith('hk.timing.')||k.startsWith('hk.timing2.')).forEach(k=>localStorage.removeItem(k))}catch(e){}
+try{Object.keys(localStorage).filter(k=>k.startsWith('hk.timing.')||k.startsWith('hk.timing2.')||k.startsWith('hk.wbw.')).forEach(k=>localStorage.removeItem(k))}catch(e){}
 
 /* ---------- Texte ---------- */
 function firstLetter(t){const m=t.match(/^[ء-يٱ-ۓۺ-ۼ][ً-ٰٟۖ-ۭ]*/);return m?m[0]:t.slice(0,1)}
@@ -908,12 +905,11 @@ function renderText(){
   verses.forEach((v,vi)=>{
     const ay=document.createElement('span'); ay.className='ayah'; ay.id='a'+v.n;
     const tj=tajweed&&tajweed[v.n]&&tajweed[v.n].length===v.w.length?tajweed[v.n]:null;
-    const gl=settings.wbw&&wbw&&wbw.v[v.n]?Object.fromEntries(wbw.v[v.n].map(x=>[x[0],x[2]])):null;
     v.w.forEach((w,i)=>{
       const k=key(v.n,w.p); allWords.push({v:v.n,p:w.p,k,t:w.t});
       const s=document.createElement('span'); s.className='w'; s.dataset.v=v.n; s.dataset.p=w.p;
-      s.innerHTML='<span class="f">'+(tj?tj[i]:esc(w.t))+'</span><span class="i">'+esc(firstLetter(w.t))+'</span>'+(gl&&gl[w.p]?'<span class="gl">'+esc(gl[w.p])+'</span>':'');
-      if(kw[wNorm(w.t)]) s.classList.add('known');
+      s.innerHTML='<span class="f">'+(tj?tj[i]:esc(w.t))+'</span><span class="i">'+esc(firstLetter(w.t))+'</span>';
+      if(kw[lexKey(w.t)]) s.classList.add('known');
       wordEl[k]=s; ay.appendChild(s); ay.appendChild(document.createTextNode(' '));
     });
     const n=document.createElement('button'); n.className='num'; n.textContent=fmtN(v.n);
@@ -923,7 +919,7 @@ function renderText(){
     frag.appendChild(ay);
   });
   box.appendChild(frag);
-  box.className=(settings.tr&&trans?'blocks':'flow')+(settings.tj&&tajweed?' tajweed':'')+(settings.wbw&&wbw?' wbw':'');
+  box.className=(settings.tr&&trans?'blocks':'flow')+(settings.tj&&tajweed?' tajweed':'');
   if(timing) buildFlat();
   paintSel(); paintBookmark(); refreshProgress();
 }
@@ -1632,7 +1628,7 @@ function applySettings(){
   applyTheme();
   opts('optDigits',['arabic','latin'],settings.digits,v=>v==='arabic'?'١\u200E ٢\u200E ٣\u200E (arabes)':'1 2 3 (latins)',v=>{settings.digits=v;applySettings();if(verses.length)renderText()});
   opts('optGoal',GOALS,settings.goal,v=>String(v),v=>{settings.goal=v;applySettings();paintToday()});
-  $('tjToggle').setAttribute('aria-pressed',!!settings.tj); $('trToggle').setAttribute('aria-pressed',!!settings.tr); $('wbwToggle').setAttribute('aria-pressed',!!settings.wbw);
+  $('tjToggle').setAttribute('aria-pressed',!!settings.tj); $('trToggle').setAttribute('aria-pressed',!!settings.tr);
   $('trSelect').hidden=!settings.tr;
   applyFont(); if(!$('setSheet').hidden) renderFonts();
   document.body.classList.remove('d-full','d-letters','d-hidden','d-step'); document.body.classList.add('d-'+settings.display);
@@ -1644,11 +1640,6 @@ $('sizeUp').onclick=()=>{settings.size=Math.min(SIZES.length-1,settings.size+1);
 $('tjToggle').onclick=async()=>{
   settings.tj=!settings.tj; applySettings();
   if(settings.tj&&!tajweed){setInfo('Chargement des couleurs du tajwid…');try{tajweed=await loadTajweed(surah)}catch(e){setInfo('Couleurs du tajwid indisponibles','Vérifie ta connexion')}}
-  renderText(); updateBar();
-};
-$('wbwToggle').onclick=async()=>{
-  settings.wbw=!settings.wbw; applySettings();
-  if(settings.wbw&&!wbw){setInfo('Chargement du sens des mots…');try{wbw=await loadWBW(surah)}catch(e){setInfo('Sens des mots indisponible','Vérifie ta connexion')}}
   renderText(); updateBar();
 };
 $('trToggle').onclick=async()=>{
@@ -1987,48 +1978,52 @@ async function loadSurah(s){
   $('text').innerHTML='<div class="loading">Chargement de la sourate…</div>';
   window.scrollTo(0,0);
   try{
-    const [txt,tj,tr,wb]=await Promise.all([loadText(s),settings.tj?loadTajweed(s).catch(()=>null):null,settings.tr?loadTranslation(s,settings.trId).catch(()=>null):null,settings.wbw?loadWBW(s).catch(()=>null):null]);
-    verses=txt; tajweed=tj; trans=tr; wbw=wb; loadProgress(); renderText(); resetStep(); updateBar();
+    const [txt,tj,tr]=await Promise.all([loadText(s),settings.tj?loadTajweed(s).catch(()=>null):null,settings.tr?loadTranslation(s,settings.trId).catch(()=>null):null]);
+    verses=txt; tajweed=tj; trans=tr; loadProgress(); renderText(); resetStep(); updateBar();
     await chooseReciter(+reciterId);
   }catch(e){$('text').innerHTML='<div class="loading">Impossible de charger la sourate. Vérifie ta connexion internet.<br><br><button class="btn primary" id="retry">Réessayer</button></div>';$('retry').onclick=()=>loadSurah(s)}
 }
 
 /* ---------- Vocabulaire : sens des mots, mots clés, entraînement ---------- */
 const WBW_HOST='https://audio.qurancdn.com/';
-async function loadWBW(s){
-  const c=LS.get('hk.wbw.'+s); if(c&&c.v) return c;
-  const out={lang:'',v:{}}; let page=1,total=1;
-  do{
-    const q=`verses/by_chapter/${s}?words=true&word_translation_language=fr&word_fields=text_uthmani,audio_url&per_page=50&page=${page}`;
-    const d=await getJSON([V4+q,QDC+q]); total=(d.pagination&&d.pagination.total_pages)||1;
-    for(const v of d.verses){const n=v.verse_number||+String(v.verse_key).split(':')[1];
-      out.v[n]=(v.words||[]).filter(w=>w.char_type_name==='word').map(w=>{const tr=w.translation||{};if(!out.lang&&tr.language_name)out.lang=String(tr.language_name).toLowerCase();
-        return [w.position,w.text_uthmani||w.text,String(tr.text||'').trim(),w.audio_url||'']})}
-    page++;
-  }while(page<=total&&page<20);
-  LS.set('hk.wbw.'+s,out); return out;
-}
+// prononciation d'un mot précis (fichiers mot à mot de quran.com)
+const wordAudio=(s,v,p)=>'wbw/'+String(s).padStart(3,'0')+'_'+String(v).padStart(3,'0')+'_'+String(p).padStart(3,'0')+'.mp3';
 // forme de base d'un mot (sans voyelles ni signes) pour regrouper les répétitions
 const AR_MARKS=/[\u0610-\u061A\u064B-\u065F\u0670\u06D6-\u06ED\u0640]/g;
 const wNorm=t=>String(t).replace(AR_MARKS,'').replace(/[ٱأإآ]/g,'ا').replace(/ى/g,'ي');
+/* Lexique : les mots les plus fréquents du Coran et de Juz' 'Amma, avec leur sens en français
+   [clé sans voyelles, forme vocalisée, phonétique, sens] — à faire relire par un enseignant */
+const LEX_ROWS=[["الله","ٱللَّه","Allâh","Allah, Dieu"],["لله","لِلَّه","lillâh","à Allah, pour Allah"],["رب","رَبّ","rabb","Seigneur (Celui qui crée, nourrit et prend soin)"],["ربك","رَبِّكَ","rabbika","ton Seigneur"],["ربكم","رَبِّكُمْ","rabbikoum","votre Seigneur"],["ربهم","رَبِّهِمْ","rabbihim","leur Seigneur"],["ربنا","رَبَّنَا","rabbanâ","notre Seigneur (souvent : « Ô notre Seigneur »)"],["ربي","رَبِّي","rabbî","mon Seigneur"],["اله","إِلَٰه","ilâh","divinité, dieu (adoré)"],["رحمن","ٱلرَّحْمَٰن","ar-Rahmân","le Tout Miséricordieux"],["رحيم","رَحِيم","rahîm","le Très Miséricordieux"],["رحمة","رَحْمَة","rahma","miséricorde"],["حمد","ٱلْحَمْد","al-hamd","la louange"],["علمين","ٱلْعَٰلَمِين","al-'âlamîn","les mondes (toutes les créatures)"],["ملك","مَٰلِك / مُلْك","mâlik / moulk","maître, roi / royauté"],["دين","ٱلدِّين","ad-dîn","la rétribution (Jour du Jugement) ; la religion"],["نعبد","نَعْبُدُ","na'boudou","nous adorons"],["نستعين","نَسْتَعِينُ","nasta'înou","nous implorons l'aide"],["اهدنا","ٱهْدِنَا","ihdinâ","guide-nous"],["صرط","صِرَٰط","sirât","chemin, voie"],["مستقيم","مُسْتَقِيم","moustaqîm","droit"],["انعمت","أَنْعَمْتَ","an'amta","Tu as comblé de bienfaits"],["مغضوب","ٱلْمَغْضُوب","al-maghdoûb","ceux qui ont encouru la colère"],["ضالين","ٱلضَّآلِّين","ad-dâllîn","les égarés"],["من","مِنْ / مَنْ","min / man","de, parmi / celui qui, qui ?"],["في","فِي","fî","dans, en"],["ما","مَا","mâ","ce que ; ne… pas ; qu'est-ce que ? (selon le contexte)"],["لا","لَا","lâ","non, ne… pas"],["ان","إِنَّ / أَنْ / إِنْ","inna / an / in","certes / que / si (selon le contexte)"],["انه","إِنَّهُۥ","innahou","certes il (lui)"],["الا","إِلَّا","illâ","sauf, si ce n'est"],["الي","إِلَىٰ","ilâ","vers, jusqu'à"],["اليه","إِلَيْهِ","ilayhi","vers lui"],["علي","عَلَىٰ","'alâ","sur, contre"],["عليهم","عَلَيْهِمْ","'alayhim","sur eux, contre eux"],["عن","عَنْ","'an","de, au sujet de"],["مع","مَعَ","ma'a","avec"],["ثم","ثُمَّ","thoumma","puis, ensuite"],["او","أَوْ","aw","ou"],["بل","بَلْ","bal","plutôt, au contraire"],["لم","لَمْ","lam","ne… pas (passé)"],["لن","لَنْ","lan","ne… jamais (futur)"],["قد","قَدْ","qad","certes, déjà"],["لقد","لَقَدْ","laqad","très certainement"],["هل","هَلْ","hal","est-ce que ? (question)"],["اذا","إِذَا","idhâ","lorsque, quand"],["اذ","إِذْ","idh","lorsque (au passé)"],["لو","لَوْ","law","si (supposition)"],["سوف","سَوْفَ","sawfa","bientôt (futur)"],["كلا","كَلَّا","kallâ","non ! certes non !"],["كل","كُلّ","koull","chaque, tout"],["يايها","يَٰٓأَيُّهَا","yâ ayyouhâ","ô vous ! ô toi ! (appel)"],["يا","يَا","yâ","ô (pour appeler)"],["هو","هُوَ","houwa","il, lui"],["هي","هِيَ","hiya","elle"],["هم","هُمْ","houm","ils, eux"],["انت","أَنتَ","anta","toi, tu"],["انتم","أَنتُمْ","antoum","vous"],["انا","أَنَا / إِنَّا","anâ / innâ","moi, je / certes Nous"],["نحن","نَحْنُ","nahnou","nous"],["له","لَهُۥ","lahou","à lui, pour lui"],["لهم","لَهُمْ","lahoum","à eux, pour eux"],["لكم","لَكُمْ","lakoum","à vous, pour vous"],["به","بِهِۦ","bihi","par lui, en lui"],["منهم","مِنْهُمْ","minhoum","parmi eux"],["فيها","فِيهَا","fîhâ","dans celle-ci, y"],["الذي","ٱلَّذِي","alladhî","celui qui"],["الذين","ٱلَّذِينَ","alladhîna","ceux qui"],["التي","ٱلَّتِي","allatî","celle qui"],["ذلك","ذَٰلِكَ","dhâlika","cela, ce"],["هذا","هَٰذَا","hâdhâ","ceci, ce"],["تلك","تِلْكَ","tilka","celle-là, ces"],["اولئك","أُو۟لَٰٓئِكَ","oulâ'ika","ceux-là"],["قال","قَالَ","qâla","il a dit"],["قالوا","قَالُوا۟","qâlou","ils ont dit"],["قل","قُلْ","qoul","dis !"],["يقول","يَقُولُ","yaqoûlou","il dit"],["كان","كَانَ","kâna","il était"],["كانوا","كَانُوا۟","kânou","ils étaient"],["يوم","يَوْم","yawm","jour (souvent : le Jour du Jugement)"],["يومئذ","يَوْمَئِذٍ","yawma'idhin","ce jour-là"],["ويل","وَيْل","wayl","malheur à…"],["ادريك","أَدْرَىٰكَ","adrâka","t'a fait savoir (« et qui te dira ce qu'est… ? »)"],["اتيك","أَتَىٰكَ","atâka","t'est parvenu"],["ارءيت","أَرَءَيْتَ","ara'ayta","as-tu vu ? que penses-tu de… ?"],["جاء","جَآءَ","jâ'a","il est venu"],["خلق","خَلَقَ","khalaqa","il a créé ; la création"],["جعل","جَعَلَ","ja'ala","il a fait, il a placé"],["علم","عِلْم / عَلِمَ","'ilm / 'alima","science, savoir / il a su"],["يعلم","يَعْلَمُ","ya'lamou","il sait"],["عليم","عَلِيم","'alîm","Omniscient, qui sait tout"],["حكيم","حَكِيم","hakîm","Sage"],["قدير","قَدِير","qadîr","Omnipotent, capable de tout"],["شيء","شَيْء","chay'","chose"],["خير","خَيْر","khayr","bien ; meilleur"],["شر","شَرّ","charr","mal"],["اجر","أَجْر","ajr","récompense"],["هدي","هُدًى","houdâ","guidée, bonne direction"],["ذكر","ذِكْر","dhikr","rappel, évocation"],["قلوب","قُلُوب","qouloûb","cœurs"],["قلب","قَلْب","qalb","cœur"],["نفس","نَفْس","nafs","âme, soi-même"],["عبد","عَبْد","'abd","serviteur, adorateur"],["عباد","عِبَاد","'ibâd","serviteurs"],["ناس","ٱلنَّاس","an-nâs","les gens, l'humanité"],["انسن","ٱلْإِنسَٰن","al-insân","l'être humain"],["قوم","قَوْم","qawm","peuple"],["رسول","رَسُول","rasoûl","messager"],["كتب","ٱلْكِتَٰب","al-kitâb","le Livre (l'Écriture)"],["ءاية","ءَايَة","âya","signe, verset"],["ءايت","ءَايَٰت","âyât","signes, versets"],["حق","ٱلْحَقّ","al-haqq","la vérité ; le droit"],["ءامنوا","ءَامَنُوا۟","âmanou","ils ont cru"],["يؤمنون","يُؤْمِنُونَ","you'minoûn","ils croient"],["كفروا","كَفَرُوا۟","kafarou","ils ont mécru (rejeté la foi)"],["كذبوا","كَذَّبُوا۟","kadhdhabou","ils ont démenti"],["مكذبين","ٱلْمُكَذِّبِين","al-moukadhdhibîn","ceux qui démentent"],["عملوا","عَمِلُوا۟","'amilou","ils ont fait (œuvré)"],["يعملون","يَعْمَلُونَ","ya'maloûn","ils font"],["عمل","عَمَل","'amal","œuvre, action"],["صلحت","ٱلصَّٰلِحَٰت","as-sâlihât","les bonnes œuvres"],["صلوة","ٱلصَّلَوٰة","as-salât","la prière"],["زكوة","ٱلزَّكَوٰة","az-zakât","l'aumône purificatrice"],["جنة","جَنَّة","janna","jardin ; le Paradis"],["جنت","جَنَّٰت","jannât","jardins (du Paradis)"],["نار","ٱلنَّار","an-nâr","le Feu (l'Enfer)"],["عذاب","عَذَاب","'adhâb","châtiment"],["جزاء","جَزَآء","jazâ'","rétribution"],["حساب","حِسَاب","hisâb","compte (le Jugement)"],["ساعة","ٱلسَّاعَة","as-sâ'a","l'Heure (la fin du monde)"],["دنيا","ٱلدُّنْيَا","ad-dounyâ","la vie d'ici-bas"],["ءاخرة","ٱلْءَاخِرَة","al-âkhira","l'au-delà"],["موت","ٱلْمَوْت","al-mawt","la mort"],["حيوة","ٱلْحَيَوٰة","al-hayât","la vie"],["ارض","ٱلْأَرْض","al-ard","la terre"],["سماء","ٱلسَّمَآء","as-samâ'","le ciel"],["سموت","ٱلسَّمَٰوَٰت","as-samâwât","les cieux"],["اليل","ٱلَّيْل","al-layl","la nuit"],["نهار","ٱلنَّهَار","an-nahâr","le jour (la journée)"],["شمس","ٱلشَّمْس","ach-chams","le soleil"],["قمر","ٱلْقَمَر","al-qamar","la lune"],["جبال","ٱلْجِبَال","al-jibâl","les montagnes"],["نجوم","ٱلنُّجُوم","an-noujoûm","les étoiles"],["ماء","مَآء","mâ'","eau"],["وجوه","وُجُوه","woujoûh","visages"],["سبيل","سَبِيل","sabîl","chemin, voie"],["عند","عِندَ","'inda","auprès de, chez"],["بين","بَيْنَ","bayna","entre"],["قبل","قَبْلِ","qabli","avant"],["بعد","بَعْدِ","ba'di","après"],["حتي","حَتَّىٰ","hattâ","jusqu'à ce que"],["فوق","فَوْقَ","fawqa","au-dessus de"],["تحت","تَحْتِ","tahti","sous, en dessous"],["كريم","كَرِيم","karîm","noble, généreux"],["عظيم","عَظِيم","'azîm","immense"],["كبير","كَبِير","kabîr","grand"],["كثير","كَثِير","kathîr","nombreux, beaucoup"],["قليل","قَلِيل","qalîl","peu"],["اكثر","أَكْثَر","akthar","la plupart ; plus"],["اعلي","ٱلْأَعْلَى","al-a'lâ","le Très-Haut"],["نعمة","نِعْمَة","ni'ma","bienfait"],["صدر","صَدْر","sadr","poitrine"],["يتيم","ٱلْيَتِيم","al-yatîm","l'orphelin"],["مسكين","ٱلْمِسْكِين","al-miskîn","le pauvre"],["مال","مَال","mâl","richesse, biens"],["يخشي","يَخْشَىٰ","yakhchâ","il craint (Allah)"],["احد","أَحَد","ahad","un, unique ; quelqu'un"],["صمد","ٱلصَّمَد","as-samad","le Seul à être imploré"],["يلد","يَلِدْ","yalid","il engendre"],["كفوا","كُفُوًا","koufouwan","égal, équivalent"],["اعوذ","أَعُوذُ","a'oûdhou","je cherche protection"],["فلق","ٱلْفَلَق","al-falaq","l'aube naissante"],["وسواس","ٱلْوَسْوَاس","al-waswâs","le tentateur qui chuchote"],["عصر","ٱلْعَصْر","al-'asr","le temps"],["خسر","خُسْر","khousr","perte"],["صبر","ٱلصَّبْر","as-sabr","la patience"],["بشر","بَشَر","bachar","être humain, homme"],["كيف","كَيْفَ","kayfa","comment ?"],["اما","أَمَّا","ammâ","quant à"]];
+const LEX={}; LEX_ROWS.forEach(([k,a,p,f])=>LEX[k]={k,a,p,f});
+// retrouve l'entrée du lexique d'un mot du texte (enlève و ف ب ل ك ال et les pronoms collés)
+const lexCache={};
+function lexKey(t){
+  if(t in lexCache) return lexCache[t];
+  const n=wNorm(t); if(LEX[n]) return lexCache[t]=n;
+  const S=new Set([n]);
+  for(const x of [...S]) if(x.length>=3&&'وف'.includes(x[0])) S.add(x.slice(1));
+  for(const x of [...S]) if(x.length>=4&&'بلك'.includes(x[0])) S.add(x.slice(1));
+  for(const x of [...S]){if(x.length>3&&x.startsWith('ال'))S.add(x.slice(2));if(x.length>3&&x.startsWith('لل'))S.add(x.slice(2))}
+  for(const x of [...S]) for(const suf of ['هما','هم','هن','ها','كم','كن','نا','ه','ك','ي','ا']) if(x.length>suf.length+1&&x.endsWith(suf)) S.add(x.slice(0,-suf.length));
+  for(const x of [...S]) if(x.endsWith('ت')) S.add(x.slice(0,-1)+'ة');
+  let best=null; for(const x of S) if(LEX[x]&&(!best||x.length>best.length)) best=x;
+  return lexCache[t]=best;
+}
 const wCards=()=>LS.get('hk.words',{});
 function knownWords(){const c=wCards(),o={};for(const k in c)if((c[k].l||0)>=2)o[k]=1;return o}
 const wAudio=new Audio(); wAudio.preload='none';
 function playWord(a){if(!a)return;try{if(run&&!run.paused)pauseRun();wAudio.src=/^https?:/.test(a)?a:WBW_HOST+a;wAudio.play().catch(()=>{})}catch(e){}}
 // bulle de sens (appui long sur un mot)
-async function showWordTip(el){
-  const v=+el.dataset.v,p=+el.dataset.p; let tip=$('wtip'); if(!tip){tip=document.createElement('div');tip.id='wtip';tip.className='wtip';document.body.appendChild(tip)}
-  tip.innerHTML='<b>…</b>'; tip.hidden=false; placeTip(tip,el);
+function showWordTip(el){
+  const v=+el.dataset.v,p=+el.dataset.p, vv=verses.find(x=>x.n===v), w=vv&&vv.w.find(x=>x.p===p); if(!w) return;
+  let tip=$('wtip'); if(!tip){tip=document.createElement('div');tip.id='wtip';tip.className='wtip';document.body.appendChild(tip)}
   try{navigator.vibrate&&navigator.vibrate(20)}catch(e){}
-  let d=wbw; if(!d){try{d=wbw=await loadWBW(surah)}catch(e){}}
-  const w=d&&d.v[v]&&d.v[v].find(x=>x[0]===p);
-  if(!w){tip.innerHTML='<small>Sens indisponible (connexion ?)</small>';return}
-  const k=wNorm(w[1]), c=wCards()[k];
-  tip.innerHTML='<span class="ar">'+esc(w[1])+'</span><b>'+esc(w[2]||'—')+'</b>'+(d.lang&&d.lang!=='french'?'<small>(traduction en '+esc(d.lang)+')</small>':'')+
-    '<div class="row"><button data-a="play">🔊 Écouter</button><button data-a="add">'+(c?'✓ Dans mes mots':'＋ À apprendre')+'</button></div>';
-  placeTip(tip,el); playWord(w[3]);
-  tip.querySelector('[data-a=play]').onclick=ev=>{ev.stopPropagation();playWord(w[3])};
-  tip.querySelector('[data-a=add]').onclick=ev=>{ev.stopPropagation();const cs=wCards();if(!cs[k]){cs[k]={l:0,d:today(),ok:0,ko:0};LS.set('hk.words',cs)}ev.target.textContent='✓ Dans mes mots'};
+  const k=lexKey(w.t), e=k&&LEX[k], c=k&&wCards()[k], au=wordAudio(surah,v,p);
+  tip.innerHTML='<span class="ar">'+esc(w.t)+'</span>'+(e?'<b>'+esc(e.f)+'</b><small>'+esc(e.a)+' · '+esc(e.p)+'</small>':'<small>Ce mot n’est pas encore dans le lexique.</small>')+
+    '<div class="row"><button data-a="play">🔊 Écouter</button>'+(e?'<button data-a="add">'+(c?'✓ Dans mes mots':'＋ À apprendre')+'</button>':'')+'</div>';
+  tip.hidden=false; placeTip(tip,el); playWord(au);
+  tip.querySelector('[data-a=play]').onclick=ev=>{ev.stopPropagation();playWord(au)};
+  const ad=tip.querySelector('[data-a=add]'); if(ad) ad.onclick=ev=>{ev.stopPropagation();const cs=wCards();if(!cs[k]){cs[k]={l:0,d:today(),ok:0,ko:0};LS.set('hk.words',cs)}ev.target.textContent='✓ Dans mes mots'};
 }
 function placeTip(tip,el){const r=el.getBoundingClientRect(),W=Math.min(280,innerWidth-24);tip.style.width=W+'px';
   tip.style.left=Math.max(12,Math.min(innerWidth-W-12,r.left+r.width/2-W/2))+'px';
@@ -2042,23 +2037,19 @@ const W_SCOPES={amma:{t:'Juz’ ‘Amma + Al-Fâtiha',list:()=>[1].concat(Array.
   mine:{t:'Mes sourates',list:()=>{const v=allVS(),o=[];for(let i=1;i<=114;i++)if(v[i].some(x=>x))o.push(i);return o.length?o:[surah]}}};
 let wScope=LS.get('hk.wScope','amma'), wDeck=null, wBusy=false;
 async function buildDeck(scope,onProg){
-  const list=W_SCOPES[scope].list(), m={}; let total=0, lang='';
+  const list=W_SCOPES[scope].list(), m={}; let total=0;
   for(let i=0;i<list.length;i++){
     const s=list[i]; if(onProg) onProg(i,list.length);
-    const d=await loadWBW(s); if(!lang&&d.lang) lang=d.lang;
-    for(const n in d.v) for(const [p,t,g,a] of d.v[n]){
-      const k=wNorm(t); if(!k) continue; total++;
-      const e=m[k]=m[k]||{k,n:0,forms:{},gl:{},a:'',ex:''};
-      e.n++; e.forms[t]=(e.forms[t]||0)+1; if(g) e.gl[g]=(e.gl[g]||0)+1; if(!e.a&&a){e.a=a;e.ex=s+':'+n}
-    }
+    const txt=s===surah&&verses.length?verses:await loadText(s);
+    for(const v of txt) for(const w of v.w){total++;const k=lexKey(w.t);if(!k)continue;
+      const e=m[k]=m[k]||{k,n:0,a:'',ex:'',form:''}; e.n++; if(!e.a){e.a=wordAudio(s,v.n,w.p);e.ex=CHAPTERS[s-1].name_simple+' '+v.n;e.form=w.t}}
   }
-  const top=(o)=>Object.entries(o).sort((a,b)=>b[1]-a[1])[0];
-  const words=Object.values(m).map(e=>({k:e.k,n:e.n,t:(top(e.forms)||[e.k])[0],g:(top(e.gl)||[''])[0],a:e.a,ex:e.ex})).sort((a,b)=>b.n-a.n);
-  return {scope,total,lang,words:words.slice(0,200),count:words.length};
+  const words=Object.values(m).map(e=>({k:e.k,n:e.n,t:LEX[e.k].a,p:LEX[e.k].p,g:LEX[e.k].f,a:e.a,ex:e.ex,form:e.form})).sort((a,b)=>b.n-a.n);
+  return {scope,total,lang:'french',words,count:words.length};
 }
 function deckSummary(d){
   const c=wCards(); let known=0,cov=0; d.words.forEach(w=>{if(c[w.k]&&c[w.k].l>=2){known++;cov+=w.n}});
-  return {known,top:Math.min(100,d.words.length),cov:d.total?Math.round(cov*100/d.total):0,cov100:Math.round(d.words.slice(0,100).reduce((x,w)=>x+w.n,0)*100/(d.total||1))};
+  return {known,top:d.words.length,cov:d.total?Math.round(cov*100/d.total):0,cov100:Math.round(d.words.reduce((x,w)=>x+w.n,0)*100/(d.total||1))};
 }
 function openWords(){closeSheets();$('wordSheet').hidden=false;renderWords()}
 async function renderWords(){
@@ -2073,22 +2064,22 @@ async function renderWords(){
   }
   const d=wDeck, sm=deckSummary(d), c=wCards(), now=today();
   LS.set('hk.wsum',{scope:d.scope,known:sm.known,cov:sm.cov,t:W_SCOPES[d.scope].t});
-  const due=d.words.slice(0,100).filter(w=>c[w.k]&&c[w.k].d<=now&&c[w.k].l>0).length;
+  const due=d.words.filter(w=>c[w.k]&&c[w.k].d<=now&&c[w.k].l>0).length;
   let h=(d.lang&&d.lang!=='french'?'<p class="note">⚠️ La traduction mot à mot n’est disponible qu’en '+esc(d.lang)+' pour l’instant.</p>':'')+
-    '<div class="stats"><div class="stat"><b>'+sm.known+'</b><small>mots connus</small></div><div class="stat"><b>'+sm.cov+' %</b><small>des mots de ces sourates compris</small></div><div class="stat"><b>'+d.count+'</b><small>mots différents</small></div></div>'+
-    '<p class="note">Les 100 mots les plus fréquents ci-dessous représentent à eux seuls <b>'+sm.cov100+' %</b> du texte de ces sourates.</p>'+
+    '<div class="stats"><div class="stat"><b>'+sm.known+'</b><small>mots connus</small></div><div class="stat"><b>'+sm.cov+' %</b><small>des mots de ces sourates compris</small></div><div class="stat"><b>'+d.count+'</b><small>mots à apprendre</small></div></div>'+
+    '<p class="note">Ces '+d.count+' mots du lexique représentent à eux seuls <b>'+sm.cov100+' %</b> du texte de ces sourates. Les apprendre, c’est comprendre une grande partie de ce que tu récites.</p>'+
     '<div class="btns" style="margin:10px 0 14px"><button class="btn primary" id="wCardsBtn">Cartes'+(due?' · '+due+' à revoir':'')+'</button><button class="btn" id="wQuizBtn">Quiz</button></div>'+
     '<span class="lbl">Les mots les plus répétés</span><div class="wlist">';
-  d.words.slice(0,100).forEach((w,i)=>{const cd=c[w.k], l=cd?cd.l:-1;
-    h+='<button data-i="'+i+'"><span class="ar">'+esc(w.t)+'</span><span class="gl2">'+esc(w.g||'—')+'</span><span class="n">×'+w.n+'</span><span class="lv" data-l="'+(l>=2?'k':l>=0?'s':'n')+'"></span></button>'});
-  h+='</div><p class="note">Source : traduction mot à mot de quran.com. Le sens d’un mot peut varier selon le verset.</p>';
+  d.words.forEach((w,i)=>{const cd=c[w.k], l=cd?cd.l:-1;
+    h+='<button data-i="'+i+'"><span class="ar">'+esc(w.t)+'</span><span class="gl2">'+esc(w.g)+'<small>'+esc(w.p)+'</small></span><span class="n">×'+w.n+'</span><span class="lv" data-l="'+(l>=2?'k':l>=0?'s':'n')+'"></span></button>'});
+  h+='</div><p class="note">Lexique préparé pour l’app : le sens donné est le plus courant ; il peut varier selon le verset. Il mérite d’être relu par un enseignant.</p>';
   $('wMain').innerHTML=h;
   $('wMain').querySelectorAll('.wlist button').forEach(b=>b.onclick=()=>playWord(d.words[+b.dataset.i].a));
   $('wCardsBtn').onclick=()=>wTrain('cards'); $('wQuizBtn').onclick=()=>wTrain('quiz');
 }
 // sélection des mots d'une séance : à revoir d'abord, puis nouveaux par fréquence
 function wQueue(nb){
-  const c=wCards(), now=today(), pool=wDeck.words.slice(0,100);
+  const c=wCards(), now=today(), pool=wDeck.words;
   const due=pool.filter(w=>c[w.k]&&c[w.k].l>0&&c[w.k].d<=now);
   const fresh=pool.filter(w=>!c[w.k]||c[w.k].l===0);
   return due.concat(fresh).slice(0,nb);
@@ -2101,13 +2092,13 @@ function wGrade(w,ok){
 function wTrain(kind){
   const q=wQueue(10); let i=0, good=0;
   if(!q.length){$('wMain').innerHTML='<p class="note">Bravo, rien à revoir pour aujourd’hui ! 🎉</p><button class="btn" id="wBack">Retour</button>';$('wBack').onclick=renderWords;return}
-  const pool=wDeck.words.slice(0,150).filter(w=>w.g);
+  const pool=wDeck.words.filter(w=>w.g);
   const next=()=>{
     if(i>=q.length){$('wMain').innerHTML='<div class="wcard"><div class="big">🎉</div><b>'+good+' / '+q.length+'</b><p>'+(good===q.length?'Parfait !':good>=q.length/2?'Bien joué, continue !':'Ces mots reviendront bientôt, c’est normal.')+'</p><div class="btns"><button class="btn primary" id="wAgain">Encore</button><button class="btn" id="wBack">Retour</button></div></div>';
       $('wAgain').onclick=()=>wTrain(kind);$('wBack').onclick=renderWords;logSession();return}
     const w=q[i], head='<div class="wprog">'+(i+1)+' / '+q.length+'</div>';
     if(kind==='cards'){
-      $('wMain').innerHTML=head+'<div class="wcard"><button class="ar big" id="wPlay">'+esc(w.t)+'</button><small>🔊 touche le mot pour l’entendre</small><div id="wBackSide" hidden><b class="mean">'+esc(w.g||'—')+'</b><small>'+w.n+' fois dans ces sourates · ex. '+w.ex+'</small></div>'+
+      $('wMain').innerHTML=head+'<div class="wcard"><button class="ar big" id="wPlay">'+esc(w.t)+'</button><small>🔊 touche le mot pour l’entendre</small><div id="wBackSide" hidden><b class="mean">'+esc(w.g)+'</b><small>'+esc(w.p)+' · '+w.n+' fois dans ces sourates</small><small>ex. '+esc(w.form)+' — '+esc(w.ex)+'</small></div>'+
         '<div class="btns" id="wAct"><button class="btn primary" id="wShow">Voir le sens</button></div></div>';
       $('wPlay').onclick=()=>playWord(w.a); playWord(w.a);
       $('wShow').onclick=()=>{$('wBackSide').hidden=false;$('wAct').innerHTML='<button class="btn" id="wNo">Pas encore</button><button class="btn ok" id="wYes">Je savais ✓</button>';
