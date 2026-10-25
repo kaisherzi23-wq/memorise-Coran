@@ -838,10 +838,19 @@ async function loadTranslation(s,id){
   const arr=(d.translations||[]).map(t=>String(t.text||'').replace(/<sup[^>]*>.*?<\/sup>/gi,'').replace(/<[^>]+>/g,'').replace(/\s+/g,' ').trim());
   LS.set(ck,arr); return arr;
 }
+// la liste de quran.com contient des récitateurs en double (même nom, même style) : on n'en garde qu'un,
+// de préférence celui déjà choisi, puis ceux qui ont une photo, puis le plus ancien
+function dedupeReciters(l){
+  const norm=x=>x.label.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f`'’ʿ-]/g,'').replace(/\s+/g,' ').trim();
+  const rank=r=>r.id==reciterId?0:LS_RECS.some(x=>x.id===r.id)?1:2, best={};
+  for(const r of l){const k=norm(r);if(!best[k]||rank(r)<rank(best[k])||(rank(r)===rank(best[k])&&r.id<best[k].id))best[k]=r}
+  const keep=new Set(Object.values(best));
+  return l.filter(r=>keep.has(r));
+}
 async function loadReciters(){
   try{const d=await getJSON([QDC+'audio/reciters?locale=en',QDC2+'audio/reciters?locale=en']);
     const l=(d.reciters||[]).map(r=>({id:r.id,label:((r.translated_name&&r.translated_name.name)||r.name)+(r.style&&r.style.name?' · '+r.style.name:'')}));
-    if(l.length) return l;}catch(e){}
+    if(l.length) return dedupeReciters(l);}catch(e){}
   return FALLBACK_RECITERS;
 }
 async function loadTiming(id,s){
