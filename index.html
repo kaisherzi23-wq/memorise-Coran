@@ -211,6 +211,7 @@ textarea{width:100%;min-height:70px;border-radius:10px;border:1px solid var(--li
 .jz{position:relative;border-radius:8px;border:1px solid var(--line);background:linear-gradient(to top,color-mix(in srgb,var(--done) 70%,var(--bg)) var(--p),var(--bg) var(--p));padding:5px 2px;text-align:center;overflow:hidden}
 .jz.full{background:var(--done);color:var(--page);border-color:var(--done)}
 .jz b{display:block;font-size:.95rem;font-variant-numeric:tabular-nums}.jz small{font-size:.66rem;color:inherit;opacity:.75}
+.goals{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:6px;margin:4px 0 6px}.goals div{background:var(--page);border:1px solid var(--line);border-radius:12px;padding:8px 10px;display:flex;flex-direction:column;gap:1px}.goals b{font-size:1rem}.goals span{font-size:.85rem}.goals small{font-size:.74rem;color:var(--muted)}
 .proj{background:var(--bg);border:1px solid var(--gold-soft);border-radius:14px;padding:12px 14px;margin:12px 0}
 .proj>b{font-size:1.15rem;display:block;margin:2px 0 8px}.proj p{margin:8px 0 0;font-size:.92rem}.proj .muted,.journey .muted{color:var(--muted);font-size:.86rem}
 .pbar{height:8px;border-radius:5px;background:var(--line);overflow:hidden}.pbar i{display:block;height:100%;background:var(--done);border-radius:5px}
@@ -1236,6 +1237,24 @@ const fmtDate=t=>{const d=new Date(t),y=d.getFullYear()!==new Date().getFullYear
 const FAMOUS=[1,112,103,108,97,87,78,67,36,55,56,18,19,2];
 function equivalent(n){let best=null;for(const s of FAMOUS){const c=CHAPTERS[s-1].verses_count;if(c<=n&&(!best||c>CHAPTERS[best-1].verses_count))best=s}return best}
 // tout le bloc « parcours » (juz', prochaine étape, projections, rythme, étapes)
+// estimation pour le Coran entier (6236 versets) d'après le rythme des 4 dernières semaines
+function wholeQuranHTML(g,rh,tu,ton){
+  const T=6236, left=T-g.verses, elle=tu==='elle', fr=x=>String(Math.round(x*10)/10).replace('.',',');
+  let h='<div class="proj"><span class="lbl">Le Coran entier</span><b>'+g.verses+' / '+T+' versets</b><div class="pbar"><i style="width:'+Math.max(.5,g.verses*100/T)+'%"></i></div>';
+  if(left<=0) return h+'<p>🌟 Tout le Coran est appris. Qu’Allah le préserve dans '+(elle?'son':'ton')+' cœur.</p></div>';
+  if(!rh.ready) h+='<p class="muted">🔮 Encore '+rh.wait+' jour'+(rh.wait>1?'s':'')+' d’utilisation et l’app pourra faire une estimation.</p>';
+  else if(rh.perDay<.05) h+='<p class="muted">🔮 Pas assez de nouveaux versets ces dernières semaines pour faire une estimation.</p>';
+  else{
+    const days=left/rh.perDay, y=days/365.25, d=today()+Math.ceil(days)*DAY;
+    const dur=y<1?Math.max(1,Math.round(days/30.4))+' mois':(()=>{const t=Math.round(y*12),a=Math.floor(t/12),m=t%12;return a+' an'+(a>1?'s':'')+(m&&a<10?' et '+m+' mois':'')})();
+    h+='<p>🔮 À '+ton+' rythme actuel ('+fr(rh.perWeek)+' versets par semaine), '+(elle?'elle aurait':'tu aurais')+' tout appris vers <b>'+(y>40?'dans plus de 40 ans':new Date(d).toLocaleDateString('fr-FR',{month:'long',year:'numeric'}))+'</b>'+(y>40?'':', dans environ '+dur)+'.</p>';
+  }
+  const goals=[2,3,5,10].map(n=>({n,pd:left/(n*365.25)})).filter(x=>!rh.ready||rh.perDay<x.pd*0.97);
+  if(goals.length){
+    h+='<p class="muted" style="margin-bottom:4px">Pour finir en…</p><div class="goals">'+goals.map(x=>'<div><b>'+x.n+' ans</b><span>'+fr(x.pd)+' versets / jour</span><small>≈ '+fr(x.pd*7/10.3)+' page'+(x.pd*7/10.3>=2?'s':'')+' / semaine</small></div>').join('')+'</div>';
+  }
+  return h+'<p class="note">L’estimation suit les 4 dernières semaines et s’affinera avec le temps. Attention : les grandes sourates (Al-Baqara, Âl ‘Imrân…) ont des versets bien plus longs que Juz’ ‘Amma.</p></div>';
+}
 function journeyHTML(who){
   const vs=allVS(), ms=milestones(vs), rh=rhythm(), g=globalCounts(), tu=who==='elle'?'elle':'tu', ton=who==='elle'?'son':'ton', tes=who==='elle'?'ses':'tes';
   let h='<div class="juz">';
@@ -1257,6 +1276,8 @@ function journeyHTML(who){
     }
     h+='</div>';
   }
+  // le Coran entier
+  h+=wholeQuranHTML(g,rh,tu,ton);
   // chemin parcouru
   if(g.verses){const eq=equivalent(g.verses);
     h+='<p class="retro">Depuis '+(rh.span>1?'le '+fmtDate(firstDay()):'aujourd’hui')+', '+tu+' '+(tu==='elle'?'a':'as')+' appris <b>'+g.verses+' versets</b>'+(eq?', c’est '+(CHAPTERS[eq-1].verses_count===g.verses?'':'plus que ')+'toute la sourate '+esc(CHAPTERS[eq-1].name_simple)+' ('+CHAPTERS[eq-1].verses_count+' versets)':'')+'. 👏</p>'}
@@ -2931,7 +2952,7 @@ document.addEventListener('visibilitychange',()=>{if(!lsRaw('hk.auth',null))retu
 window.addEventListener('online',()=>{if(lsRaw('hk.auth',null))syncNow()});
 
 // ===== Avis des testeurs : message WhatsApp pré-rempli (la personne choisit à qui l'envoyer) =====
-const APP_V='v51';
+const APP_V='v52';
 function deviceInfo(){
   const ua=navigator.userAgent; let d='appareil inconnu';
   const ios=ua.match(/OS (\d+)_(\d+)/), and=ua.match(/Android ([\d.]+)/);
