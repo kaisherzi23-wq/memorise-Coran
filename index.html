@@ -264,6 +264,7 @@ textarea{width:100%;min-height:70px;border-radius:10px;border:1px solid var(--li
 .wcard{display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center;background:var(--bg);border:1px solid var(--gold-soft);border-radius:18px;padding:18px 14px}
 .wcard .ar.big{font-family:var(--f-ar);font-size:3rem;line-height:1.7;direction:rtl;background:none;border:0;color:var(--ink);padding:0 10px}
 #wBackSide small{display:block;margin-top:2px}.wcard .big{font-size:3rem}.wcard small{color:var(--muted);font-size:.8rem}.wcard .mean{font-size:1.35rem;display:block;margin-bottom:4px}
+.wrev{width:100%;display:flex;flex-direction:column;gap:6px;border-top:1px solid var(--line);padding-top:12px;margin-top:4px}.wrev .okc{color:var(--done)}.wrev .koc{color:var(--danger)}.wrev .wv{font-family:var(--f-ar);font-size:calc(var(--ar-size)*.8);line-height:2;direction:rtl;margin:4px 0;color:var(--ink)}.wrev .wv span{padding:0 .06em}.wrev .wv mark{background:var(--now);color:var(--now-ink);border-radius:6px;padding:0 .1em}.wrev .wv .vn{color:var(--gold);font-size:.8em}.wrev .trv{font-size:.88rem;color:var(--muted);margin:0;line-height:1.45}.wrev .btns{width:100%}
 .wopts{display:grid;gap:8px;width:100%}
 .wopts button{border:1px solid var(--line);background:var(--page);border-radius:12px;padding:12px;font-size:1rem;color:var(--ink)}
 .wopts button.right{background:var(--done);color:var(--page);border-color:var(--done)}.wopts button.wrong{background:var(--danger);color:#fff;border-color:var(--danger)}
@@ -2145,9 +2146,9 @@ async function buildDeck(scope,onProg){
     const s=list[i]; if(onProg) onProg(i,list.length);
     const txt=s===surah&&verses.length?verses:await loadText(s);
     for(const v of txt) for(const w of v.w){total++;const k=lexKey(w.t);if(!k)continue;
-      const e=m[k]=m[k]||{k,n:0,a:'',ex:'',form:'',sc:1e9}; e.n++; const sc=Math.abs(wNorm(w.t).length-k.length)+(wNorm(w.t)===k?0:1); if(sc<e.sc){e.sc=sc;e.a=wordAudio(s,v.n,w.p);e.ex=CHAPTERS[s-1].name_simple+' '+v.n;e.form=w.t}}
+      const e=m[k]=m[k]||{k,n:0,a:'',ex:'',form:'',sc:1e9,oc:[]}; e.n++; if(e.oc.length<8)e.oc.push([s,v.n,w.p]); const sc=Math.abs(wNorm(w.t).length-k.length)+(wNorm(w.t)===k?0:1); if(sc<e.sc){e.sc=sc;e.a=wordAudio(s,v.n,w.p);e.ex=CHAPTERS[s-1].name_simple+' '+v.n;e.form=w.t}}
   }
-  const words=Object.values(m).map(e=>({k:e.k,n:e.n,t:LEX[e.k].a,p:LEX[e.k].p,g:LEX[e.k].f,a:e.a,ex:e.ex,form:e.form,sec:LEX[e.k].sec})).sort((a,b)=>b.n-a.n);
+  const words=Object.values(m).map(e=>({k:e.k,n:e.n,t:LEX[e.k].a,p:LEX[e.k].p,g:LEX[e.k].f,a:e.a,ex:e.ex,form:e.form,sec:LEX[e.k].sec,oc:e.oc})).sort((a,b)=>b.n-a.n);
   const rest=LEX_ROWS.filter(r=>!m[r[0]]).map(([k,a,p,f,sec])=>({k,n:0,t:a,p,g:f,a:'',ex:'',form:'',sec}));
   return {scope,total,lang:'french',words,rest,count:words.length};
 }
@@ -2199,6 +2200,19 @@ function wGrade(w,ok){
   if(ok){c.l=Math.min((c.l||0)+1,INTERVALS.length);c.d=today()+INTERVALS[c.l-1]*DAY;c.ok++}else{c.l=0;c.d=today();c.ko++}
   cs[w.k]=c; LS.set('hk.words',cs);
 }
+// après une réponse au quiz : le mot dans un verset du Coran, avec la traduction et l'audio du verset
+async function wReveal(w,ok,go){
+  const [s,v,p]=w.oc[Math.floor(Math.random()*w.oc.length)], c=CHAPTERS[s-1]||{name_simple:'Sourate '+s};
+  const card=$('wMain').querySelector('.wcard'); if(!card) return;
+  const r=document.createElement('div'); r.className='wrev';
+  r.innerHTML='<b class="'+(ok?'okc':'koc')+'">'+(ok?'✓ Bonne réponse':'✗ La bonne réponse : '+esc(w.g))+'</b><small>Dans le Coran · '+esc(c.name_simple)+', verset '+v+'</small><p class="ar wv">…</p><p class="trv"></p><div class="btns"><button class="btn" id="wVerse">🔊 Écouter le verset</button><button class="btn primary" id="wNext">Suivant ›</button></div>';
+  card.appendChild(r); r.scrollIntoView({block:'nearest',behavior:'smooth'});
+  $('wNext').onclick=()=>{smpStop();go()};
+  try{const txt=(s===surah&&verses.length)?verses:await loadText(s), vv=txt.find(x=>x.n===v);
+    if(vv) r.querySelector('.wv').innerHTML=vv.w.map(x=>x.p===p?'<mark>'+esc(x.t)+'</mark>':'<span>'+esc(x.t)+'</span>').join(' ')+' <span class="vn">'+fmtN(v)+'</span>';}catch(e){r.querySelector('.wv').textContent=''}
+  loadTranslation(s,settings.trId).then(a=>{const t=a&&a[v-1];if(t&&document.body.contains(r))r.querySelector('.trv').textContent='« '+t+' »'}).catch(()=>{});
+  $('wVerse').onclick=async()=>{try{wAudio.pause();const t=await loadTiming(reciterId,s),x=t.v[v];if(!x)return;smpStop();smp.src=t.url;smp.currentTime=x.from/1000;smpStopAt=x.to/1000;await smp.play()}catch(e){}};
+}
 function wTrain(kind){
   const q=wQueue(10); let i=0, good=0;
   if(!q.length){$('wMain').innerHTML='<p class="note">Bravo, rien à revoir pour aujourd’hui ! 🎉</p><button class="btn" id="wBack">Retour</button>';$('wBack').onclick=renderWords;return}
@@ -2221,7 +2235,8 @@ function wTrain(kind){
       $('wMain').querySelectorAll('.wopts button').forEach(b=>b.onclick=()=>{
         const ok=b.textContent===w.g; wGrade(w,ok); if(ok)good++;
         $('wMain').querySelectorAll('.wopts button').forEach(x=>{x.disabled=true;if(x.textContent===w.g)x.classList.add('right');else if(x===b)x.classList.add('wrong')});
-        setTimeout(()=>{i++;next()},ok?700:1600);
+        if(!w.oc||!w.oc.length){setTimeout(()=>{i++;next()},ok?700:1600);return}
+        wReveal(w,ok,()=>{i++;next()});
       });
     }
   };
@@ -3005,7 +3020,7 @@ document.addEventListener('visibilitychange',()=>{if(!lsRaw('hk.auth',null))retu
 window.addEventListener('online',()=>{if(lsRaw('hk.auth',null))syncNow()});
 
 // ===== Avis des testeurs : message WhatsApp pré-rempli (la personne choisit à qui l'envoyer) =====
-const APP_V='v54';
+const APP_V='v55';
 function deviceInfo(){
   const ua=navigator.userAgent; let d='appareil inconnu';
   const ios=ua.match(/OS (\d+)_(\d+)/), and=ua.match(/Android ([\d.]+)/);
