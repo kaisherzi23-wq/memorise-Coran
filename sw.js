@@ -1,6 +1,6 @@
 // Service worker : garde l'app, le texte, le minutage et les polices pour un usage hors connexion.
 // L'audio téléchargé est stocké à part (IndexedDB) par la page elle-même.
-const VERSION = 'kahf-v56';
+const VERSION = 'kahf-v57';
 const SHELL = ['./', './index.html', './manifest.json', './icon-180.png', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', e => {

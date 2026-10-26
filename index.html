@@ -272,6 +272,7 @@ textarea{width:100%;min-height:70px;border-radius:10px;border:1px solid var(--li
 .wtiles{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;direction:rtl}.wtiles button{width:46px;flex:none}.wtiles button:disabled{opacity:.25}
 .wres{width:100%;display:flex;flex-direction:column;align-items:center;gap:6px}.wres .okc{color:var(--done)}.wres .koc{color:var(--danger)}.wres .alc{color:var(--gold)}
 .wexp{text-align:left;margin:4px 0 0;padding-left:18px;font-size:.9rem;line-height:1.5;width:100%}.wexp li{margin:4px 0}.arl{font-family:var(--f-ar);font-size:1.25em;padding:0 2px}
+.wweak{background:var(--bg);border:1px solid var(--gold);border-radius:14px;padding:12px;margin:0 0 14px;display:flex;flex-direction:column;gap:8px}.wweak small{color:var(--muted);font-size:.8rem}.wchips{display:flex;flex-wrap:wrap;gap:6px;direction:rtl}.wchips span{display:flex;flex-direction:column;align-items:center;background:var(--page);border:1px solid var(--line);border-radius:10px;padding:4px 8px}.wchips b{font-family:var(--f-ar);font-size:1.25rem;font-weight:400}.wchips i{font-style:normal;font-size:.68rem;color:var(--muted);direction:ltr}
 .wrev{width:100%;display:flex;flex-direction:column;gap:6px;border-top:1px solid var(--line);padding-top:12px;margin-top:4px}.wrev .okc{color:var(--done)}.wrev .koc{color:var(--danger)}.wrev .wv{font-family:var(--f-ar);font-size:calc(var(--ar-size)*.8);line-height:2;direction:rtl;margin:4px 0;color:var(--ink)}.wrev .wv span{padding:0 .06em}.wrev .wv mark{background:var(--now);color:var(--now-ink);border-radius:6px;padding:0 .1em}.wrev .wv .vn{color:var(--gold);font-size:.8em}.wrev .trv{font-size:.88rem;color:var(--muted);margin:0;line-height:1.45}.wrev .btns{width:100%}
 .wopts{display:grid;gap:8px;width:100%}
 .wopts button{border:1px solid var(--line);background:var(--page);border-radius:12px;padding:12px;font-size:1rem;color:var(--ink)}
@@ -501,6 +502,7 @@ textarea{width:100%;min-height:70px;border-radius:10px;border:1px solid var(--li
 .ls-week i.on{background:#1F5E4E;border-color:#1F5E4E}
 .ls-week i.tod{box-shadow:0 0 0 2px var(--bg),0 0 0 4px var(--ink)}
 .ls-ht{font-size:1.6rem;color:var(--gold)}
+.ls-fri{display:flex;flex-direction:column;align-items:center;gap:2px;width:100%;margin:0 0 14px;padding:14px;border-radius:22px;border:3px solid var(--gold);background:var(--page);color:var(--ink)}.ls-fri .med{font-size:1.1rem;color:var(--gold);font-weight:700}.ls-fri .arn{font-family:var(--f-ar);font-size:2.2rem;line-height:1.5}.ls-fri small{color:var(--muted);font-size:.85rem}
 .ls-help h3{margin:18px 0 8px;font-size:1rem}
 .sync input{width:100%;padding:11px 12px;border-radius:10px;border:1px solid var(--line);background:var(--bg);margin:0 0 8px;box-sizing:border-box}
 .sync .btns{display:flex;gap:8px;flex-wrap:wrap}.sync .btns .btn{flex:1}
@@ -539,6 +541,11 @@ textarea{width:100%;min-height:70px;border-radius:10px;border:1px solid var(--li
     <img src="icon-180.png" alt="">
     <div><b>Installe l’app sur ton iPhone</b><br>Touche <b>Partager</b> puis <b>« Sur l’écran d’accueil »</b>.</div>
     <button class="x" id="installClose" aria-label="Fermer">✕</button>
+  </div>
+  <div class="banner" id="wordsTip" hidden>
+    <div><b>📌 Mots à revoir</b><br><span id="wordsTipTxt"></span></div>
+    <button class="go" id="wordsGo">Réviser</button>
+    <button class="x" id="wordsClose" aria-label="Fermer">✕</button>
   </div>
   <div class="banner" id="fridayTip" hidden>
     <div><b>Jumu‘a mubarak</b><br><span id="fridayTxt">C’est vendredi, le jour de la sourate Al-Kahf.</span></div>
@@ -1763,7 +1770,7 @@ function setPlayIcon(on){$('playIcon').innerHTML=on?'<path d="M6 5h4v14H6zM14 5h
 function ready(){return new Promise(res=>{if(audio.readyState>=1)return res();audio.addEventListener('loadedmetadata',()=>res(),{once:true})})}
 async function requestWake(){try{if('wakeLock' in navigator&&!wakeLock){wakeLock=await navigator.wakeLock.request('screen');wakeLock.addEventListener('release',()=>{wakeLock=null})}}catch(e){}}
 function releaseWake(){try{wakeLock&&wakeLock.release()}catch(e){}wakeLock=null}
-document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&run)requestWake()});
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'){if(run)requestWake();paintFriday();paintWordsTip();if(!$('ls').hidden&&lsView==='home'&&!run)openListenHome()}});
 
 function startRun(ranges,reps,kind,onDone,label,opts){
   stopRun(true); myAudio.pause();
@@ -2182,6 +2189,7 @@ async function renderWords(){
     '<div class="stats"><div class="stat"><b>'+sm.known+'</b><small>mots connus</small></div><div class="stat"><b>'+sm.cov+' %</b><small>des mots de ces sourates compris</small></div><div class="stat"><b>'+d.count+'</b><small>mots à apprendre</small></div></div>'+
     '<p class="note">Ces '+d.count+' mots du lexique représentent à eux seuls <b>'+sm.cov100+' %</b> du texte de ces sourates. Les apprendre, c’est comprendre une grande partie de ce que tu récites.</p>'+
     '<div class="btns" style="margin:10px 0 14px"><button class="btn primary" id="wCardsBtn">Cartes'+(due?' · '+due+' à revoir':'')+'</button><button class="btn" id="wQuizBtn">Quiz</button><button class="btn" id="wWriteBtn">✍️ Écrire</button></div>'+
+    weakBoxHTML()+
     '<span class="lbl">Les mots les plus répétés</span><div class="wlist">';
   d.words.forEach((w,i)=>{const cd=c[w.k], l=cd?cd.l:-1;
     h+='<button data-i="'+i+'"><span class="ar">'+esc(w.t)+'</span><span class="gl2">'+esc(w.g)+(w.p?'<small>'+esc(w.p)+'</small>':'')+(w.form&&wNorm(w.form)!==w.k?'<small>🔊 entendu : <span class="arf">'+esc(w.form)+'</span></small>':'')+'</span><span class="n">×'+w.n+'</span><span class="lv" data-l="'+(l>=2?'k':l>=0?'s':'n')+'"></span></button>'});
@@ -2195,6 +2203,8 @@ async function renderWords(){
   $('wMain').innerHTML=h;
   $('wMain').querySelectorAll('.wlist button').forEach(b=>b.onclick=()=>playWord(d.words[+b.dataset.i].a));
   $('wCardsBtn').onclick=()=>wTrain('cards'); $('wQuizBtn').onclick=()=>wTrain('quiz'); $('wWriteBtn').onclick=wWriteStart;
+  if($('wReviewBtn')) $('wReviewBtn').onclick=wReview;
+  if(wAfter){const f=wAfter;wAfter=null;f()}
 }
 // sélection des mots d'une séance : à revoir d'abord, puis nouveaux par fréquence
 function wQueue(nb){
@@ -2296,10 +2306,11 @@ function wWriteStart(){
   $('wMain').querySelectorAll('[data-lv]').forEach(b=>b.onclick=()=>{LS.set('hk.wLevel',b.dataset.lv);wWrite(b.dataset.lv)});
   $('wBack').onclick=renderWords;
 }
-function wWrite(lv){
-  const q=wQueue(30).filter(w=>w.g&&wGloss(w)&&wLetters(wTarget(w)).length>=2).slice(0,10); let i=0, good=0;
+function wWrite(lv,list,then){
+  const q=(list||wQueue(30)).filter(w=>w.g&&wGloss(w)&&wLetters(wTarget(w)).length>=2).slice(0,list?99:10); let i=0, good=0;
   if(!q.length){$('wMain').innerHTML='<p class="note">Rien à écrire pour aujourd’hui ! 🎉</p><button class="btn" id="wBack">Retour</button>';$('wBack').onclick=renderWords;return}
   const next=()=>{
+    if(i>=q.length&&then){then(good,q.length);return}
     if(i>=q.length){$('wMain').innerHTML='<div class="wcard"><div class="big">🎉</div><b>'+good+' / '+q.length+'</b><p>'+(good===q.length?'Parfait, ton écriture est juste !':good>=q.length/2?'Bien joué, continue !':'L’écriture s’apprend petit à petit : ces mots reviendront.')+'</p><div class="btns"><button class="btn primary" id="wAgain">Encore</button><button class="btn" id="wBack">Retour</button></div></div>';
       $('wAgain').onclick=()=>wWrite(lv);$('wBack').onclick=renderWords;logSession();return}
     const w=q[i], target=wTarget(w), T=wLetters(target).filter(c=>c!=='ٰ'); let typed=[], hint=0, sys=false;
@@ -2323,7 +2334,7 @@ function wWrite(lv){
     $('wOk').onclick=()=>{
       const v=sys?$('wSys').value:typed.map(x=>x.c||x).join(''); if(!wTyped(v).length){$('wHintTxt').hidden=false;$('wHintTxt').textContent='Écris d’abord le mot.';return}
       const c=wCheck(target,v), ex=wExplain(c,target);
-      wGrade(w,c.res==='ok'?true:c.res==='almost'?'almost':false); if(c.res==='ok')good++;
+      wGrade(w,c.res==='ok'?true:c.res==='almost'?'almost':false); wTrack(w,'write',c.res); if(c.res==='ok')good++;
       $('wAct').remove(); ['wKb','wTiles','wSysBtn','wSys','wHintTxt'].forEach(id=>{const e=$(id);if(e)e.hidden=true});
       $('wAns').innerHTML='<span class="arw">'+wOpsHTML(c.ops)+'</span>';
       const res=document.createElement('div'); res.className='wres';
@@ -2337,11 +2348,50 @@ function wWrite(lv){
   };
   next();
 }
-function wTrain(kind){
-  const q=wQueue(10); let i=0, good=0;
+/* ---------- Mots à revoir : ceux où l'on s'est trompé, jusqu'à ce qu'ils soient sûrs ---------- */
+// un mot devient « sûr » après 2 bonnes réponses d'affilée au quiz et 1 écriture juste (dès le niveau facile)
+let wAfter=null;
+function wTrack(w,kind,res){
+  const cs=wCards(), c=cs[w.k]||{l:0,d:today(),ok:0,ko:0};
+  if(res==='ok'){if(kind==='quiz')c.qs=(c.qs||0)+1;else c.ws=(c.ws||0)+1}
+  else{c.err=(c.err||0)+1;c.weak=1;if(kind==='quiz')c.qs=0;else c.ws=0}
+  if(c.weak&&(c.qs||0)>=2&&(c.ws||0)>=1){c.weak=0;c.sure=dayStr(Date.now())}
+  cs[w.k]=c; LS.set('hk.words',cs); paintWordsTip();
+}
+function wObj(k){
+  const d=wDeck, f=d&&(d.words.find(w=>w.k===k)||(d.rest||[]).find(w=>w.k===k)); if(f) return f;
+  const e=LEX[k]; return e?{k,t:e.a,g:e.f,p:e.p,sec:e.sec,a:'',oc:[],n:0}:null;
+}
+const weakKeys=()=>Object.entries(wCards()).filter(([k,c])=>c.weak&&LEX[k]).sort((a,b)=>(b[1].err||0)-(a[1].err||0)).map(([k])=>k);
+function weakBoxHTML(){
+  const ks=weakKeys(), cs=wCards(), sure=Object.values(cs).filter(c=>c.sure&&!c.weak).length;
+  if(!ks.length) return sure?'<p class="note">✅ '+sure+' mot'+(sure>1?'s':'')+' devenu'+(sure>1?'s':'')+' sûr'+(sure>1?'s':'')+' après des erreurs. Aucun mot à revoir pour l’instant.</p>':'';
+  return '<div class="wweak"><b>📌 Mes mots à revoir ('+ks.length+')</b><small>Les mots où tu t’es trompé. Un mot devient sûr après 2 bonnes réponses d’affilée au quiz et 1 écriture juste.</small><div class="wchips">'+
+    ks.slice(0,24).map(k=>{const c=cs[k],e=LEX[k];return '<span><b>'+esc(e.a)+'</b><i>quiz '+'✓'.repeat(Math.min(2,c.qs||0))+'·'.repeat(2-Math.min(2,c.qs||0))+' · écrit '+((c.ws||0)>=1?'✓':'·')+'</i></span>'}).join('')+(ks.length>24?'<span>+'+(ks.length-24)+'</span>':'')+'</div>'+
+    '<button class="btn primary" id="wReviewBtn" style="width:100%">Réviser ces mots ('+Math.min(ks.length,12)+')</button>'+(sure?'<small>✅ Déjà '+sure+' mot'+(sure>1?'s':'')+' devenu'+(sure>1?'s':'')+' sûr'+(sure>1?'s':'')+'.</small>':'')+'</div>';
+}
+function wReview(){
+  const L=weakKeys().slice(0,12).map(wObj).filter(Boolean);
+  if(!L.length){renderWords();return}
+  wTrain('quiz',L,()=>wWrite('easy',L,()=>{
+    const left=weakKeys(), done=L.filter(w=>!left.includes(w.k)).length;
+    $('wMain').innerHTML='<div class="wcard"><div class="big">'+(done?'🌟':'💪')+'</div><b>'+(done?done+' mot'+(done>1?'s':'')+' devenu'+(done>1?'s':'')+' sûr'+(done>1?'s':'')+' !':'Bonne révision')+'</b><p>'+(left.length?'Il reste '+left.length+' mot'+(left.length>1?'s':'')+' à revoir. '+(left.length>1?'Ils te seront proposés':'Il te sera proposé')+' à la prochaine ouverture de l’app : il faut 2 bonnes réponses d’affilée au quiz pour qu’un mot soit sûr.':'Tous tes mots à revoir sont maintenant sûrs. Bravo !')+'</p><div class="btns">'+(left.length?'<button class="btn primary" id="wAgain">Continuer</button>':'')+'<button class="btn" id="wBack">Retour</button></div></div>';
+    if($('wAgain'))$('wAgain').onclick=wReview; $('wBack').onclick=renderWords; logSession();
+  }));
+}
+function paintWordsTip(){
+  const n=weakKeys().length, t=$('wordsTip'); if(!t) return;
+  t.hidden=!n||t.dataset.closed==='1';
+  if(n) $('wordsTipTxt').textContent=n+' mot'+(n>1?'s':'')+' du vocabulaire '+(n>1?'ne sont':'n’est')+' pas encore sûr'+(n>1?'s':'')+'. Une petite révision ?';
+}
+$('wordsClose').onclick=()=>{$('wordsTip').hidden=true;$('wordsTip').dataset.closed='1'};
+$('wordsGo').onclick=()=>{$('wordsTip').hidden=true;$('wordsTip').dataset.closed='1';wAfter=wReview;$('wOpen').click()};
+function wTrain(kind,list,then){
+  const q=list||wQueue(10); let i=0, good=0;
   if(!q.length){$('wMain').innerHTML='<p class="note">Bravo, rien à revoir pour aujourd’hui ! 🎉</p><button class="btn" id="wBack">Retour</button>';$('wBack').onclick=renderWords;return}
   const pool=wDeck.words.concat(wDeck.rest||[]).filter(w=>w.g);
   const next=()=>{
+    if(i>=q.length&&then){then(good,q.length);return}
     if(i>=q.length){$('wMain').innerHTML='<div class="wcard"><div class="big">🎉</div><b>'+good+' / '+q.length+'</b><p>'+(good===q.length?'Parfait !':good>=q.length/2?'Bien joué, continue !':'Ces mots reviendront bientôt, c’est normal.')+'</p><div class="btns"><button class="btn primary" id="wAgain">Encore</button><button class="btn" id="wBack">Retour</button></div></div>';
       $('wAgain').onclick=()=>wTrain(kind);$('wBack').onclick=renderWords;logSession();return}
     const w=q[i], head='<div class="wprog">'+(i+1)+' / '+q.length+'</div>';
@@ -2357,7 +2407,7 @@ function wTrain(kind){
       $('wMain').innerHTML=head+'<div class="wcard"><button class="ar big" id="wPlay">'+esc(w.t)+'</button><small>Que veut dire ce mot ?</small><div class="wopts">'+opts.map(o=>'<button>'+esc(o)+'</button>').join('')+'</div></div>';
       $('wPlay').onclick=()=>playWord(w.a); playWord(w.a);
       $('wMain').querySelectorAll('.wopts button').forEach(b=>b.onclick=()=>{
-        const ok=b.textContent===w.g; wGrade(w,ok); if(ok)good++;
+        const ok=b.textContent===w.g; wGrade(w,ok); wTrack(w,'quiz',ok?'ok':'ko'); if(ok)good++;
         $('wMain').querySelectorAll('.wopts button').forEach(x=>{x.disabled=true;if(x.textContent===w.g)x.classList.add('right');else if(x===b)x.classList.add('wrong')});
         if(!w.oc||!w.oc.length){setTimeout(()=>{i++;next()},ok?700:1600);return}
         wReveal(w,ok,()=>{i++;next()});
@@ -2753,14 +2803,20 @@ function lsTileHTML(id){
   const c=CHAPTERS[id-1], st=lsStateOf(id);
   return '<button class="ls-tile" data-id="'+id+'" data-st="'+st+'" aria-label="'+esc(c.name_simple)+'">'+(st==='m'?'<span class="ok">'+LS_ICO.done+'</span>':'')+'<span class="med">'+lsN(id)+'</span><span class="arn">'+esc(c.name_arabic)+'</span></button>';
 }
+// vendredi : rappel de la sourate Al-Kahf aussi en mode écoute
+function lsFridayHTML(){
+  if(new Date().getDay()!==5) return '';
+  return '<button class="ls-fri" id="lsFri"><span class="med">'+lsN(18)+'</span><span class="arn">الكهف</span><small>Jumu‘a mubarak · c’est le jour d’Al-Kahf</small></button>';
+}
 function openListenHome(){
   lsOpen(); lsStop(); lsView='home'; lsSel=null;
-  let h='<div class="ls-top"><span class="ls-spacer"></span><div class="ls-head"><img class="ls-logo" id="lsLogo" src="icon-180.png" alt="Mémorise le Coran"></div><button class="ls-recbtn" id="lsRecBtn" aria-label="Récitateur">'+recAvatar(+reciterId)+'</button></div><div class="ls-body">'+gardenHTML()+'<div class="ls-grid">';
+  let h='<div class="ls-top"><span class="ls-spacer"></span><div class="ls-head"><img class="ls-logo" id="lsLogo" src="icon-180.png" alt="Mémorise le Coran"></div><button class="ls-recbtn" id="lsRecBtn" aria-label="Récitateur">'+recAvatar(+reciterId)+'</button></div><div class="ls-body">'+lsFridayHTML()+gardenHTML()+'<div class="ls-grid">';
   LS_LIST.forEach(id=>h+=lsTileHTML(id));
   h+='</div></div>';
   $('ls').innerHTML=h; $('ls').scrollTop=0;
   longPress($('lsLogo'),openHelper);
   $('lsRecBtn').onclick=()=>{lsUnlock();openReciters()};
+  if($('lsFri')) $('lsFri').onclick=()=>{lsUnlock();say({ar:'سورة الكهف',fr:'Sourate Al-Kahf'});openListenSurah(18)};
   document.querySelectorAll('.ls-tile').forEach(lsBindTile);
 }
 function lsBindTile(b){
@@ -2977,7 +3033,7 @@ function openReciters(){
 extOnBlocked=()=>{if($('ls').hidden)return;lsPlaying=false;lsPaint()};
 
 async function init(){
-  renderRules(); applySettings(); layout(); paintFriday();
+  renderRules(); applySettings(); layout(); paintFriday(); paintWordsTip();
   loadTranslations().then(l=>{const s=$('trSelect');s.innerHTML='';for(const t of l){const o=document.createElement('option');o.value=t.id;o.textContent=t.label;s.appendChild(o)}if(!l.some(t=>t.id==settings.trId)){settings.trId=l[0].id;saveSettings()}s.value=settings.trId});
   const recs=await loadReciters();
   const s=$('reciter'); s.innerHTML='';
@@ -3144,7 +3200,7 @@ document.addEventListener('visibilitychange',()=>{if(!lsRaw('hk.auth',null))retu
 window.addEventListener('online',()=>{if(lsRaw('hk.auth',null))syncNow()});
 
 // ===== Avis des testeurs : message WhatsApp pré-rempli (la personne choisit à qui l'envoyer) =====
-const APP_V='v56';
+const APP_V='v57';
 function deviceInfo(){
   const ua=navigator.userAgent; let d='appareil inconnu';
   const ios=ua.match(/OS (\d+)_(\d+)/), and=ua.match(/Android ([\d.]+)/);
