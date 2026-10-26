@@ -272,7 +272,7 @@ textarea{width:100%;min-height:70px;border-radius:10px;border:1px solid var(--li
 .wtiles{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;direction:rtl}.wtiles button{width:46px;flex:none}.wtiles button:disabled{opacity:.25}
 .wres{width:100%;display:flex;flex-direction:column;align-items:center;gap:6px}.wres .okc{color:var(--done)}.wres .koc{color:var(--danger)}.wres .alc{color:var(--gold)}
 .wexp{text-align:left;margin:4px 0 0;padding-left:18px;font-size:.9rem;line-height:1.5;width:100%}.wexp li{margin:4px 0}.arl{font-family:var(--f-ar);font-size:1.25em;padding:0 2px}
-.wweak{background:var(--bg);border:1px solid var(--gold);border-radius:14px;padding:12px;margin:0 0 14px;display:flex;flex-direction:column;gap:8px}.wweak small{color:var(--muted);font-size:.8rem}.wchips{display:flex;flex-wrap:wrap;gap:6px;direction:rtl}.wchips span{display:flex;flex-direction:column;align-items:center;background:var(--page);border:1px solid var(--line);border-radius:10px;padding:4px 8px}.wchips b{font-family:var(--f-ar);font-size:1.25rem;font-weight:400}.wchips i{font-style:normal;font-size:.68rem;color:var(--muted);direction:ltr}
+.wweak{background:var(--bg);border:1px solid var(--gold);border-radius:14px;padding:12px;margin:0 0 14px;display:flex;flex-direction:column;gap:8px}.wweak small{color:var(--muted);font-size:.8rem}.wchips{display:flex;flex-wrap:wrap;gap:6px;direction:rtl}.wchips span{display:flex;flex-direction:column;align-items:center;background:var(--page);border:1px solid var(--line);border-radius:10px;padding:4px 8px}.wchips b{font-family:var(--f-ar);font-size:1.25rem;font-weight:400}.wchips span.due{border-color:var(--gold)}.wchips i{font-style:normal;font-size:.68rem;color:var(--muted);direction:ltr}
 .wrev{width:100%;display:flex;flex-direction:column;gap:6px;border-top:1px solid var(--line);padding-top:12px;margin-top:4px}.wrev .okc{color:var(--done)}.wrev .koc{color:var(--danger)}.wrev .wv{font-family:var(--f-ar);font-size:calc(var(--ar-size)*.8);line-height:2;direction:rtl;margin:4px 0;color:var(--ink)}.wrev .wv span{padding:0 .06em}.wrev .wv mark{background:var(--now);color:var(--now-ink);border-radius:6px;padding:0 .1em}.wrev .wv .vn{color:var(--gold);font-size:.8em}.wrev .trv{font-size:.88rem;color:var(--muted);margin:0;line-height:1.45}.wrev .btns{width:100%}
 .wopts{display:grid;gap:8px;width:100%}
 .wopts button{border:1px solid var(--line);background:var(--page);border-radius:12px;padding:12px;font-size:1rem;color:var(--ink)}
@@ -2348,41 +2348,68 @@ function wWrite(lv,list,then){
   };
   next();
 }
-/* ---------- Mots à revoir : ceux où l'on s'est trompé, jusqu'à ce qu'ils soient sûrs ---------- */
-// un mot devient « sûr » après 2 bonnes réponses d'affilée au quiz et 1 écriture juste (dès le niveau facile)
+/* ---------- Mots à revoir : barème du « réapprentissage espacé » ----------
+   erreur → à revoir (revient le lendemain) ; un « jour de réussite » = quiz juste ET écriture juste le même jour ;
+   3 jours de réussite espacés d'au moins 1, 3 puis 7 jours → sûr ; réussi encore après 30 jours → ancré.
+   Une erreur à n'importe quelle étape ramène le mot au début. */
 let wAfter=null;
+const W_GAPS=[1,3,7], W_ANCHOR=30;
+const dDiff=(a,b)=>Math.round((new Date(b+'T12:00')-new Date(a+'T12:00'))/DAY);
+function wStage(c){
+  if(!c||!c.weak&&!c.st) return null;
+  if(!c.st){c.st='rev';c.ds=[];c.next=today()} // anciennes données
+  return c.st;
+}
 function wTrack(w,kind,res){
-  const cs=wCards(), c=cs[w.k]||{l:0,d:today(),ok:0,ko:0};
-  if(res==='ok'){if(kind==='quiz')c.qs=(c.qs||0)+1;else c.ws=(c.ws||0)+1}
-  else{c.err=(c.err||0)+1;c.weak=1;if(kind==='quiz')c.qs=0;else c.ws=0}
-  if(c.weak&&(c.qs||0)>=2&&(c.ws||0)>=1){c.weak=0;c.sure=dayStr(Date.now())}
+  const cs=wCards(), c=cs[w.k]||{l:0,d:today(),ok:0,ko:0}, td=dayStr(Date.now());
+  wStage(c);
+  if(res!=='ok'){c.err=(c.err||0)+1;c.weak=1;c.st='rev';c.ds=[];c.le=td;c.next=today()+DAY;delete c.dq;delete c.dw}
+  else if(c.st&&c.st!=='ancre'){
+    if(kind==='quiz')c.dq=td;else c.dw=td;
+    const ds=c.ds||(c.ds=[]), last=ds[ds.length-1]||c.le||'';
+    if(c.dq===td&&c.dw===td&&last!==td){
+      if(c.st==='sur'){ if(dDiff(ds[2],td)>=W_ANCHOR){c.st='ancre';c.weak=0;c.anc=td} }
+      else{ const need=W_GAPS[ds.length]; if(!last||dDiff(last,td)>=need){ds.push(td);
+        if(ds.length>=3){c.st='sur';c.sure=td;c.next=today()+W_ANCHOR*DAY} else {c.st='cours';c.next=today()+W_GAPS[ds.length]*DAY} } }
+    }
+  }
   cs[w.k]=c; LS.set('hk.words',cs); paintWordsTip();
 }
 function wObj(k){
   const d=wDeck, f=d&&(d.words.find(w=>w.k===k)||(d.rest||[]).find(w=>w.k===k)); if(f) return f;
   const e=LEX[k]; return e?{k,t:e.a,g:e.f,p:e.p,sec:e.sec,a:'',oc:[],n:0}:null;
 }
-const weakKeys=()=>Object.entries(wCards()).filter(([k,c])=>c.weak&&LEX[k]).sort((a,b)=>(b[1].err||0)-(a[1].err||0)).map(([k])=>k);
+const W_ST={rev:['❌','À revoir'],cours:['🟡','En cours'],sur:['🟢','Sûr'],ancre:['🌳','Ancré']};
+// tous les mots suivis (pas encore ancrés), et ceux à réviser aujourd'hui
+function wCardsM(){const cs=wCards();let ch=false;for(const k in cs){const c=cs[k];if(c.weak&&!c.st){c.st='rev';c.ds=[];c.next=today();ch=true}}if(ch)LS.set('hk.words',cs);return cs}
+function weakAll(){const cs=wCardsM();return Object.keys(cs).filter(k=>LEX[k]&&wStage(cs[k])&&cs[k].st!=='ancre').sort((a,b)=>(cs[a].next||0)-(cs[b].next||0))}
+const weakKeys=()=>{const cs=wCardsM(),t=today();return weakAll().filter(k=>(cs[k].next||0)<=t)};
 function weakBoxHTML(){
-  const ks=weakKeys(), cs=wCards(), sure=Object.values(cs).filter(c=>c.sure&&!c.weak).length;
-  if(!ks.length) return sure?'<p class="note">✅ '+sure+' mot'+(sure>1?'s':'')+' devenu'+(sure>1?'s':'')+' sûr'+(sure>1?'s':'')+' après des erreurs. Aucun mot à revoir pour l’instant.</p>':'';
-  return '<div class="wweak"><b>📌 Mes mots à revoir ('+ks.length+')</b><small>Les mots où tu t’es trompé. Un mot devient sûr après 2 bonnes réponses d’affilée au quiz et 1 écriture juste.</small><div class="wchips">'+
-    ks.slice(0,24).map(k=>{const c=cs[k],e=LEX[k];return '<span><b>'+esc(e.a)+'</b><i>quiz '+'✓'.repeat(Math.min(2,c.qs||0))+'·'.repeat(2-Math.min(2,c.qs||0))+' · écrit '+((c.ws||0)>=1?'✓':'·')+'</i></span>'}).join('')+(ks.length>24?'<span>+'+(ks.length-24)+'</span>':'')+'</div>'+
-    '<button class="btn primary" id="wReviewBtn" style="width:100%">Réviser ces mots ('+Math.min(ks.length,12)+')</button>'+(sure?'<small>✅ Déjà '+sure+' mot'+(sure>1?'s':'')+' devenu'+(sure>1?'s':'')+' sûr'+(sure>1?'s':'')+'.</small>':'')+'</div>';
+  const all=weakAll(), due=weakKeys(), cs=wCards(), anc=Object.values(cs).filter(c=>c.st==='ancre').length;
+  if(!all.length) return anc?'<p class="note">🌳 '+anc+' mot'+(anc>1?'s':'')+' ancré'+(anc>1?'s':'')+' après des erreurs. Aucun mot à revoir pour l’instant.</p>':'';
+  const cnt=k=>all.filter(x=>cs[x].st===k).length;
+  return '<div class="wweak"><b>📌 Mes mots à revoir</b><small>❌ '+cnt('rev')+' à revoir · 🟡 '+cnt('cours')+' en cours · 🟢 '+cnt('sur')+' sûrs'+(anc?' · 🌳 '+anc+' ancrés':'')+'</small><div class="wchips">'+
+    all.slice(0,30).map(k=>{const c=cs[k],e=LEX[k],n=Math.round(((c.next||0)-today())/DAY),ds=(c.ds||[]).length;
+      return '<span class="'+((c.next||0)<=today()?'due':'')+'"><b>'+esc(e.a)+'</b><i>'+W_ST[c.st][0]+' '+(c.st==='sur'?'contrôle':'réussites '+ds+'/3')+' · '+(n<=0?'aujourd’hui':n===1?'demain':'dans '+n+' j')+'</i></span>'}).join('')+(all.length>30?'<span>+'+(all.length-30)+'</span>':'')+'</div>'+
+    (due.length?'<button class="btn primary" id="wReviewBtn" style="width:100%">Réviser les '+Math.min(due.length,12)+' mot'+(due.length>1?'s':'')+' du jour</button>':'<p class="note" style="margin:0">Rien à réviser aujourd’hui : chaque mot revient au bon moment pour s’ancrer.</p>')+
+    '<small>Un mot devient 🟢 sûr après 3 jours de réussite (quiz et écriture justes) espacés de 1, 3 puis 7 jours, puis 🌳 ancré s’il est encore su un mois plus tard.</small></div>';
 }
 function wReview(){
   const L=weakKeys().slice(0,12).map(wObj).filter(Boolean);
   if(!L.length){renderWords();return}
-  wTrain('quiz',L,()=>wWrite('easy',L,()=>{
-    const left=weakKeys(), done=L.filter(w=>!left.includes(w.k)).length;
-    $('wMain').innerHTML='<div class="wcard"><div class="big">'+(done?'🌟':'💪')+'</div><b>'+(done?done+' mot'+(done>1?'s':'')+' devenu'+(done>1?'s':'')+' sûr'+(done>1?'s':'')+' !':'Bonne révision')+'</b><p>'+(left.length?'Il reste '+left.length+' mot'+(left.length>1?'s':'')+' à revoir. '+(left.length>1?'Ils te seront proposés':'Il te sera proposé')+' à la prochaine ouverture de l’app : il faut 2 bonnes réponses d’affilée au quiz pour qu’un mot soit sûr.':'Tous tes mots à revoir sont maintenant sûrs. Bravo !')+'</p><div class="btns">'+(left.length?'<button class="btn primary" id="wAgain">Continuer</button>':'')+'<button class="btn" id="wBack">Retour</button></div></div>';
-    if($('wAgain'))$('wAgain').onclick=wReview; $('wBack').onclick=renderWords; logSession();
-  }));
+  const cs=wCards(), easy=L.filter(w=>!(cs[w.k].ds||[]).length), mid=L.filter(w=>(cs[w.k].ds||[]).length);
+  const fin=()=>{
+    const c2=wCards(), td=dayStr(Date.now()), adv=L.filter(w=>{const c=c2[w.k];return c&&((c.ds||[]).slice(-1)[0]===td||c.anc===td)}), up=L.filter(w=>c2[w.k]&&(c2[w.k].st==='sur'||c2[w.k].st==='ancre')&&(c2[w.k].sure===td||c2[w.k].anc===td));
+    $('wMain').innerHTML='<div class="wcard"><div class="big">'+(adv.length?'🌟':'💪')+'</div><b>'+adv.length+' / '+L.length+' mot'+(L.length>1?'s':'')+' réussi'+(adv.length>1?'s':'')+' aujourd’hui</b><p>'+(up.length?up.length+' mot'+(up.length>1?'s':'')+' passe'+(up.length>1?'nt':'')+' à l’étape suivante (🟢 sûr ou 🌳 ancré). ':'')+'Chaque mot reviendra au bon moment : demain s’il y a eu une erreur, sinon dans 3 ou 7 jours. C’est l’espacement qui ancre la mémoire.</p><div class="btns"><button class="btn primary" id="wBack">Terminer</button></div></div>';
+    $('wBack').onclick=renderWords; logSession();
+  };
+  const writeMid=()=>mid.length?wWrite('mid',mid,fin):fin();
+  wTrain('quiz',L,()=>easy.length?wWrite('easy',easy,writeMid):writeMid());
 }
 function paintWordsTip(){
   const n=weakKeys().length, t=$('wordsTip'); if(!t) return;
   t.hidden=!n||t.dataset.closed==='1';
-  if(n) $('wordsTipTxt').textContent=n+' mot'+(n>1?'s':'')+' du vocabulaire '+(n>1?'ne sont':'n’est')+' pas encore sûr'+(n>1?'s':'')+'. Une petite révision ?';
+  if(n) $('wordsTipTxt').textContent=n+' mot'+(n>1?'s':'')+' du vocabulaire '+(n>1?'sont':'est')+' à réviser aujourd’hui pour bien '+(n>1?'les':'le')+' ancrer.';
 }
 $('wordsClose').onclick=()=>{$('wordsTip').hidden=true;$('wordsTip').dataset.closed='1'};
 $('wordsGo').onclick=()=>{$('wordsTip').hidden=true;$('wordsTip').dataset.closed='1';wAfter=wReview;$('wOpen').click()};
@@ -3200,7 +3227,7 @@ document.addEventListener('visibilitychange',()=>{if(!lsRaw('hk.auth',null))retu
 window.addEventListener('online',()=>{if(lsRaw('hk.auth',null))syncNow()});
 
 // ===== Avis des testeurs : message WhatsApp pré-rempli (la personne choisit à qui l'envoyer) =====
-const APP_V='v57';
+const APP_V='v58';
 function deviceInfo(){
   const ua=navigator.userAgent; let d='appareil inconnu';
   const ios=ua.match(/OS (\d+)_(\d+)/), and=ua.match(/Android ([\d.]+)/);
