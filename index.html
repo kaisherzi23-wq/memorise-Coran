@@ -240,6 +240,7 @@ textarea{width:100%;min-height:70px;border-radius:10px;border:1px solid var(--li
 .st-two{display:grid;grid-template-columns:1fr 1fr;gap:10px}.st-two small{color:var(--muted);font-size:.75rem}
 .diff em{font-style:normal;font-size:.7rem;font-weight:600;padding:1px 6px;border-radius:8px;margin-left:4px;vertical-align:1px}
 .diff em.st-m{background:var(--done);color:var(--page)}.diff em.st-l{background:var(--learn);color:var(--now-ink)}.diff em.st-n{background:var(--line);color:var(--ink)}
+.memo p{margin:0 0 10px;font-size:.92rem;line-height:1.5}.memo b{color:var(--ink)}
 .diff small.why{color:var(--gold);grid-column:1}
 .w.known .f{text-decoration:underline dotted color-mix(in srgb,var(--done) 70%,transparent);text-decoration-thickness:2px;text-underline-offset:.35em}
 .wtip{position:fixed;z-index:70;background:var(--page);border:1px solid var(--gold);border-radius:14px;box-shadow:0 10px 30px rgba(0,0,0,.25);padding:10px 12px;text-align:center}
@@ -716,7 +717,7 @@ textarea{width:100%;min-height:70px;border-radius:10px;border:1px solid var(--li
 const DAY=86400000, INTERVALS=[1,3,7,15,30,60];
 const $=id=>document.getElementById(id);
 const audio=$('audio'), myAudio=new Audio();
-var SYNC_RE=/^hk\.(settings|surah|parts\.\d+|manual\.\d+|smanual|bm\.\d+|sum|days|les\.\d+|reciter|uiMode|progTab|lsAt|lsSpeed2|time|hours|prog|diff|slast|words|wsum|wScope)$/;
+var SYNC_RE=/^hk\.(settings|surah|parts\.\d+|manual\.\d+|smanual|bm\.\d+|sum|days|les\.\d+|reciter|uiMode|progTab|lsAt|lsSpeed2|time|hours|prog|diff|diffh|learnLog|slast|words|wsum|wScope)$/;
 const LS={get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},set(k,v){try{const j=JSON.stringify(v);if(localStorage.getItem(k)===j)return;localStorage.setItem(k,j);if(SYNC_RE.test(k))syncMark(k)}catch(e){}}};
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const FALLBACK_RECITERS=[
@@ -1038,6 +1039,7 @@ function statBump(a,b,idx){
   if(b.v-a.v>2) return; const d=LS.get('hk.diff',{}), day=dayStr(Date.now());
   for(let v=a.v;v<=b.v;v++){const k=surah+':'+v,x=d[k]=d[k]||[0,0,0,''];while(x.length<4)x.push(x.length===3?'':0);x[idx]++;x[3]=day}
   LS.set('hk.diff',d);
+  if(idx===0){const hs=LS.get('hk.diffh',{}),sl=slotOf(new Date().getHours());for(let v=a.v;v<=b.v;v++){const k=surah+':'+v,y=hs[k]=hs[k]||[0,0,0,0];y[sl]++}LS.set('hk.diffh',hs)}
 }
 // dernier jour où une sourate a été travaillée (écoute, boucle, test)
 function touchSurah(s){const l=LS.get('hk.slast',{}),k=dayStr(Date.now());if(l[s]!==k){l[s]=k;LS.set('hk.slast',l)}}
@@ -1070,11 +1072,11 @@ function calHTML(weeks){
   return h+'</div>';
 }
 function diffList(n){
-  const d=LS.get('hk.diff',{});
+  const d=LS.get('hk.diff',{}), vs=allVS(), eb=effBase();
   return Object.entries(d).map(([k,x])=>{const [s,v]=k.split(':').map(Number),r=x[0]||0,f=x[1]||0,ok=x[2]||0;
       // score : les ratés pèsent lourd, les réussites allègent
       return {s,v,r,f,ok,last:x[3]||'',score:r+f*5-ok*4}})
-    .filter(x=>x.score>=5).sort((a,b)=>b.score-a.score).slice(0,n||6);
+    .filter(x=>{if(x.score<5)return false;if(vs[x.s]&&vs[x.s][x.v-1]==='m'&&x.f<=x.ok){const c=effClass(x.s,x.v,eb);return c?c.k>=2:x.r>=15}return true}).sort((a,b)=>b.score-a.score).slice(0,n||6);
 }
 // sourates (apprises ou commencées) pas révisées depuis longtemps
 function reviewList(vs){
@@ -1160,6 +1162,56 @@ function chartsHTML(who){
   }
   return h;
 }
+/* ---------- Effort de mémorisation, comparé à soi-même ---------- */
+// effort d'un verset = répétitions en boucle avant d'être marqué « appris », rapporté à sa longueur (par mot)
+const SLOTS=['le matin','l’après-midi','le soir','la nuit'], slotOf=h=>h>=5&&h<12?0:h>=12&&h<18?1:h>=18?2:3, EFF_MIN=15;
+function wordCount(s,v){
+  if(s===surah&&verses.length){const x=verses.find(q=>q.n===v);if(x)return x.w.length}
+  const t=LS.get('hk.text.'+s,null); if(t){const x=t.find(q=>q.n===v);if(x)return x.w.length}
+  return 0;
+}
+function logLearn(s,v){
+  const k=s+':'+v, x=LS.get('hk.diff',{})[k]; if(!x||!x[0]) return; // déjà su avant l'app : pas de mesure
+  const lg=LS.get('hk.learnLog',{}); lg[k]={d:dayStr(Date.now()),r:x[0],f:x[1]||0,w:wordCount(s,v)}; LS.set('hk.learnLog',lg);
+}
+const effOf=e=>e.r/Math.max(3,e.w||8), median=a=>{if(!a.length)return 0;const b=a.slice().sort((x,y)=>x-y),m=b.length>>1;return b.length%2?b[m]:(b[m-1]+b[m])/2};
+function effBase(){const l=Object.values(LS.get('hk.learnLog',{}));return l.length>=EFF_MIN?median(l.map(effOf)):0}
+const EFF_CLS=[{k:0,t:'retenu facilement'},{k:1,t:'effort habituel'},{k:2,t:'verset exigeant'},{k:3,t:'verset difficile, à garder à l’œil en révision'}];
+function effClass(s,v,base){
+  if(!base) return null; const e=LS.get('hk.learnLog',{})[s+':'+v]; if(!e) return null;
+  const q=effOf(e)/base; return EFF_CLS[q<.5?0:q<1.5?1:q<3?2:3];
+}
+function memoHTML(who){
+  const el=who==='elle', lg=LS.get('hk.learnLog',{}), keys=Object.keys(lg), n=keys.length, tu=el?'elle':'tu', te=el?'lui':'te';
+  if(n<EFF_MIN) return '<p class="note">'+(n?n+' verset'+(n>1?'s':'')+' mesuré'+(n>1?'s':'')+' sur '+EFF_MIN+'. ':'')+'Quand '+(el?'elle aura':'tu auras')+' appris '+(EFF_MIN-n)+' verset'+(EFF_MIN-n>1?'s':'')+' de plus en les répétant dans l’app, l’app pourra '+(el?'lui':'t’')+'expliquer '+(el?'sa':'ta')+' façon de mémoriser. Les sourates déjà sues avant ne comptent pas.</p>';
+  const L=keys.map(k=>Object.assign({k},lg[k])), base=median(L.map(effOf)), out=[];
+  const pct=x=>Math.round(Math.abs(x)*100)+'\u00a0%';
+  // repère
+  out.push('📏 En moyenne, il '+te+' faut environ <b>'+Math.max(1,Math.round(base*10))+' répétitions</b> pour retenir un verset de 10 mots. C’est '+(el?'son':'ton')+' repère : chaque verset est comparé à '+(el?'elle-même':'toi-même')+', jamais aux autres.');
+  // répartition
+  const cnt=[0,0,0,0]; L.forEach(e=>{const q=effOf(e)/base;cnt[q<.5?0:q<1.5?1:q<3?2:3]++});
+  const pl=(c,w)=>'<b>'+c+'</b> '+w+(c>1?'s':'');
+  out.push('🧩 Sur '+n+' versets mesurés : '+pl(cnt[0],'retenu')+' facilement, <b>'+cnt[1]+'</b> avec un effort habituel, '+pl(cnt[2],'exigeant')+', '+pl(cnt[3],'difficile')+'.');
+  // progrès de la mémoire
+  const age=e=>daysSince(e.d), rec=L.filter(e=>age(e)<=30), old=L.filter(e=>age(e)>30&&age(e)<=120);
+  if(rec.length>=8&&old.length>=8){const ch=median(rec.map(effOf))/median(old.map(effOf))-1;
+    if(ch<=-.1) out.push('🌱 <b>'+(el?'Sa':'Ta')+' mémoire s’entraîne</b> : ce mois-ci, il '+te+' faut '+pct(ch)+' de répétitions en moins qu’avant pour retenir un verset de même longueur.');
+    else if(ch>=.15) out.push('🧗 Les versets de ce mois-ci '+(el?'lui':'te')+' demandent '+pct(ch)+' d’effort en plus qu’avant. C’est fréquent quand on aborde des passages moins connus ou qui se ressemblent : rien d’anormal.');
+    else out.push('⚖️ '+(el?'Son':'Ton')+' effort est stable d’un mois à l’autre : '+(el?'elle a':'tu as')+' trouvé '+(el?'son':'ton')+' rythme.');
+  } else out.push('🌱 Dans quelques semaines, l’app pourra dire si '+(el?'sa':'ta')+' mémoire devient plus rapide (comparaison mois par mois).');
+  // longueur des versets
+  const sh=L.filter(e=>e.w&&e.w<=10), lo=L.filter(e=>e.w>=20);
+  if(sh.length>=6&&lo.length>=6){const ratio=median(lo.map(e=>e.r))/Math.max(1,median(sh.map(e=>e.r)));
+    if(ratio>=1.6) out.push('📐 Au-delà de 20 mots, un verset '+(el?'lui':'te')+' demande environ <b>'+String(Math.round(ratio*10)/10).replace('.',',')+' fois plus</b> de répétitions qu’un verset court. Astuce : sélectionner le verset en deux moitiés et les apprendre l’une après l’autre.');
+    else out.push('📐 Les longs versets ne '+(el?'lui':'te')+' posent pas plus de difficulté que les courts, proportionnellement : bonne capacité à retenir les longs passages.');
+  }
+  // moment de la journée
+  const hs=LS.get('hk.diffh',{}), by=[[],[],[],[]];
+  L.forEach(e=>{const y=hs[e.k];if(!y)return;const t=y.reduce((a,b)=>a+b,0),m=Math.max(...y);if(t&&m/t>=.6)by[y.indexOf(m)].push(effOf(e))});
+  const ok=by.map((a,i)=>({i,n:a.length,m:median(a)})).filter(x=>x.n>=6).sort((a,b)=>a.m-b.m);
+  if(ok.length>=2){const b=ok[0],w=ok[ok.length-1];if(b.m<=w.m*.8) out.push('🕰️ '+(el?'Elle semble':'Tu sembles')+' retenir plus vite <b>'+SLOTS[b.i]+'</b> que '+SLOTS[w.i]+' (environ '+pct(1-b.m/w.m)+' de répétitions en moins).')}
+  return '<div class="memo">'+out.map(x=>'<p>'+x+'</p>').join('')+'</div><p class="note">Ces explications se basent sur les versets marqués « appris » après avoir été répétés dans l’app. Elles s’affinent avec le temps.</p>';
+}
 function gapsHTML(who){
   const el=who==='elle', vs=allVS(), rv=reviewList(vs), dl=diffList(8);
   let h='<span class="lbl">À réviser pour ne pas oublier</span>';
@@ -1172,7 +1224,7 @@ function gapsHTML(who){
     const bits=[x.r+' répétition'+(x.r>1?'s':'')];
     if(tot) bits.push('test : '+x.ok+' réussi'+(x.ok>1?'s':'')+' / '+x.f+' raté'+(x.f>1?'s':''));
     if(d!=null) bits.push(d===0?'travaillé aujourd’hui':d===1?'hier':'il y a '+d+' jours');
-    const why=x.f>x.ok?'souvent raté au test':(st!=='m'&&x.r>=15?'beaucoup répété mais pas encore acquis':(st==='m'?'appris, mais demandé beaucoup d’efforts':'demande encore du travail'));
+    const why=x.f>x.ok?'souvent raté au test':(st!=='m'&&x.r>=15?'beaucoup répété mais pas encore acquis':(st==='m'?(()=>{const c=effClass(x.s,x.v,effBase());return c?'appris · '+c.t:'appris, après beaucoup de répétitions'})():'demande encore du travail'));
     h+='<button data-s="'+x.s+'" data-v="'+x.v+'"><b>'+esc(c.name_simple)+' · verset '+x.v+' <em class="st-'+(st||'n')+'">'+(st==='m'?'appris':st==='l'?'en cours':'pas commencé')+'</em></b><small>'+bits.join(' · ')+'</small><small class="why">→ '+why+'</small><span>›</span></button>'});
     h+='</div>'}
   return h;
@@ -1349,6 +1401,7 @@ function coverage(){
 function setVerseStates(list,st){
   // si la sourate entière était cochée, on fige d'abord ses versets en « maîtrisé »
   if(smanual[surah]==='m'){for(const v of verses) if(!manual[v.n]) manual[v.n]='m'; delete smanual[surah]; LS.set('hk.smanual',smanual)}
+  if(st==='m'){const before=coverage().vs;for(const n of list) if(before[n]!=='m') logLearn(surah,n)}
   for(const n of list) manual[n]=st;
   LS.set('hk.manual.'+surah,manual); refreshProgress();
 }
@@ -1429,7 +1482,7 @@ function renderStats(){
     (()=>{const w=LS.get('hk.wsum',null);return w?'<div class="stats" style="grid-template-columns:1fr 1fr"><div class="stat"><b>📚 '+w.known+'</b><small>mots connus</small></div><div class="stat"><b>'+w.cov+' %</b><small>des mots compris ('+esc(w.t)+')</small></div></div>':''})()+
     '<div class="group st-grp">'+chartsHTML('tu')+'</div>'+
     '<div class="group journey"><span class="lbl">Mon parcours</span>'+journeyHTML('tu')+'</div>'+
-    '<div class="group st-grp">'+gapsHTML('tu')+'</div>'+
+    '<div class="group st-grp">'+gapsHTML('tu')+'</div>'+'<div class="group st-grp"><span class="lbl">Ma façon de mémoriser</span>'+memoHTML('tu')+'</div>'+
     '<div class="group"><span class="lbl">Mes 16 dernières semaines</span>'+calHTML(16)+
     '<div class="legend cal-leg"><span>moins</span><i data-l="0"></i><i data-l="1"></i><i data-l="2"></i><i data-l="3"></i><i data-l="4"></i><span>plus</span></div>'+
     '<p class="note">Seul le temps où la récitation joue est compté.</p></div>';
@@ -2546,7 +2599,7 @@ function openHelper(){
     '<div class="stats" style="grid-template-columns:1fr"><div class="stat"><b>'+g.learning+'</b><small>sourates en cours</small></div></div>'+
     '<h3>Sa progression</h3><div class="st-grp">'+chartsHTML('elle')+'</div>'+
     '<h3>Son parcours</h3><div class="journey">'+journeyHTML('elle')+'</div>'+
-    '<h3>Ce qui lui manque</h3><div class="st-grp">'+gapsHTML('elle')+'</div>'+
+    '<h3>Ce qui lui manque</h3><div class="st-grp">'+gapsHTML('elle')+'</div>'+'<h3>Sa façon de mémoriser</h3><div class="st-grp">'+memoHTML('elle')+'</div>'+
     '<h3>Ses 16 dernières semaines</h3>'+calHTML(16)+
     '<div class="legend cal-leg"><span>moins</span><i data-l="0"></i><i data-l="1"></i><i data-l="2"></i><i data-l="3"></i><i data-l="4"></i><span>plus</span></div>'+
     '<h3>Donner son avis</h3><button class="btn primary" data-fb style="width:100%">💬 Envoyer un avis sur WhatsApp</button>'+
@@ -2840,7 +2893,7 @@ function syncMerge(k,loc,rem,locNewer){
   else if(k==='hk.slast'){for(const x in rem)if(loc[x])o[x]=loc[x]>rem[x]?loc[x]:rem[x]}
   else if(k==='hk.diff'){for(const x in rem)if(Array.isArray(loc[x])&&Array.isArray(rem[x]))o[x]=(loc[x][0]||0)>=(rem[x][0]||0)?loc[x]:rem[x]}
   else if(k==='hk.words'){for(const x in rem)if(loc[x]&&rem[x])o[x]=((loc[x].ok||0)+(loc[x].ko||0))>=((rem[x].ok||0)+(rem[x].ko||0))?loc[x]:rem[x]}
-  else if(k==='hk.sum'||/^hk\.(manual|parts|bm)\.\d+$/.test(k)||k==='hk.smanual'){/* union, la version la plus récente gagne en cas de conflit */}
+  else if(k==='hk.sum'||k==='hk.learnLog'||k==='hk.diffh'||/^hk\.(manual|parts|bm)\.\d+$/.test(k)||k==='hk.smanual'){/* union, la version la plus récente gagne en cas de conflit */}
   else return locNewer?loc:rem;
   return o;
 }
@@ -2952,7 +3005,7 @@ document.addEventListener('visibilitychange',()=>{if(!lsRaw('hk.auth',null))retu
 window.addEventListener('online',()=>{if(lsRaw('hk.auth',null))syncNow()});
 
 // ===== Avis des testeurs : message WhatsApp pré-rempli (la personne choisit à qui l'envoyer) =====
-const APP_V='v53';
+const APP_V='v54';
 function deviceInfo(){
   const ua=navigator.userAgent; let d='appareil inconnu';
   const ios=ua.match(/OS (\d+)_(\d+)/), and=ua.match(/Android ([\d.]+)/);
