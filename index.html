@@ -30,9 +30,9 @@
   --gold:#A9802F; --gold-soft:#EEDFB6; --accent:#2F5D50; --accent-ink:#FFFFFF;
   --now:#F2CF6E; --now-ink:#231A08; --sel:#F0E2BA; --learn:#E9C46A; --done:#2F5D50; --danger:#A4442E; --rec:#C0392B;
   /* couleurs du tajwid (palette usuelle des mushafs tajwid) */
-  --tj-silent:#9A9A9A; --tj-madd2:#537FFF; --tj-madd245:#4050FF; --tj-madd45:#2144C1; --tj-madd6:#000EBC;
-  --tj-qalqala:#DD0008; --tj-ghunna:#FF7E1E; --tj-ikhfa:#9400A8; --tj-ikhfa-sh:#D500B7; --tj-iqlab:#1FA9E0;
-  --tj-idgham-g:#169777; --tj-idgham-ng:#169200; --tj-idgham-sh:#58B800; --tj-idgham-x:#8E8E8E;
+  --tj-silent:#9A9A9A; --tj-madd2:#C79A0B; --tj-madd245:#F08A1C; --tj-madd45:#E2421E; --tj-madd6:#A3121B;
+  --tj-qalqala:#1E9BD7; --tj-ghunna:#1E9A3E; --tj-ikhfa:#1E9A3E; --tj-ikhfa-sh:#1E9A3E; --tj-iqlab:#1E9A3E;
+  --tj-idgham-g:#1E9A3E; --tj-idgham-ng:#9A9A9A; --tj-idgham-sh:#1E9A3E; --tj-idgham-x:#9A9A9A;
   --f-ar:"Amiri Quran","Amiri","Geeza Pro","Traditional Arabic",serif;
   --f-orn:"Amiri","Geeza Pro",serif;
   --f-ui:"Atkinson Hyperlegible",-apple-system,"Segoe UI",sans-serif;
@@ -43,17 +43,17 @@
   --bg:#120F0A; --page:#1B1710; --ink:#EFE4CB; --muted:#A8987A; --line:#3A3122;
   --gold:#D6B067; --gold-soft:#41361F; --accent:#7CC0AA; --accent-ink:#0F1A16;
   --now:#E4BF5E; --now-ink:#1A1408; --sel:#3A3020; --learn:#C9A044; --done:#7CC0AA; --danger:#EE8C74; --rec:#F07563;
-  --tj-silent:#8C8C8C; --tj-madd2:#86A6FF; --tj-madd245:#7C88FF; --tj-madd45:#6D8BF0; --tj-madd6:#9AA3FF;
-  --tj-qalqala:#FF6B6B; --tj-ghunna:#FFA05A; --tj-ikhfa:#D27BE6; --tj-ikhfa-sh:#F06BDB; --tj-iqlab:#5CCBF5;
-  --tj-idgham-g:#4FC7A6; --tj-idgham-ng:#5FCB4F; --tj-idgham-sh:#93DE4F; --tj-idgham-x:#9A9A9A;
+  --tj-silent:#8C8C8C; --tj-madd2:#E8C24A; --tj-madd245:#FFA24F; --tj-madd45:#FF6A45; --tj-madd6:#E5505A;
+  --tj-qalqala:#5CC4F2; --tj-ghunna:#4CC96B; --tj-ikhfa:#4CC96B; --tj-ikhfa-sh:#4CC96B; --tj-iqlab:#4CC96B;
+  --tj-idgham-g:#4CC96B; --tj-idgham-ng:#8C8C8C; --tj-idgham-sh:#4CC96B; --tj-idgham-x:#8C8C8C;
   color-scheme:dark}}
 :root[data-theme="dark"]{
   --bg:#120F0A; --page:#1B1710; --ink:#EFE4CB; --muted:#A8987A; --line:#3A3122;
   --gold:#D6B067; --gold-soft:#41361F; --accent:#7CC0AA; --accent-ink:#0F1A16;
   --now:#E4BF5E; --now-ink:#1A1408; --sel:#3A3020; --learn:#C9A044; --done:#7CC0AA; --danger:#EE8C74; --rec:#F07563;
-  --tj-silent:#8C8C8C; --tj-madd2:#86A6FF; --tj-madd245:#7C88FF; --tj-madd45:#6D8BF0; --tj-madd6:#9AA3FF;
-  --tj-qalqala:#FF6B6B; --tj-ghunna:#FFA05A; --tj-ikhfa:#D27BE6; --tj-ikhfa-sh:#F06BDB; --tj-iqlab:#5CCBF5;
-  --tj-idgham-g:#4FC7A6; --tj-idgham-ng:#5FCB4F; --tj-idgham-sh:#93DE4F; --tj-idgham-x:#9A9A9A;
+  --tj-silent:#8C8C8C; --tj-madd2:#E8C24A; --tj-madd245:#FFA24F; --tj-madd45:#FF6A45; --tj-madd6:#E5505A;
+  --tj-qalqala:#5CC4F2; --tj-ghunna:#4CC96B; --tj-ikhfa:#4CC96B; --tj-ikhfa-sh:#4CC96B; --tj-iqlab:#4CC96B;
+  --tj-idgham-g:#4CC96B; --tj-idgham-ng:#8C8C8C; --tj-idgham-sh:#4CC96B; --tj-idgham-x:#8C8C8C;
   color-scheme:dark}
 *{box-sizing:border-box}
 [hidden]{display:none!important}
@@ -73,7 +73,7 @@ button{cursor:pointer}
 .title-btn span{font-family:var(--f-orn);color:var(--gold);font-size:1.25rem;white-space:nowrap}
 .title-btn .ico{width:16px;height:16px;flex:0 0 auto;color:var(--muted)}
 .icon-btn{width:38px;height:38px;border-radius:12px;border:1px solid var(--line);background:var(--page);display:grid;place-items:center;flex:0 0 auto;position:relative}
-.icon-btn .tj{font-family:var(--f-orn);font-size:1.05rem;line-height:1;background:linear-gradient(90deg,var(--tj-qalqala),var(--tj-ghunna) 40%,var(--tj-idgham-g) 70%,var(--tj-madd2));-webkit-background-clip:text;background-clip:text;color:transparent;font-weight:700}
+.icon-btn .tj{font-family:var(--f-orn);font-size:1.05rem;line-height:1;background:linear-gradient(90deg,var(--tj-madd6),var(--tj-madd245) 35%,var(--tj-ghunna) 65%,var(--tj-qalqala));-webkit-background-clip:text;background-clip:text;color:transparent;font-weight:700}
 .badge{position:absolute;top:-5px;right:-5px;min-width:18px;height:18px;border-radius:9px;background:var(--danger);color:#fff;font-size:.7rem;font-weight:700;display:grid;place-items:center;padding:0 4px}
 
 /* Page de mushaf */
@@ -91,6 +91,8 @@ main{padding:4px max(8px,env(safe-area-inset-right,0px)) 120px max(8px,env(safe-
 .w .i{display:none}
 .w.sel{background:var(--sel)}
 .w.now{background:var(--now);color:var(--now-ink);transition-duration:.16s}
+/* sur le surlignage doré du mot en cours, des teintes plus foncées pour que le tajwid reste lisible */
+.w.now{--tj-madd2:#6E5200;--tj-madd245:#9A4A00;--tj-madd45:#A3200A;--tj-madd6:#6E0A10;--tj-qalqala:#0B5A85;--tj-ghunna:#0E5C24;--tj-ikhfa:#0E5C24;--tj-ikhfa-sh:#0E5C24;--tj-iqlab:#0E5C24;--tj-idgham-g:#0E5C24;--tj-idgham-sh:#0E5C24;--tj-silent:#6E6450;--tj-idgham-ng:#6E6450;--tj-idgham-x:#6E6450}
 .num{display:inline-flex;align-items:center;justify-content:center;min-width:1.55em;height:1.55em;padding:0 .18em;margin:0 .12em;vertical-align:middle;border-radius:50%;border:1.5px solid var(--gold);box-shadow:0 0 0 2px var(--page),0 0 0 3px var(--gold-soft);background:var(--page);color:var(--gold);font-family:var(--f-orn);font-size:.55em;line-height:1}
 .num[data-st="l"]{background:var(--learn);border-color:var(--learn);color:var(--now-ink)}
 .num[data-st="m"]{background:var(--done);border-color:var(--done);color:var(--page);font-weight:700}
@@ -1573,29 +1575,27 @@ function renderSurahs(){
 $('surahSearch').addEventListener('input',renderSurahs);
 
 /* ---------- Règles du tajwid ---------- */
+// couleurs du mushaf tajwid (Dar Al-Maarifah), celles des corans imprimés les plus courants
 const RULES=[
- ['Lettres non prononcées',[
-  ['--tj-silent','Hamzat al-wasl, lettres muettes','gris','Lettre écrite mais non prononcée : l’alif de liaison (ٱ) quand on enchaîne avec le mot précédent, ou une lettre muette.','ٱلْحَمْدُ'],
-  ['--tj-silent','Lam shamsiyya','gris','Le « l » de l’article « al » ne se prononce pas devant une lettre solaire (ت ث د ذ ر ز س ش ص ض ط ظ ل ن) : la lettre suivante est doublée.','ٱلشَّمْسِ']]],
- ['Les prolongations (madd)',[
-  ['--tj-madd2','Madd naturel','2 temps','Prolongation normale d’une voyelle longue (ا و ي), sans hamza ni soukoun après.','قَالَ'],
-  ['--tj-madd245','Madd permis (munfasil)','2, 4 ou 5 temps','Voyelle longue en fin de mot, suivie d’une hamza au début du mot suivant.','بِمَآ أُنزِلَ'],
-  ['--tj-madd45','Madd obligatoire (muttasil)','4 ou 5 temps','Voyelle longue suivie d’une hamza dans le même mot.','جَآءَ'],
-  ['--tj-madd6','Madd nécessaire (lazim)','6 temps','Voyelle longue suivie d’une lettre avec soukoun ou chadda. Aussi dans certaines lettres isolées en début de sourate.','ٱلضَّآلِّينَ']]],
- ['Le rebond',[
-  ['--tj-qalqala','Qalqala','rouge','Les lettres ق ط ب ج د avec soukoun produisent un léger rebond sonore, plus fort à l’arrêt.','يَجْعَل']]],
- ['La nasalisation (ghunna)',[
-  ['--tj-ghunna','Ghunna','2 temps','Son nasal (par le nez) sur le noun ou le mim avec chadda.','إِنَّ · ثُمَّ']]],
- ['Noun sakina et tanwin',[
-  ['--tj-ikhfa','Ikhfa','dissimulation','Le noun sakina ou le tanwin devant l’une des 15 lettres de l’ikhfa : il est « caché », prononcé à moitié avec une nasalisation.','أَنزَلَ'],
-  ['--tj-iqlab','Iqlab','transformation','Le noun sakina ou le tanwin devant un ب se transforme en mim, avec nasalisation.','مِنۢ بَعْدِ'],
+ ['Les prolongations (madd) — du rouge foncé au jaune',[
+  ['--tj-madd6','Madd nécessaire (lazim)','6 temps · rouge foncé','Voyelle longue suivie d’une lettre avec soukoun ou chadda. Aussi dans certaines lettres isolées en début de sourate.','ٱلضَّآلِّينَ'],
+  ['--tj-madd45','Madd obligatoire (muttasil)','4 ou 5 temps · rouge orangé','Voyelle longue suivie d’une hamza dans le même mot.','جَآءَ'],
+  ['--tj-madd245','Madd permis (munfasil, ‘arid)','2, 4 ou 6 temps · orange','Voyelle longue suivie d’une hamza au début du mot suivant, ou avant l’arrêt en fin de verset.','بِمَآ أُنزِلَ'],
+  ['--tj-madd2','Madd naturel','2 temps · jaune doré','Prolongation normale d’une voyelle longue (ا و ي), sans hamza ni soukoun après.','قَالَ']]],
+ ['La nasalisation (ghunna) — vert',[
+  ['--tj-ghunna','Ghunna','2 temps','Son nasal (par le nez) sur le noun ou le mim avec chadda.','إِنَّ · ثُمَّ'],
+  ['--tj-ikhfa','Ikhfa','noun caché','Le noun sakina ou le tanwin devant l’une des 15 lettres de l’ikhfa : il est « caché », prononcé à moitié avec une nasalisation.','أَنزَلَ'],
   ['--tj-idgham-g','Idgham avec ghunna','fusion nasale','Le noun sakina ou le tanwin se fond dans la lettre suivante (ي ن م و), avec nasalisation.','مَن يَقُولُ'],
-  ['--tj-idgham-ng','Idgham sans ghunna','fusion simple','Le noun sakina ou le tanwin se fond complètement dans ل ou ر, sans nasalisation.','مِن رَّبِّهِمْ']]],
- ['Mim sakina',[
-  ['--tj-ikhfa-sh','Ikhfa shafawi','dissimulation labiale','Le mim sakina devant un ب est caché, avec nasalisation.','تَرْمِيهِم بِحِجَارَةٍ'],
-  ['--tj-idgham-sh','Idgham shafawi','fusion labiale','Le mim sakina devant un autre mim : les deux se fondent, avec nasalisation.','لَهُم مَّا']]],
- ['Lettres proches',[
-  ['--tj-idgham-x','Idgham mutajanisayn / mutaqaribayn','gris','Deux lettres de même point ou de points proches d’articulation se fondent : la première ne se prononce pas.','قَد تَّبَيَّنَ · قُل رَّبِّ']]]
+  ['--tj-iqlab','Iqlab','noun → mim','Le noun sakina ou le tanwin devant un ب se transforme en mim, avec nasalisation.','مِنۢ بَعْدِ'],
+  ['--tj-ikhfa-sh','Ikhfa shafawi','mim caché','Le mim sakina devant un ب est caché, avec nasalisation.','تَرْمِيهِم بِحِجَارَةٍ'],
+  ['--tj-idgham-sh','Idgham shafawi','mim + mim','Le mim sakina devant un autre mim : les deux se fondent, avec nasalisation.','لَهُم مَّا']]],
+ ['Le rebond — bleu clair',[
+  ['--tj-qalqala','Qalqala','ق ط ب ج د','Ces lettres avec soukoun produisent un léger rebond sonore, plus fort à l’arrêt.','يَجْعَل']]],
+ ['Lettres non prononcées — gris',[
+  ['--tj-silent','Hamzat al-wasl, lettres muettes','muette','Lettre écrite mais non prononcée : l’alif de liaison (ٱ) quand on enchaîne avec le mot précédent, ou une lettre muette.','ٱلْحَمْدُ'],
+  ['--tj-silent','Lam shamsiyya','muette','Le « l » de l’article « al » ne se prononce pas devant une lettre solaire (ت ث د ذ ر ز س ش ص ض ط ظ ل ن) : la lettre suivante est doublée.','ٱلشَّمْسِ'],
+  ['--tj-idgham-ng','Idgham sans ghunna','noun fondu','Le noun sakina ou le tanwin disparaît complètement dans ل ou ر, sans nasalisation.','مِن رَّبِّهِمْ'],
+  ['--tj-idgham-x','Idgham mutajanisayn / mutaqaribayn','lettre fondue','Deux lettres de même point ou de points proches d’articulation se fondent : la première ne se prononce pas.','قَد تَّبَيَّنَ · قُل رَّبِّ']]]
 ];
 function renderRules(){
   const box=$('rules'); box.innerHTML='';
@@ -2952,7 +2952,7 @@ document.addEventListener('visibilitychange',()=>{if(!lsRaw('hk.auth',null))retu
 window.addEventListener('online',()=>{if(lsRaw('hk.auth',null))syncNow()});
 
 // ===== Avis des testeurs : message WhatsApp pré-rempli (la personne choisit à qui l'envoyer) =====
-const APP_V='v52';
+const APP_V='v53';
 function deviceInfo(){
   const ua=navigator.userAgent; let d='appareil inconnu';
   const ios=ua.match(/OS (\d+)_(\d+)/), and=ua.match(/Android ([\d.]+)/);
