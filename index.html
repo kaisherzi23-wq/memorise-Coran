@@ -3335,7 +3335,7 @@ document.addEventListener('visibilitychange',()=>{if(!lsRaw('hk.auth',null))retu
 window.addEventListener('online',()=>{if(lsRaw('hk.auth',null))syncNow()});
 
 // ===== Avis des testeurs : message WhatsApp pré-rempli (la personne choisit à qui l'envoyer) =====
-const APP_V='v64';
+const APP_V='v65';
 function deviceInfo(){
   const ua=navigator.userAgent; let d='appareil inconnu';
   const ios=ua.match(/OS (\d+)_(\d+)/), and=ua.match(/Android ([\d.]+)/);
@@ -3353,6 +3353,21 @@ function sendFeedback(){
   location.href='https://wa.me/?text='+encodeURIComponent(txt);
 }
 document.querySelectorAll('[data-fb]').forEach(b=>b.onclick=sendFeedback);
+
+// mesure d'audience anonyme : un identifiant tiré au hasard, une fois par jour (aucune donnée personnelle)
+function dailyPing(){
+  try{
+    const k=dayStr(Date.now()); if(localStorage.getItem('hk.pingDay')===k||!navigator.onLine) return;
+    let id=localStorage.getItem('hk.dev'); if(!id){id=(crypto.randomUUID?crypto.randomUUID():'xxxxxxxx-xxxx-4xxx-8xxx-xxxxxxxxxxxx'.replace(/x/g,()=>(Math.random()*16|0).toString(16)));localStorage.setItem('hk.dev',id)}
+    const ua=navigator.userAgent, os=/iPhone|iPad|iPod/.test(ua)||(/Macintosh/.test(ua)&&'ontouchend' in document)?'ios':/Android/.test(ua)?'android':'other';
+    const m=LS.get('hk.uiMode',null), mode=m==='listen'?'listen':m==='read'?'read':'none';
+    fetch(SB_URL+'/rest/v1/app_pings?on_conflict=device,day',{method:'POST',keepalive:true,headers:{apikey:SB_KEY,'Content-Type':'application/json',Prefer:'resolution=ignore-duplicates,return=minimal'},body:JSON.stringify({device:id,v:APP_V,mode,os})})
+      .then(r=>{if(r.ok||r.status===409)localStorage.setItem('hk.pingDay',k)}).catch(()=>{});
+  }catch(e){}
+}
+setTimeout(dailyPing,4000);
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')setTimeout(dailyPing,2000)});
+window.addEventListener('online',()=>setTimeout(dailyPing,2000));
 
 init();
 })();
