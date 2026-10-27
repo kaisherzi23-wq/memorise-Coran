@@ -282,7 +282,6 @@ textarea{width:100%;min-height:70px;border-radius:10px;border:1px solid var(--li
 .cel-t{font-size:1.25rem}.cel-s{margin:0;color:var(--muted);font-size:.92rem}.cel-in .btns{width:100%;margin-top:6px}.cel-in .cel-h{text-align:left;width:100%}
 .miles{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:6px;margin:6px 0 10px}.miles span{display:flex;flex-direction:column;align-items:center;gap:2px;border:1px solid var(--line);border-radius:12px;padding:6px 4px;text-align:center;opacity:.55}.miles span.on{opacity:1;border-color:var(--gold);background:var(--page)}.miles i{font-style:normal;font-size:1.3rem}.miles small{font-size:.68rem;line-height:1.2;color:var(--muted)}
 .ls-tile[data-st="m"] .med{box-shadow:0 0 0 4px #1F5E4E,0 0 0 6px #E9D9A6;position:relative}.ls-tile[data-st="m"] .med::before,.ls-tile[data-st="m"] .med::after{content:"✦";position:absolute;color:#E9D9A6;font-size:.8rem;top:-14px}.ls-tile[data-st="m"] .med::after{top:auto;bottom:-14px}
-.wcount{font-size:.85rem!important;color:var(--ink)!important}
 .wrev{width:100%;display:flex;flex-direction:column;gap:6px;border-top:1px solid var(--line);padding-top:12px;margin-top:4px}.wrev .okc{color:var(--done)}.wrev .koc{color:var(--danger)}.wrev .wv{font-family:var(--f-ar);font-size:calc(var(--ar-size)*.8);line-height:2;direction:rtl;margin:4px 0;color:var(--ink)}.wrev .wv span{padding:0 .06em}.wrev .wv mark{background:var(--now);color:var(--now-ink);border-radius:6px;padding:0 .1em}.wrev .wv .vn{color:var(--gold);font-size:.8em}.wrev .trv{font-size:.88rem;color:var(--muted);margin:0;line-height:1.45}.wrev .btns{width:100%}
 .wopts{display:grid;gap:8px;width:100%}
 .wopts button{border:1px solid var(--line);background:var(--page);border-radius:12px;padding:12px;font-size:1rem;color:var(--ink)}
@@ -2291,7 +2290,6 @@ async function renderWords(){
     catch(e){wBusy=false;$('wMain').innerHTML='<p class="note">Impossible de charger le sens des mots. Vérifie ta connexion et réessaie.</p>';return}
     wBusy=false;
   }
-  if(!LEXC){loadLexCounts().then(j=>{if(j&&$('wMain')&&!$('wMain').querySelector('.wcard'))renderWords()})}
   const d=wDeck, sm=deckSummary(d), c=wCards(), now=today();
   LS.set('hk.wsum',{scope:d.scope,known:sm.known,cov:sm.cov,t:W_SCOPES[d.scope].t});
   const due=d.words.filter(w=>c[w.k]&&c[w.k].d<=now&&c[w.k].l>0).length;
@@ -2302,7 +2300,7 @@ async function renderWords(){
     weakBoxHTML()+
     '<span class="lbl">Les mots les plus répétés</span><div class="wlist">';
   d.words.forEach((w,i)=>{const cd=c[w.k], l=cd?cd.l:-1;
-    h+='<button data-i="'+i+'"><span class="ar">'+esc(w.t)+'</span><span class="gl2">'+esc(w.g)+(w.p?'<small>'+esc(w.p)+'</small>':'')+(w.form&&wNorm(w.form)!==w.k?'<small>🔊 entendu : <span class="arf">'+esc(w.form)+'</span></small>':'')+'</span><span class="n">×'+(xCount(w.k)??w.n)+'</span><span class="lv" data-l="'+(l>=2?'k':l>=0?'s':'n')+'"></span></button>'});
+    h+='<button data-i="'+i+'"><span class="ar">'+esc(w.t)+'</span><span class="gl2">'+esc(w.g)+(w.p?'<small>'+esc(w.p)+'</small>':'')+(w.form&&wNorm(w.form)!==w.k?'<small>🔊 entendu : <span class="arf">'+esc(w.form)+'</span></small>':'')+'</span><span class="n">×'+w.n+'</span><span class="lv" data-l="'+(l>=2?'k':l>=0?'s':'n')+'"></span></button>'});
   h+='</div>';
   // le reste du lexique, rangé par thème
   const th={}; d.rest.forEach(w=>{(th[w.sec]=th[w.sec]||[]).push(w)});
@@ -2330,21 +2328,11 @@ function wGrade(w,ok){
   cs[w.k]=c; LS.set('hk.words',cs);
 }
 // après une réponse au quiz : le mot dans un verset du Coran, avec la traduction et l'audio du verset
-// nombre exact d'occurrences, toutes formes du mot confondues (Quranic Arabic Corpus), dans tout le Coran et par sourate
-let LEXC=null, lexcP=null;
-function loadLexCounts(){return lexcP||(lexcP=fetch('lexcounts.json').then(r=>r.json()).then(j=>LEXC=j).catch(()=>{lexcP=null;return null}))}
-function scopeList(){return wScope==='cur'?[surah]:W_SCOPES[wScope]?W_SCOPES[wScope].list():[surah]}
-function xCount(k){const c=LEXC&&LEXC[k];if(!c)return null;let n=0;for(const s of scopeList())n+=c.s[s]||0;return n}
-function wCountHTML(w){
-  const c=LEXC&&LEXC[w.k]; if(!c) return '';
-  const sc=wScope==='cur'?W_SCOPES.cur.t.replace(/^Sourate /,'la sourate '):wScope==='mine'?'tes sourates':'Juz’ ‘Amma et Al-Fâtiha', n=xCount(w.k);
-  return '<small class="wcount">📖 <b>'+c.t.toLocaleString('fr-FR')+' fois</b> dans le Coran'+(n?' · <b>'+n.toLocaleString('fr-FR')+' fois</b> dans '+esc(sc):'')+'<br><span style="color:var(--muted);font-size:.9em">toutes les formes du mot (singulier, pluriel, conjugaisons…)</span></small>';
-}
 async function wReveal(w,ok,go,noHead){
   const [s,v,p]=w.oc[Math.floor(Math.random()*w.oc.length)], c=CHAPTERS[s-1]||{name_simple:'Sourate '+s};
   const card=$('wMain').querySelector('.wcard'); if(!card) return;
   const r=document.createElement('div'); r.className='wrev';
-  r.innerHTML=(noHead?'':'<b class="'+(ok?'okc':'koc')+'">'+(ok?'✓ Bonne réponse':'✗ La bonne réponse : '+esc(w.g))+'</b>')+wCountHTML(w)+'<small>Exemple · '+esc(c.name_simple)+', verset '+v+'</small><p class="ar wv">…</p><p class="trv"></p><div class="btns"><button class="btn" id="wVerse">🔊 Écouter le verset</button><button class="btn primary" id="wNext">Suivant ›</button></div>';
+  r.innerHTML=(noHead?'':'<b class="'+(ok?'okc':'koc')+'">'+(ok?'✓ Bonne réponse':'✗ La bonne réponse : '+esc(w.g))+'</b>')+'<small>Exemple · '+esc(c.name_simple)+', verset '+v+'</small><p class="ar wv">…</p><p class="trv"></p><div class="btns"><button class="btn" id="wVerse">🔊 Écouter le verset</button><button class="btn primary" id="wNext">Suivant ›</button></div>';
   card.appendChild(r); r.scrollIntoView({block:'nearest',behavior:'smooth'});
   $('wNext').onclick=()=>{smpStop();go()};
   try{const txt=(s===surah&&verses.length)?verses:await loadText(s), vv=txt.find(x=>x.n===v);
@@ -3347,7 +3335,7 @@ document.addEventListener('visibilitychange',()=>{if(!lsRaw('hk.auth',null))retu
 window.addEventListener('online',()=>{if(lsRaw('hk.auth',null))syncNow()});
 
 // ===== Avis des testeurs : message WhatsApp pré-rempli (la personne choisit à qui l'envoyer) =====
-const APP_V='v62';
+const APP_V='v63';
 function deviceInfo(){
   const ua=navigator.userAgent; let d='appareil inconnu';
   const ios=ua.match(/OS (\d+)_(\d+)/), and=ua.match(/Android ([\d.]+)/);
