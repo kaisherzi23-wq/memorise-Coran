@@ -272,6 +272,19 @@ textarea{width:100%;min-height:70px;border-radius:10px;border:1px solid var(--li
 .wres{width:100%;display:flex;flex-direction:column;align-items:center;gap:6px}.wres .okc{color:var(--done)}.wres .koc{color:var(--danger)}.wres .alc{color:var(--gold)}
 .wexp{text-align:left;margin:4px 0 0;padding-left:18px;font-size:.9rem;line-height:1.5;width:100%}.wexp li{margin:4px 0}.arl{font-family:var(--f-ar);font-size:1.25em;padding:0 2px}
 .wweak{background:var(--bg);border:1px solid var(--gold);border-radius:14px;padding:12px;margin:0 0 14px;display:flex;flex-direction:column;gap:8px}.wweak small{color:var(--muted);font-size:.8rem}.wchips{display:flex;flex-wrap:wrap;gap:6px;direction:rtl}.wchips span{display:flex;flex-direction:column;align-items:center;background:var(--page);border:1px solid var(--line);border-radius:10px;padding:4px 8px}.wchips b{font-family:var(--f-ar);font-size:1.25rem;font-weight:400}.wchips span.due{border-color:var(--gold)}.wchips i{font-style:normal;font-size:.68rem;color:var(--muted);direction:ltr}
+#celToast{position:fixed;left:50%;bottom:calc(96px + env(safe-area-inset-bottom,0px));transform:translate(-50%,20px);opacity:0;pointer-events:none;width:min(92vw,460px);background:var(--page);border:2px solid var(--gold);border-radius:16px;padding:10px 14px;z-index:90;font-size:.92rem;line-height:1.45;transition:opacity .3s,transform .3s;box-shadow:0 6px 24px rgba(0,0,0,.18)}
+#celToast.on{opacity:1;transform:translate(-50%,0);pointer-events:auto}
+.cel-h{margin:8px 0 0;padding:8px 10px;border-left:3px solid var(--gold);background:var(--bg);border-radius:0 10px 10px 0;font-size:.88rem;line-height:1.5;color:var(--ink)}.cel-h cite{display:block;font-style:normal;color:var(--muted);font-size:.78rem;margin-top:4px}
+#cel{position:fixed;inset:0;z-index:95;display:grid;place-items:center;background:rgba(0,0,0,.45);opacity:0;transition:opacity .25s;padding:16px}#cel.on{opacity:1}
+.cel-in{background:var(--page);border:3px solid var(--gold);border-radius:24px;padding:22px 18px;max-width:420px;width:100%;text-align:center;display:flex;flex-direction:column;align-items:center;gap:8px;transform:scale(.9);transition:transform .35s cubic-bezier(.2,1.4,.4,1)}#cel.on .cel-in{transform:scale(1)}
+.cel-med{min-width:120px;min-height:120px;border-radius:50%;border:4px double var(--gold);display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:3rem;background:var(--bg);padding:8px}.cel-med .bal{width:110px}
+.cm-n{font-size:1.2rem;font-weight:700;color:var(--gold)}.cm-a{font-family:var(--f-ar);font-size:1.9rem;line-height:1.4}
+.cel-t{font-size:1.25rem}.cel-s{margin:0;color:var(--muted);font-size:.92rem}.cel-in .btns{width:100%;margin-top:6px}.cel-in .cel-h{text-align:left;width:100%}
+.balance{display:flex;align-items:center;gap:12px;background:var(--bg);border:1px solid var(--gold-soft);border-radius:16px;padding:8px 12px;margin:0 0 12px}.balance .bal{width:120px;flex:0 0 auto}.balance b{display:block}.balance small{color:var(--muted);font-size:.82rem;line-height:1.4}
+.ls-garden{flex-wrap:wrap}.ls-garden .balance{background:none;border:0;padding:0;margin:0}.ls-garden .balance .bal{width:140px}.ls-garden .ls-week{flex-basis:100%;max-width:260px;margin:4px auto 0}
+.bal .bs{stroke:var(--muted);stroke-width:3;stroke-linecap:round}.bal .bf{fill:var(--muted)}.bal .bg{fill:var(--gold)}.bal .bb{stroke:var(--gold);stroke-width:4;stroke-linecap:round}.bal .bc{stroke:var(--line);stroke-width:1.2}.bal .bd{fill:none;stroke:var(--muted);stroke-width:2.5;stroke-linecap:round}.bal .bd.g{stroke:var(--done)}.bal .bp{fill:var(--done)}
+.miles{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:6px;margin:6px 0 10px}.miles span{display:flex;flex-direction:column;align-items:center;gap:2px;border:1px solid var(--line);border-radius:12px;padding:6px 4px;text-align:center;opacity:.55}.miles span.on{opacity:1;border-color:var(--gold);background:var(--page)}.miles i{font-style:normal;font-size:1.3rem}.miles small{font-size:.68rem;line-height:1.2;color:var(--muted)}
+.ls-tile[data-st="m"] .med{box-shadow:0 0 0 4px #1F5E4E,0 0 0 6px #E9D9A6;position:relative}.ls-tile[data-st="m"] .med::before,.ls-tile[data-st="m"] .med::after{content:"✦";position:absolute;color:#E9D9A6;font-size:.8rem;top:-14px}.ls-tile[data-st="m"] .med::after{top:auto;bottom:-14px}
 .wrev{width:100%;display:flex;flex-direction:column;gap:6px;border-top:1px solid var(--line);padding-top:12px;margin-top:4px}.wrev .okc{color:var(--done)}.wrev .koc{color:var(--danger)}.wrev .wv{font-family:var(--f-ar);font-size:calc(var(--ar-size)*.8);line-height:2;direction:rtl;margin:4px 0;color:var(--ink)}.wrev .wv span{padding:0 .06em}.wrev .wv mark{background:var(--now);color:var(--now-ink);border-radius:6px;padding:0 .1em}.wrev .wv .vn{color:var(--gold);font-size:.8em}.wrev .trv{font-size:.88rem;color:var(--muted);margin:0;line-height:1.45}.wrev .btns{width:100%}
 .wopts{display:grid;gap:8px;width:100%}
 .wopts button{border:1px solid var(--line);background:var(--page);border-radius:12px;padding:12px;font-size:1rem;color:var(--ink)}
@@ -732,7 +745,7 @@ textarea{width:100%;min-height:70px;border-radius:10px;border:1px solid var(--li
 const DAY=86400000, INTERVALS=[1,3,7,15,30,60];
 const $=id=>document.getElementById(id);
 const audio=$('audio'), myAudio=new Audio();
-var SYNC_RE=/^hk\.(settings|surah|parts\.\d+|manual\.\d+|smanual|bm\.\d+|sum|days|les\.\d+|reciter|uiMode|progTab|lsAt|lsSpeed2|time|hours|prog|diff|diffh|learnLog|slast|words|wsum|wScope|wLevel)$/;
+var SYNC_RE=/^hk\.(settings|surah|parts\.\d+|manual\.\d+|smanual|bm\.\d+|sum|days|les\.\d+|reciter|uiMode|progTab|lsAt|lsSpeed2|time|hours|prog|diff|diffh|learnLog|slast|words|wsum|wScope|wLevel|miles|balDone)$/;
 const LS={get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},set(k,v){try{const j=JSON.stringify(v);if(localStorage.getItem(k)===j)return;localStorage.setItem(k,j);if(SYNC_RE.test(k))syncMark(k)}catch(e){}}};
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const FALLBACK_RECITERS=[
@@ -1046,7 +1059,7 @@ let statTick=Date.now();
 setInterval(()=>{const now=Date.now(),dt=Math.min(10,(now-statTick)/1000);statTick=now;if(audio.paused)return;
   const t=LS.get('hk.time',{}),k=dayStr(now);t[k]=Math.round(((t[k]||0)+dt)*10)/10;LS.set('hk.time',t);
   const hr=LS.get('hk.hours',{}),h=new Date(now).getHours();hr[h]=Math.round((hr[h]||0)+dt);LS.set('hk.hours',hr);
-  if(!LS.get('hk.prog',{})[k]) progSnap();},5000);
+  if(!LS.get('hk.prog',{})[k]) progSnap(); checkBalance();},5000);
 // versets travaillés en boucle (répétitions) et ratés au test
 function statBump(a,b,idx){
   if(!a||!b) return; touchSurah(surah);
@@ -1133,10 +1146,26 @@ function barChart(vals,o){
   return h+'</svg>';
 }
 /* ---------- Encouragements ---------- */
-const HADITHS=[
-  ['Le meilleur d’entre vous est celui qui apprend le Coran et l’enseigne.','Al-Bukhârî'],
-  ['Celui qui récite le Coran avec aisance sera avec les nobles anges scribes, et celui qui le récite en butant, avec difficulté, aura une double récompense.','Muslim'],
-  ['Récitez le Coran, car il viendra le Jour de la Résurrection intercéder en faveur de ceux qui l’ont accompagné.','Muslim']];
+// textes authentiques uniquement, toujours avec leur référence (vérifiables sur sunnah.com)
+const HAD={
+  best:['Le meilleur d’entre vous est celui qui apprend le Coran et l’enseigne.','Al-Bukhârî 5027'],
+  two:['Celui qui récite le Coran avec aisance sera avec les nobles anges scribes, et celui qui le récite en butant, avec difficulté, aura deux récompenses.','Al-Bukhârî 4937, Muslim 798'],
+  shafa:['Récitez le Coran, car il viendra le Jour de la Résurrection intercéder en faveur de ses compagnons.','Muslim 804'],
+  near:['Allah dit : « Si Mon serviteur se rapproche de Moi d’un empan, Je Me rapproche de lui d’une coudée… et s’il vient à Moi en marchant, Je viens à lui en courant. »','Al-Bukhârî 7405, Muslim 2675'],
+  regular:['Les œuvres les plus aimées d’Allah sont les plus régulières, même si elles sont peu nombreuses.','Al-Bukhârî 6464, Muslim 783'],
+  rise:['On dira au compagnon du Coran : « Lis, élève-toi et psalmodie comme tu psalmodiais ici-bas, car ta demeure sera au dernier verset que tu réciteras. »','Abû Dâwud 1464, At-Tirmidhî 2914'],
+  letter:['Celui qui lit une lettre du Livre d’Allah obtient une bonne action, et la bonne action vaut dix fois autant.','At-Tirmidhî 2910'],
+  niyya:['Les actes ne valent que par les intentions.','Al-Bukhârî 1, Muslim 1907'],
+  easy:['« Et Nous avons rendu le Coran facile pour la méditation. Y a-t-il quelqu’un pour réfléchir ? »','Coran, sourate Al-Qamar, 54:17']
+};
+// vertus authentiques de certaines sourates
+const SURAH_VIRTUE={
+  1:['La Fâtiha est la plus grande sourate du Coran : les sept versets répétés.','Al-Bukhârî 4474'],
+  18:['Celui qui apprend par cœur dix versets du début de la sourate Al-Kahf sera protégé du Dajjâl.','Muslim 809'],
+  67:['Il y a dans le Coran une sourate de trente versets qui a intercédé pour un homme jusqu’à ce qu’il soit pardonné : « Tabâraka-lladhî bi-yadihi-l-mulk ».','Abû Dâwud 1400, At-Tirmidhî 2891'],
+  112:['Par Celui qui tient mon âme dans Sa main, elle équivaut au tiers du Coran.','Al-Bukhârî 5013']
+};
+const HADITHS=[HAD.best,HAD.two,HAD.shafa,HAD.near,HAD.regular,HAD.rise,HAD.letter];
 function encourage(who){
   const el=who==='elle', act=activeDays(), st=streak(), tm=LS.get('hk.time',{}), sp=seriesProg(15);
   let w1=0,w0=0; for(let i=0;i<7;i++){w1+=tm[dKey(i)]||0;w0+=tm[dKey(i+7)]||0}
@@ -1144,14 +1173,114 @@ function encourage(who){
   let gapDays=0; for(let i=1;i<30;i++){if(act[dKey(i)])break;gapDays++}
   const msg=[];
   if(act[dKey(0)]&&gapDays>=3) msg.push(['🌱',el?'Elle a repris après '+gapDays+' jours de pause. C’est ça le plus important : revenir.':'Content de te revoir après '+gapDays+' jours ! Le plus important, c’est de revenir.']);
-  if(st>=3) msg.push(['🔥',(el?'Elle travaille':'Tu travailles')+' depuis '+st+' jours d’affilée. '+(st>=7?'Une vraie régularité, bravo !':'Continue comme ça !')]);
+  if(st>=3){const gi=streakInfo().grace;msg.push(['🔥',(el?'Elle travaille':'Tu travailles')+' depuis '+st+' jours'+(gi?' (avec '+gi+' jour'+(gi>1?'s':'')+' de répit)':' d’affilée')+'. '+(st>=7?'Une vraie régularité, bravo !':'Continue comme ça !')])}
   if(g7>0) msg.push(['📈',g7+' nouveau'+(g7>1?'x':'')+' verset'+(g7>1?'s':'')+' appris ces 7 derniers jours.']);
   if(w1>w0+300&&w0>0) msg.push(['⏱️','+'+fmtDur(w1-w0)+' de travail par rapport à la semaine d’avant.']);
   if(!msg.length&&!act[dKey(0)]) msg.push(['🤲',el?'Une petite séance aujourd’hui ? Même 5 minutes comptent.':'Une petite séance aujourd’hui ? Même 5 minutes comptent.']);
   if(!msg.length) msg.push(['✨',el?'Chaque écoute la rapproche du but.':'Chaque écoute te rapproche du but.']);
   const hd=HADITHS[Math.floor(noonT()/DAY)%HADITHS.length];
-  return '<div class="st-enc">'+msg.slice(0,2).map(m=>'<p><span>'+m[0]+'</span>'+esc(m[1])+'</p>').join('')+'<blockquote>« '+esc(hd[0])+' »<cite>Hadith rapporté par '+hd[1]+'</cite></blockquote></div>';
+  return '<div class="st-enc">'+msg.slice(0,2).map(m=>'<p><span>'+m[0]+'</span>'+esc(m[1])+'</p>').join('')+'<blockquote>« '+esc(hd[0])+' »<cite>'+esc(hd[1])+'</cite></blockquote></div>';
 }
+/* ========== Récompenses : rappeler ce qu'Allah promet à celui qui fait l'effort ========== */
+// petit carillon (Web Audio, aucun fichier)
+let actx=null;
+function chime(big){
+  try{actx=actx||new (window.AudioContext||window.webkitAudioContext)();const t0=actx.currentTime;
+    (big?[523.25,659.25,783.99,1046.5]:[659.25,987.77]).forEach((f,i)=>{const o=actx.createOscillator(),g=actx.createGain();o.type='sine';o.frequency.value=f;
+      g.gain.setValueAtTime(0,t0+i*.12);g.gain.linearRampToValueAtTime(.18,t0+i*.12+.02);g.gain.exponentialRampToValueAtTime(.001,t0+i*.12+1.2);o.connect(g);g.connect(actx.destination);o.start(t0+i*.12);o.stop(t0+i*.12+1.3)});
+  }catch(e){}
+}
+const listenUI=()=>!$('ls').hidden;
+function hadHTML(h){return h?'<blockquote class="cel-h">« '+esc(h[0].replace(/^«\s*|\s*»$/g,''))+' »<cite>'+esc(h[1])+'</cite></blockquote>':''}
+// bandeau bref (verset appris)
+function celToast(html){
+  let t=$('celToast'); if(!t){t=document.createElement('div');t.id='celToast';document.body.appendChild(t);t.onclick=()=>t.classList.remove('on')}
+  t.innerHTML=html; t.classList.remove('on'); void t.offsetWidth; t.classList.add('on');
+  clearTimeout(t._h); t._h=setTimeout(()=>t.classList.remove('on'),html.length>200?9000:4500);
+}
+// grande célébration (sourate complète, jalon, balance pleine)
+function celebrate(o){
+  chime(true);
+  let c=$('cel'); if(!c){c=document.createElement('div');c.id='cel';document.body.appendChild(c)}
+  c.innerHTML='<div class="cel-in"><div class="cel-med">'+(o.med||'✨')+'</div><b class="cel-t">'+esc(o.t)+'</b>'+(o.sub?'<p class="cel-s">'+esc(o.sub)+'</p>':'')+hadHTML(o.h)+
+    '<div class="btns"><button class="btn primary" id="celOk">الحمد لله</button>'+(o.share?'<button class="btn" id="celShare">Partager</button>':'')+'</div></div>';
+  c.hidden=false; requestAnimationFrame(()=>c.classList.add('on'));
+  $('celOk').onclick=()=>{c.classList.remove('on');setTimeout(()=>c.hidden=true,250)};
+  if($('celShare')) $('celShare').onclick=()=>{location.href='https://wa.me/?text='+encodeURIComponent(o.share+'\n\n(avec l’app Mémorise le Coran)')};
+  if(listenUI()) setTimeout(()=>say({ar:o.ar||'ما شاء الله',fr:'Mâ shâ’ Allah'}),700);
+}
+function onVersesLearned(s,list,wasDone){
+  const n=list.length, done=surahInfo(s,LS.get('hk.sum',{})).st==='m', c=CHAPTERS[s-1]||{name_simple:''};
+  if(done&&!wasDone){celebrateSurah(s);checkMiles();checkBalance();return}
+  chime(false);
+  if(listenUI()) say({ar:'ما شاء الله',fr:'Mâ shâ’ Allah'});
+  // le hadith arrive par surprise (une fois sur trois), toujours si le verset a demandé beaucoup d'effort
+  const ec=n===1?effClass(s,list[0],effBase()):null;
+  const h=ec&&ec.k>=2?HAD.two:Math.random()<.34?[HAD.rise,HAD.near,HAD.letter,HAD.easy][Math.floor(Math.random()*4)]:null;
+  celToast('<b>✨ Mâ shâ’ Allah !</b> '+(n>1?n+' versets appris':'Verset '+list[0]+' appris')+' · '+esc(c.name_simple)+hadHTML(h));
+  checkMiles(); checkBalance();
+}
+function celebrateSurah(id){
+  const c=CHAPTERS[id-1]; if(!c) return;
+  celebrate({med:'<span class="cm-n">'+id+'</span><span class="cm-a">'+esc(c.name_arabic)+'</span>',t:'Sourate '+c.name_simple+' apprise !',
+    sub:'Qu’Allah la préserve dans ton cœur et en fasse une lumière pour toi.',h:SURAH_VIRTUE[id]||HAD.shafa,ar:'ما شاء الله، سورة '+c.name_arabic,
+    share:'🌟 J’ai appris la sourate '+c.name_simple+' ('+c.name_arabic+') ! Alhamdulillah.'});
+}
+// jalons : des étapes qui ont du sens, fêtées une seule fois
+const AMMA=[1].concat(Array.from({length:37},(_,i)=>78+i));
+function miles(){
+  const g=globalCounts(), vs=allVS(), st=streak(), cs=wCards();
+  const full=s=>vs[s]&&vs[s].length&&vs[s].every(x=>x==='m');
+  const juz=()=>{for(let j=1;j<=30;j++){const c=countRanges(juzRanges(j),vs);if(c.tot&&c.m>=c.tot)return true}return false};
+  const L=[['s1','Première sourate apprise','🌱',g.surahs>=1],['v10','10 versets appris','✨',g.verses>=10],['v50','50 versets appris','⭐',g.verses>=50],
+    ['v100','100 versets appris','🌟',g.verses>=100],['v250','250 versets appris','💫',g.verses>=250],['v500','500 versets appris','🏅',g.verses>=500],
+    ['v1000','1 000 versets appris','🏆',g.verses>=1000],['amma','Juz’ ‘Amma et Al-Fâtiha complets','📗',AMMA.every(full)],['juz','Un juz’ entier','📘',juz()],
+    ['s10','10 sourates apprises','🕌',g.surahs>=10],['d7','7 jours de régularité','🔥',st>=7],['d30','30 jours de régularité','🔥',st>=30],['d100','100 jours de régularité','💎',st>=100],
+    ['w10','10 mots de vocabulaire ancrés','📚',Object.values(cs).filter(c=>c.st==='ancre').length>=10],['all','Le Coran entier','🤲',g.verses>=6236]];
+  return L.map(([id,t,ic,ok])=>({id,t,ic,ok}));
+}
+function checkMiles(){
+  try{
+    const have=LS.get('hk.miles',null), L=miles(), now=dayStr(Date.now());
+    let quiet=false; try{quiet=!!localStorage.getItem('hk.milesQuiet');localStorage.removeItem('hk.milesQuiet')}catch(e){}
+    if(have===null||quiet){const o=have||{};L.filter(x=>x.ok&&!o[x.id]).forEach(x=>o[x.id]=now);LS.set('hk.miles',o);return} // première fois, ou progression récupérée d'un autre appareil : on note sans fêter
+    const nw=L.filter(x=>x.ok&&!have[x.id]); if(!nw.length) return;
+    nw.forEach(x=>have[x.id]=now); LS.set('hk.miles',have);
+    const x=nw[nw.length-1];
+    setTimeout(()=>celebrate({med:x.ic,t:'Nouvelle étape : '+x.t,sub:'Chaque effort te rapproche d’Allah. Continue, même un peu chaque jour.',h:x.id[0]==='d'?HAD.regular:x.id==='all'?HAD.rise:HAD.near,share:x.ic+' Nouvelle étape dans mon apprentissage du Coran : '+x.t+'. Alhamdulillah !'}),$('cel')&&!$('cel').hidden?2500:300);
+  }catch(e){}
+}
+function milesHTML(){
+  const have=LS.get('hk.miles',{})||{}, L=miles();
+  return '<div class="miles">'+L.map(x=>'<span class="'+(x.ok?'on':'')+'" title="'+esc(x.t)+'"><i>'+(x.ok?x.ic:'🔒')+'</i><small>'+esc(x.t)+'</small></span>').join('')+'</div>';
+}
+// la balance du jour : se remplit avec l'écoute (1 point par minute) et les versets appris après répétition (3 points), revient à zéro chaque jour
+const BAL_GOAL=15;
+function balanceScore(){
+  const k=dayStr(Date.now()), mins=(LS.get('hk.time',{})[k]||0)/60, nv=Object.values(LS.get('hk.learnLog',{})).filter(e=>e.d===k).length; // versets vraiment travaillés puis appris aujourd'hui
+  return {pts:Math.round(mins+nv*3),mins:Math.round(mins),nv};
+}
+function balanceSVG(r){
+  const ang=r*14, rad=ang*Math.PI/180, cx=90, cy=26, L=62, lx=cx-L*Math.cos(rad), ly=cy-L*Math.sin(rad), rx=cx+L*Math.cos(rad), ry=cy+L*Math.sin(rad);
+  const dish=(x,y)=>'M'+(x-24)+' '+(y+52)+' Q'+x+' '+(y+68)+' '+(x+24)+' '+(y+52);
+  const n=Math.round(r*10); let pearls=''; for(let i=0;i<n;i++){const row=Math.floor(i/4),col=i%4,w=Math.min(4,n-row*4);pearls+='<circle cx="'+(rx+(col-(w-1)/2)*9)+'" cy="'+(ry+55-row*8)+'" r="4" class="bp"/>'}
+  return '<svg viewBox="0 0 180 112" class="bal" aria-hidden="true"><path d="M90 26V100" class="bs"/><path d="M68 104h44l-8-8H76z" class="bf"/><circle cx="90" cy="24" r="5" class="bg"/>'+
+    '<g transform="rotate('+ang.toFixed(1)+' 90 26)"><path d="M28 26H152" class="bb"/></g>'+
+    '<path d="M'+lx+' '+ly+'L'+(lx-22)+' '+(ly+52)+'M'+lx+' '+ly+'L'+(lx+22)+' '+(ly+52)+'" class="bc"/><path d="'+dish(lx,ly)+'" class="bd"/>'+
+    '<path d="M'+rx+' '+ry+'L'+(rx-22)+' '+(ry+52)+'M'+rx+' '+ry+'L'+(rx+22)+' '+(ry+52)+'" class="bc"/>'+pearls+'<path d="'+dish(rx,ry)+'" class="bd g"/></svg>';
+}
+function balanceHTML(who){
+  const b=balanceScore(), r=Math.min(1,b.pts/BAL_GOAL), el=who==='elle';
+  return '<div class="balance'+(r>=1?' full':'')+'">'+balanceSVG(r)+(who==='ls'?'':'<div><b>'+(r>=1?'Balance pleine aujourd’hui 🌿':'La balance du jour')+'</b><small>'+(r>=1?'Qu’Allah accepte '+(el?'ses':'tes')+' efforts.':b.mins+' min d’écoute'+(b.nv?' · '+b.nv+' verset'+(b.nv>1?'s':'')+' appris':'')+' — elle se remplit à chaque effort et revient à zéro chaque jour.')+'</small></div>')+'</div>';
+}
+function checkBalance(){
+  try{const k=dayStr(Date.now()); if(LS.get('hk.balDone','')===k) return;
+    if(balanceScore().pts>=BAL_GOAL){LS.set('hk.balDone',k);
+      celebrate({med:balanceSVG(1),t:'Ta balance du jour est pleine',sub:'Ce n’est qu’un symbole : la vraie balance appartient à Allah. Qu’Il accepte tes efforts.',h:[['« Al-hamdu lillâh » remplit la balance.','Muslim 223'],HAD.regular][Math.floor(Math.random()*2)],ar:'الحمد لله'});
+      if(!$('ls').hidden&&lsView==='home') setTimeout(openListenHome,600)}
+  }catch(e){}
+}
+
 /* ---------- Bloc complet : courbes, habitudes, points faibles ---------- */
 function chartsHTML(who){
   const el=who==='elle', sp=seriesProg(90), tm=LS.get('hk.time',{}), rh=rhythm();
@@ -1357,18 +1486,25 @@ function journeyHTML(who){
       '<div class="stat"><b>'+Math.round(rh.daysPerWeek)+' / 7</b><small>jours actifs par semaine</small></div></div>'+
       (rh.moment?'<p class="note">'+(tu==='elle'?'Elle travaille':'Tu travailles')+' surtout '+rh.moment+'.</p>':'');
   }
+  h+='<span class="lbl">'+(tu==='elle'?'Ses':'Mes')+' étapes franchies</span>'+milesHTML();
   // étapes
   h+='<span class="lbl">Les étapes</span><div class="steps">';
   ms.forEach(x=>{const done=x.m>=x.tot,p=Math.round(x.m*100/x.tot);
     h+='<div class="stp'+(done?' done':'')+'"><span class="ic">'+(done?'✓':x.m?'◐':'○')+'</span><b>'+esc(x.t)+'</b><small>'+(done?'terminé':x.m+' / '+x.tot+' versets')+'</small><div class="pbar"><i style="width:'+p+'%"></i></div></div>'});
   return h+'</div>';
 }
-function streak(){
-  const d=activeDays(); let n=0, t=noonT();
-  if(!d[dayStr(t)]) t-=DAY;
-  while(d[dayStr(t)]){n++;t-=DAY}
-  return n;
+// série bienveillante : un jour manqué est pardonné s'il n'y en a pas eu d'autre dans les 7 jours (jour de répit)
+function streakInfo(){
+  const d=activeDays(); let n=0, t=noonT(), grace=0, lastGrace=-99, i=0;
+  if(!d[dayStr(t)]){t-=DAY;i++}
+  for(;i<1000;i++,t-=DAY){
+    if(d[dayStr(t)]){n++;continue}
+    if(n>0&&i-lastGrace>=7&&d[dayStr(t-DAY)]){grace++;lastGrace=i;continue}
+    break;
+  }
+  return {n,grace};
 }
+function streak(){return streakInfo().n}
 function paintToday(){
   const d=LS.get('hk.days',{}), c=d[dayStr(Date.now())]||0, g=settings.goal, s=streak();
   const pct=Math.min(100,Math.round(c*100/g));
@@ -1415,9 +1551,12 @@ function coverage(){
 function setVerseStates(list,st){
   // si la sourate entière était cochée, on fige d'abord ses versets en « maîtrisé »
   if(smanual[surah]==='m'){for(const v of verses) if(!manual[v.n]) manual[v.n]='m'; delete smanual[surah]; LS.set('hk.smanual',smanual)}
-  if(st==='m'){const before=coverage().vs;for(const n of list) if(before[n]!=='m') logLearn(surah,n)}
+  let newly=[];
+  if(st==='m'){const before=coverage().vs;for(const n of list) if(before[n]!=='m'){logLearn(surah,n);newly.push(n)}}
+  const wasDone=surahInfo(surah,LS.get('hk.sum',{})).st==='m';
   for(const n of list) manual[n]=st;
   LS.set('hk.manual.'+surah,manual); refreshProgress();
+  if(newly.length) onVersesLearned(surah,newly,wasDone);
 }
 function setSurahMastered(id,on){
   const sums=LS.get('hk.sum',{});
@@ -1425,6 +1564,7 @@ function setSurahMastered(id,on){
   else{delete smanual[id]; LS.set('hk.manual.'+id,{}); if(sums[id]){sums[id].mv=0;sums[id].any=0;delete sums[id].st;LS.set('hk.sum',sums)}}
   LS.set('hk.smanual',smanual); progSnap();
   if(id===surah){manual={}; refreshProgress()}
+  if(on) setTimeout(()=>{celebrateSurah(id);checkMiles()},400);
 }
 function closeVerseMenu(){$('vpop').hidden=true}
 function openVerseMenu(n,el){
@@ -1490,7 +1630,7 @@ function renderAll(){
 }
 function renderStats(){
   const ts=timeStats(), g=globalCounts(), st=streak();
-  let h=encourage('tu')+
+  let h=balanceHTML('tu')+encourage('tu')+
     '<div class="stats"><div class="stat"><b>'+fmtDur(ts.today)+'</b><small>aujourd’hui</small></div><div class="stat"><b>'+fmtDur(ts.week)+'</b><small>ces 7 jours</small></div><div class="stat"><b>'+fmtDur(ts.total)+'</b><small>au total</small></div></div>'+
     '<div class="stats"><div class="stat"><b>🔥 '+st+'</b><small>jour'+(st>1?'s':'')+' d’affilée</small></div><div class="stat"><b>'+g.verses+'</b><small>versets maîtrisés</small></div><div class="stat"><b>'+g.surahs+'</b><small>sourates maîtrisées</small></div></div>'+
     (()=>{const w=LS.get('hk.wsum',null);return w?'<div class="stats" style="grid-template-columns:1fr 1fr"><div class="stat"><b>📚 '+w.known+'</b><small>mots connus</small></div><div class="stat"><b>'+w.cov+' %</b><small>des mots compris ('+esc(w.t)+')</small></div></div>':''})()+
@@ -2801,13 +2941,13 @@ function weekDotsHTML(){
   for(let i=6;i>=0;i--){const k=dayStr(end-i*DAY);h+='<i class="'+(act[k]?'on':'')+(i===0?' tod':'')+'"></i>'}
   return h+'</div>';
 }
-function gardenHTML(){const g=globalCounts();return '<div class="ls-garden">'+treeSVG(g.verses,g.surahs)+weekDotsHTML()+'</div>'}
+function gardenHTML(){const g=globalCounts();return '<div class="ls-garden">'+treeSVG(g.verses,g.surahs)+balanceHTML('ls')+weekDotsHTML()+'</div>'}
 // écran de suivi pour l'accompagnant (appui long sur le logo ou la maison)
 function openHelper(){
   lsOpen(); lsStop(); lsView='helper';
   const ts=timeStats(), g=globalCounts(), st=streak();
   $('ls').innerHTML='<div class="ls-top"><button class="ls-home" id="lsHome" aria-label="Accueil">'+LS_ICO.home+'</button><div class="ls-head"><b class="ls-ht">Suivi</b></div><span class="ls-spacer"></span></div>'+
-    '<div class="ls-body ls-help"><p class="note">Écran réservé à l’accompagnant.</p>'+encourage('elle')+
+    '<div class="ls-body ls-help"><p class="note">Écran réservé à l’accompagnant.</p>'+balanceHTML('elle')+encourage('elle')+
     '<div class="stats"><div class="stat"><b>'+fmtDur(ts.today)+'</b><small>aujourd’hui</small></div><div class="stat"><b>'+fmtDur(ts.week)+'</b><small>ces 7 jours</small></div><div class="stat"><b>'+fmtDur(ts.total)+'</b><small>au total</small></div></div>'+
     '<div class="stats"><div class="stat"><b>🔥 '+st+'</b><small>jour'+(st>1?'s':'')+' d’affilée</small></div><div class="stat"><b>'+g.verses+'</b><small>versets appris</small></div><div class="stat"><b>'+g.surahs+'</b><small>sourates apprises</small></div></div>'+
     '<div class="stats" style="grid-template-columns:1fr"><div class="stat"><b>'+g.learning+'</b><small>sourates en cours</small></div></div>'+
@@ -3006,7 +3146,7 @@ function lsMark(){
   const cur=lsVS()[lsCur]||'', next=cur===''?'l':cur==='l'?'m':'n';
   setVerseStates([lsCur],next); lsPaintDots();
   const b=$('lsMark'); if(b){b.classList.remove('pop');void b.offsetWidth;b.classList.add('pop')}
-  say({fr:next==='m'?'Appris':next==='l'?'En cours':'Effacé'});
+  if(next!=='m') say({fr:next==='l'?'En cours':'Effacé'});
 }
 // après 5 écoutes en boucle d'un verset pas encore commencé, il passe tout seul « en cours »
 function lsAutoLearn(n){
@@ -3058,7 +3198,7 @@ function openReciters(){
 extOnBlocked=()=>{if($('ls').hidden)return;lsPlaying=false;lsPaint()};
 
 async function init(){
-  renderRules(); applySettings(); layout(); paintFriday(); paintWordsTip();
+  renderRules(); applySettings(); layout(); paintFriday(); paintWordsTip(); setTimeout(()=>{checkMiles();checkBalance()},2500);
   loadTranslations().then(l=>{const s=$('trSelect');s.innerHTML='';for(const t of l){const o=document.createElement('option');o.value=t.id;o.textContent=t.label;s.appendChild(o)}if(!l.some(t=>t.id==settings.trId)){settings.trId=l[0].id;saveSettings()}s.value=settings.trId});
   const recs=await loadReciters();
   const s=$('reciter'); s.innerHTML='';
@@ -3131,7 +3271,7 @@ async function syncNow(opts){
       else if(dirty[r.key]) v=syncMerge(r.key,lsRaw(r.key,null),r.value,lt>=rt);
       else continue;
       const j=JSON.stringify(v);
-      if(localStorage.getItem(r.key)!==j){localStorage.setItem(r.key,j);changed=true}
+      if(localStorage.getItem(r.key)!==j){localStorage.setItem(r.key,j);changed=true;localStorage.setItem('hk.milesQuiet','1')}
       if(j!==JSON.stringify(r.value)){dirty[r.key]=1;meta[r.key]=Math.max(Date.now(),rt+1)}else{delete dirty[r.key];meta[r.key]=rt}
     }
     lsPut('hk.syncMeta',meta); lsPut('hk.syncDirty',dirty);
@@ -3225,7 +3365,7 @@ document.addEventListener('visibilitychange',()=>{if(!lsRaw('hk.auth',null))retu
 window.addEventListener('online',()=>{if(lsRaw('hk.auth',null))syncNow()});
 
 // ===== Avis des testeurs : message WhatsApp pré-rempli (la personne choisit à qui l'envoyer) =====
-const APP_V='v59';
+const APP_V='v60';
 function deviceInfo(){
   const ua=navigator.userAgent; let d='appareil inconnu';
   const ios=ua.match(/OS (\d+)_(\d+)/), and=ua.match(/Android ([\d.]+)/);
