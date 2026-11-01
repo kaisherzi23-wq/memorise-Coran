@@ -2415,7 +2415,8 @@ function wWriteStart(){
   $('wBack').onclick=renderWords;
 }
 function wWrite(lv,list,then){
-  const q=(list||wQueue(30)).filter(w=>w.g&&wGloss(w)&&wLetters(wTarget(w)).length>=2).slice(0,list?99:10); let i=0, good=0;
+  // une entrée dont la forme principale est une expression (ex. « بَيْنَ أَيْدِي ») n'est pas écrite ici : les exemples du Coran ne montrent que le mot seul
+  const q=(list||wQueue(30)).filter(w=>w.g&&wGloss(w)&&!/\s/.test(wTarget(w))&&wLetters(wTarget(w)).length>=2).slice(0,list?99:10); let i=0, good=0;
   if(!q.length){$('wMain').innerHTML='<p class="note">Rien à écrire pour aujourd’hui ! 🎉</p><button class="btn" id="wBack">Retour</button>';$('wBack').onclick=renderWords;return}
   const next=()=>{
     if(i>=q.length&&then){then(good,q.length);return}
