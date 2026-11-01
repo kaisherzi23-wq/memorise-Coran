@@ -751,7 +751,7 @@ const MODES=[['repeat','Répéter'],['chain','Enchaîner'],['test','Test'],['rea
 const MODE_NOTE={repeat:'Répète le passage sélectionné.',chain:'Enchaîne les morceaux cochés : 1, puis 1+2, puis 1+2+3…',test:'Écoute le début, récite la suite, enregistre-toi et vérifie.',read:'Lit la sourate d’un trait à partir du marque-page (ou de ta sélection).'};
 const DISPLAYS=[['full','Texte complet'],['letters','Premières lettres'],['hidden','Masqué'],['step','Mot par mot']];
 const DISPLAY_NOTE={full:'',letters:'Seule la première lettre de chaque mot reste visible : un appui pour réciter sans lire.',hidden:'Le texte est flouté, seul le mot récité apparaît.',step:'Le texte est flouté. Touche l’œil dans la barre du bas pour dévoiler le mot suivant.'};
-const REPS=[1,3,5,7,10,Infinity], GAPS=[0,2,4,6,8], SPEEDS=[0.75,0.85,1,1.25], SIZES=[1.4,1.6,1.8,2.05,2.3,2.6], GOALS=[1,3,5,10];
+const REPS=[1,3,5,7,10,Infinity], GAPS=[0,2,4,6,8], SPEEDS=[0.75,0.85,1,1.25,1.5,2], SIZES=[1.4,1.6,1.8,2.05,2.3,2.6], GOALS=[1,3,5,10];
 const ST_LABEL={new:'À apprendre',learning:'En cours',mastered:'Maîtrisé'};
 
 /* ---------- État ---------- */
@@ -2966,7 +2966,7 @@ document.addEventListener('visibilitychange',()=>{if(!lsRaw('hk.auth',null))retu
 window.addEventListener('online',()=>{if(lsRaw('hk.auth',null))syncNow()});
 
 // ===== Avis des testeurs : message WhatsApp pré-rempli (la personne choisit à qui l'envoyer) =====
-const APP_V='v67';
+const APP_V='v68';
 function deviceInfo(){
   const ua=navigator.userAgent; let d='appareil inconnu';
   const ios=ua.match(/OS (\d+)_(\d+)/), and=ua.match(/Android ([\d.]+)/);
