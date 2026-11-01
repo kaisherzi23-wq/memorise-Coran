@@ -2271,7 +2271,7 @@ async function buildDeck(scope,onProg){
     for(const v of txt) for(const w of v.w){total++;const k=lexKey(w.t);if(!k)continue;
       const e=m[k]=m[k]||{k,n:0,a:'',ex:'',form:'',sc:1e9,oc:[]}; e.n++; if(e.oc.length<8)e.oc.push([s,v.n,w.p]); const sc=Math.abs(wNorm(w.t).length-k.length)+(wNorm(w.t)===k?0:1); if(sc<e.sc){e.sc=sc;e.a=wordAudio(s,v.n,w.p);e.ex=CHAPTERS[s-1].name_simple+' '+v.n;e.form=w.t}}
   }
-  const words=Object.values(m).map(e=>({k:e.k,n:e.n,t:LEX[e.k].a,p:LEX[e.k].p,g:LEX[e.k].f,a:e.a,ex:e.ex,form:e.form,sec:LEX[e.k].sec,oc:e.oc})).sort((a,b)=>b.n-a.n);
+  const words=Object.values(m).map(e=>({k:e.k,n:e.n,t:e.form||LEX[e.k].a,p:LEX[e.k].p,g:LEX[e.k].f,a:e.a,ex:e.ex,form:e.form,sec:LEX[e.k].sec,oc:e.oc})).sort((a,b)=>b.n-a.n);
   const rest=LEX_ROWS.filter(r=>!m[r[0]]).map(([k,a,p,f,sec])=>({k,n:0,t:a,p,g:f,a:'',ex:'',form:'',sec}));
   return {scope,total,lang:'french',words,rest,count:words.length};
 }
